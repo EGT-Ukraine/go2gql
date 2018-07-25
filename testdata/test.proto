@@ -1,0 +1,102 @@
+syntax = "proto3";
+package example;
+
+import "common/common.proto";
+option go_package = "github.com/EGT-Ukraine/go2gql/testdata";
+
+// Service, which do smth
+service ServiceExample {
+    rpc getQueryMethod (RootMessage) returns (RootMessage);
+    // rpc comment
+    rpc mutationMethod (RootMessage2) returns (RootMessage.NestedMessage);
+    rpc EmptyMsgs (Empty) returns (Empty);
+    rpc MsgsWithEpmty (MessageWithEmpty) returns (MessageWithEmpty);
+
+
+}
+enum RootEnum {
+    RootEnumVal0 = 0;
+    RootEnumVal1 = 1;
+    // It's a RootEnumVal2
+    RootEnumVal2 = 2;
+    //some comment in enum
+}
+
+message RootMessage {
+    enum NestedEnum {
+        NestedEnumVal0 = 0;
+        NestedEnumVal1 = 1;
+    }
+    message NestedMessage {
+        enum NestedNestedEnum {
+            NestedNestedEnumVal0 = 0;
+            NestedNestedEnumVal1 = 1;
+            NestedNestedEnumVal2 = 2;
+            NestedNestedEnumVal3 = 3;
+        }
+        repeated NestedEnum sub_r_enum = 1; // repeated Enum
+        repeated NestedNestedEnum sub_sub_r_enum = 2; // repeated Enum
+    }
+    // enum_map
+    map<int32, NestedEnum> map_enum = 1; // Map with enum value
+    // scalar map
+    map<int32, int32> map_scalar = 28; // Map with scalar value
+    map<string, NestedMessage> map_msg = 2; // Map with Message value
+    map<string, NestedMessage> ctx_map = 30;
+    map<string, NestedEnum> ctx_map_enum = 31;
+    // repeated Message
+    repeated NestedMessage r_msg = 3;
+    // repeated Scalar
+    repeated int32 r_scalar = 4;
+    // repeated Enum
+    repeated RootEnum r_enum = 5;
+    // repeated empty message
+    repeated Empty r_empty_msg = 6;
+
+    // non-repeated Enum
+    common.CommonEnum n_r_enum = 7;
+    // non-repeated Scalar
+    int32 n_r_scalar = 8;
+    // non-repeated Message
+    common.CommonMessage n_r_msg = 9;
+    // field from context
+    int32 scalar_from_context = 10;
+    // non-repeated empty message field
+    Empty n_r_empty_msg = 11;
+
+
+    oneof enum_first_oneoff {
+        common.CommonEnum e_f_o_e = 12;
+        int32 e_f_o_s = 13;
+        common.CommonMessage e_f_o_m = 14;
+        Empty e_f_o_em = 15; // non-repeated Message
+    };
+    oneof scalar_first_oneoff {
+        int32 s_f_o_s = 16; // non-repeated Scalar
+        RootEnum s_f_o_e = 17; // non-repeated Enum
+        RootMessage2 s_f_o_mes = 18; // non-repeated Message
+        Empty s_f_o_m = 19; // non-repeated Message
+    }
+    oneof message_first_oneoff {
+        RootMessage2 m_f_o_m = 20; // non-repeated Message
+        int32 m_f_o_s = 21; // non-repeated Scalar
+        RootEnum m_f_o_e = 22; // non-repeated Enum
+        Empty m_f_o_em = 23; // non-repeated Message
+    }
+    oneof empty_first_oneoff {
+        Empty em_f_o_em = 24; // non-repeated Message
+        int32 em_f_o_s = 25; // non-repeated Scalar
+        RootEnum em_f_o_en = 26; // non-repeated Enum
+        RootMessage2 em_f_o_m = 27; // non-repeated Message
+    }
+}
+message Empty {
+
+}
+message MessageWithEmpty {
+    Empty empt = 1;
+}
+
+message RootMessage2 {
+    int32 some_field = 1;
+}

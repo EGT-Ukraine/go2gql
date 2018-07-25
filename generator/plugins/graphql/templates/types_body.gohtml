@@ -1,0 +1,374 @@
+// Enums
+{{range $enum := .File.Enums -}}
+	var {{$enum.VariableName}} = {{gqlPkg}}.NewEnum({{gqlPkg}}.EnumConfig{
+		Name:        "{{$enum.GraphQLName}}",
+		{{ if $enum.Comment -}}
+			Description: {{$enum.Comment}},
+		{{ end -}}
+		Values: {{gqlPkg}}.EnumValueConfigMap{
+            {{range $value := $enum.Values -}}
+				"{{$value.Name}}": &{{gqlPkg}}.EnumValueConfig{
+					Value: {{$value.Value}},
+					{{ if ne $value.Comment `""` -}}
+						Description: {{$value.Comment}},
+					{{ end -}}
+				},
+			{{end -}}
+		},
+	})
+{{end -}}
+
+
+// Input object
+{{ range $object := .File.InputObjects -}}
+	var {{$object.VariableName}} = {{gqlPkg}}.NewInputObject({{gqlPkg}}.InputObjectConfig{
+        Name: "{{$object.GraphQLName}}",
+        Fields: {{gqlPkg}}.InputObjectConfigFieldMap{},
+    })
+	func init(){
+		{{range $field := $object.Fields -}}
+			{{$object.VariableName}}.Fields()["{{$field.Name}}"] = &{{gqlPkg}}.InputObjectField{PrivateName: "{{$field.Name}}", Type: {{call $field.Type $}}}
+		{{end -}}
+	}
+{{ end -}}
+
+// Input objects resolvers
+{{ range $resolver := .File.InputObjectResolvers -}}
+func {{$resolver.FunctionName}}({{ if $.TracerEnabled }} tr {{tracerPkg}}.Tracer, {{end}}ctx {{ctxPkg}}.Context, i interface{}) (_ {{goType $resolver.OutputGoType}}, rerr error){
+	{{ if $.TracerEnabled -}}
+		span := tr.CreateChildSpanFromContext(ctx, "{{$resolver.FunctionName}}")
+		defer span.Finish()
+		defer func(){
+			if perr := recover(); perr != nil {
+				span.SetTag("error", "true").SetTag("error_message", perr).SetTag("error_stack", string({{debugPkg}}.Stack()))
+			}
+			if rerr != nil {
+				span.SetTag("error", "true").SetTag("error_message", rerr.Error())
+			}
+		}()
+	{{end -}}
+	if i == nil {
+		return nil, nil
+	}
+	args := i.(map[string]interface{})
+	_ = args
+	var result = new({{goTypeForNew $resolver.OutputGoType}})
+	{{ range $field := $resolver.Fields -}}
+		{{ if $field.IsFromArgs -}}
+			if args["{{$field.GraphQLInputFieldName}}"] != nil {
+		{{ end -}}
+			{{ if isArray $field.GoType -}}
+				in := args["{{$field.GraphQLInputFieldName}}"].([]interface{})
+				result.{{$field.OutputFieldName}} = make({{goType $field.GoType}}, len(in))
+				for i, val := range in {
+					{{ if $field.ResolverWithError }}
+						v, err := {{call $field.ValueResolver "val" $}}
+						if err != nil {
+							return nil, {{errorsPkg}}.Wrap(err, "failed to resolve input object field")
+						}
+						result.{{$field.OutputFieldName}}[i] = v
+					{{ else -}}
+						result.{{$field.OutputFieldName}}[i] = {{call $field.ValueResolver "val" $}}
+					{{ end -}}
+				}
+			{{ else -}}
+				{{ if $field.ResolverWithError -}}
+					v, err := {{call $field.ValueResolver (concat "args[\"" $field.GraphQLInputFieldName "\"]") $}}
+					if err != nil {
+						return nil, {{errorsPkg}}.Wrap(err, "failed to resolve input object field")
+					}
+					result.{{$field.OutputFieldName}} = v
+				{{ else -}}
+					result.{{$field.OutputFieldName}} = {{call $field.ValueResolver (concat "args[\"" $field.GraphQLInputFieldName "\"]") $}}
+				{{ end -}}
+			{{ end -}}
+		{{ if $field.IsFromArgs -}}
+			}
+		{{ end -}}
+	{{ end -}}
+	{{range $oneof := $resolver.OneOfFields -}}
+		{{range $index, $field := $oneof.Fields -}}
+			{{if eq $index 0 -}}
+			if {{$field.GraphQLInputFieldName}}_, ok := args["{{$field.GraphQLInputFieldName}}"]; ok && {{$field.GraphQLInputFieldName}}_ != nil {
+                {{ if $field.ResolverWithError -}}
+                    v, err := {{call $field.ValueResolver (concat $field.GraphQLInputFieldName "_") $}}
+                    if err != nil {
+                        return nil, {{errorsPkg}}.Wrap(err, "failed to resolve oneOf object field {{$field.GraphQLInputFieldName}}")
+                    }
+                {{ else -}}
+                    v := {{call $field.ValueResolver (concat $field.GraphQLInputFieldName "_") $}}
+                {{end -}}
+                {{ if $field.AssigningWrapper -}}
+                    result.{{$oneof.OutputFieldName}} = {{call $field.AssigningWrapper "v" $}}
+                {{ else -}}
+                    result.{{$oneof.OutputFieldName}} = v
+                {{ end -}}
+			}{{else -}} else if {{$field.GraphQLInputFieldName}}_, ok := args["{{$field.GraphQLInputFieldName}}"]; ok && {{$field.GraphQLInputFieldName}}_ != nil {
+                {{ if $field.ResolverWithError -}}
+                    v, err := {{call $field.ValueResolver (concat $field.GraphQLInputFieldName "_") $}}
+                    if err != nil {
+                        return nil, {{errorsPkg}}.Wrap(err, "failed to resolve oneOf object field {{$field.GraphQLInputFieldName}}")
+                    }
+                {{ else -}}
+                    v := {{call $field.ValueResolver (concat $field.GraphQLInputFieldName "_") $}}
+                {{end -}}
+                {{ if $field.AssigningWrapper -}}
+                    result.{{$oneof.OutputFieldName}} = {{call $field.AssigningWrapper "v" $}}
+                {{ else -}}
+                    result.{{$oneof.OutputFieldName}} = v
+                {{ end -}}
+			}{{end -}}
+
+		{{end}}
+	{{end}}
+
+	return result, nil
+}
+{{ end -}}
+// Output objects
+{{ range $object := $.File.OutputObjects -}}
+	var {{$object.VariableName}} = {{gqlPkg}}.NewObject({{gqlPkg}}.ObjectConfig{
+		Name: "{{$object.GraphQLName}}",
+		Fields: {{gqlPkg}}.Fields{},
+	})
+	func init(){
+		{{ range $field := $object.Fields -}}
+			{{$object.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
+				Name: "{{$field.Name}}",
+				Type: {{call $field.Type $}},
+				Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
+        	    	switch src := p.Source.(type){
+						case *{{goType $object.GoType}}:
+							if src == nil {
+								return nil, nil
+							}
+							s := *src
+							{{if $field.NeedCast -}}
+								return {{$field.CastTo}}({{call $field.Value "s" $}}), nil
+							{{else -}}
+								return {{call $field.Value "s" $}}, nil
+							{{ end -}}
+						case {{goType $object.GoType}}:
+							{{if $field.NeedCast -}}
+								return {{$field.CastTo}}({{call $field.Value "src" $}}), nil
+							{{else -}}
+								return {{call $field.Value "src" $}}, nil
+							{{end -}}
+					}
+					return nil, {{errorsPkg}}.New("source of unknown type")
+				},
+			})
+		{{ end -}}
+		{{ range $field := $object.MapFields -}}
+			{{$object.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
+				Name: "{{$field.Name}}",
+				Type: {{call $field.Type $}},
+				Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
+        	    	switch src := p.Source.(type){
+						case *{{goType $object.GoType}}:
+							if src == nil {
+								return nil, nil
+							}
+                            s := *src
+							var res []map[string]interface{}
+							for key, value := range {{call $field.Value "s" $}} {
+								res = append(res, map[string]interface{}{
+									"key":   key,
+									"value": value,
+								})
+							}
+							return res, nil
+						case {{goType $object.GoType}}:
+							var res []map[string]interface{}
+							for key, value := range {{call $field.Value "src" $}} {
+								res = append(res, map[string]interface{}{
+									"key":   key,
+									"value": value,
+								})
+							}
+							return res, nil
+					}
+					return nil, {{errorsPkg}}.New("source of unknown type")
+				},
+			})
+		{{ end -}}
+	}
+{{ end -}}
+// Maps input objects
+{{ range $object := .File.MapInputObjects -}}
+	var {{$object.VariableName}} = {{gqlPkg}}.NewInputObject({{gqlPkg}}.InputObjectConfig{
+        Name: "{{$object.GraphQLName}}",
+        Fields: {{gqlPkg}}.InputObjectConfigFieldMapThunk(func() {{gqlPkg}}.InputObjectConfigFieldMap {
+            return {{gqlPkg}}.InputObjectConfigFieldMap{
+				"key": &{{gqlPkg}}.InputObjectFieldConfig{Type: {{call $object.KeyObjectType $}}},
+    	        "value": &{{gqlPkg}}.InputObjectFieldConfig{Type: {{call $object.ValueObjectType $}}},
+            }
+        }),
+    })
+{{ end -}}
+// Maps input objects resolvers
+{{ range $resolver := .File.MapInputObjectResolvers -}}
+	func {{$resolver.FunctionName}}({{ if $.TracerEnabled }} tr {{tracerPkg}}.Tracer, {{end}}ctx {{ctxPkg}}.Context, i interface{}) (_ map[{{goType $resolver.KeyGoType}}]{{goType $resolver.ValueGoType}}, rerr error){
+		{{ if $.TracerEnabled -}}
+			span := tr.CreateChildSpanFromContext(ctx, "{{$resolver.FunctionName}}")
+			defer span.Finish()
+			defer func(){
+				if perr := recover(); perr != nil {
+					span.SetTag("error", "true").SetTag("error_message", perr).SetTag("error_stack", string({{debugPkg}}.Stack()))
+				}
+				if rerr != nil {
+					span.SetTag("error", "true").SetTag("error_message", rerr.Error())
+				}
+			}()
+		{{end -}}
+		if i == nil {
+			return nil, nil
+		}
+		in := i.([]interface{})
+		result := make(map[{{goType $resolver.KeyGoType}}]{{goType $resolver.ValueGoType}})
+		for i, ival := range in {
+			_ = i
+			val := ival.(map[string]interface{})
+			k, v := val["key"], val["value"]
+			_, _ = k,v
+			{{if $resolver.KeyResolverWithError -}}
+				kk, err := {{call $resolver.KeyResolver "k" $}}
+				if err != nil {
+					return nil, {{errorsPkg}}.Wrapf(err, "failed to resolve #%d map element key", i)
+				}
+			{{else -}}
+				kk := {{call $resolver.KeyResolver "k" $}}
+			{{end -}}
+			{{if $resolver.ValueResolverWithError -}}
+				vv, err := {{call $resolver.ValueResolver "v" $}}
+				if err != nil {
+					return nil, {{errorsPkg}}.Wrapf(err, "failed to resolve #%d map element value", i)
+				}
+			{{else -}}
+				vv := {{call $resolver.ValueResolver "v" $}}
+			{{end -}}
+			result[kk]=vv
+		}
+		return result, nil
+	}
+{{ end -}}
+
+// Maps output objects
+{{ range $object := .File.MapOutputObjects -}}
+	var {{$object.VariableName}} = {{gqlPkg}}.NewObject({{gqlPkg}}.ObjectConfig{
+		Name: "{{$object.GraphQLName}}",
+       	Fields: {{gqlPkg}}.Fields{
+		},
+	})
+	func init(){
+		{{$object.VariableName}}.AddFieldConfig("key", &{{gqlPkg}}.Field{
+			Name: "key",
+			Type: {{call $object.KeyObjectType $}},
+			Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
+				src := p.Source.(map[string]interface{})
+				if src == nil {
+					return nil, nil
+				}
+				return src["key"], nil
+			},
+		})
+		{{$object.VariableName}}.AddFieldConfig("value", &{{gqlPkg}}.Field{
+			Name: "value",
+			Type: {{call $object.ValueObjectType $}},
+			Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
+				src := p.Source.(map[string]interface{})
+				if src == nil {
+					return nil, nil
+				}
+				return src["value"], nil
+			},
+		})
+	}
+{{end -}}
+
+// Services
+{{ range $service := .File.Services -}}
+	func Get{{$service.Name}}ServiceMethods(c {{goType $service.CallInterface}}, ih *{{interceptorsPkg}}.InterceptorHandler {{ if $.TracerEnabled }} ,tr {{tracerPkg}}.Tracer {{end}}) {{gqlPkg}}.Fields {
+		{{ if $service.Methods -}}
+			return {{gqlPkg}}.Fields{
+				{{range $method := $service.Methods -}}
+					"{{$method.Name}}": &{{gqlPkg}}.Field{
+						Name: "{{$method.Name}}",
+						Type: {{call $method.GraphQLOutputType $}},
+						{{ if $method.Arguments -}}
+							Args: {{gqlPkg}}.FieldConfigArgument{
+		                		{{ range $arg := $method.Arguments -}}
+									"{{$arg.Name}}": &{{gqlPkg}}.ArgumentConfig{Type: {{call $arg.Type $}}},
+								{{ end -}}
+							},
+						{{ end -}}
+						Resolve: func(p {{gqlPkg}}.ResolveParams) (_ interface{}, rerr error) {
+                            ctx := p.Context
+                            _ = ctx
+							{{ if $.TracerEnabled -}}
+								span := tr.CreateChildSpanFromContext(p.Context, "{{$service.Name}}.{{$method.Name}} Resolver")
+								defer span.Finish()
+								defer func(){
+									if rerr != nil {
+										span.SetTag("error", "true").SetTag("error_message", rerr.Error())
+									}
+								}()
+							{{end -}}
+							if ih == nil {
+								{{ if $method.RequestResolver -}}
+                                	req, err := {{call $method.RequestResolver "p.Args" $}}{{- if not $method.RequestResolverWithErr -}}, error(nil){{end}}
+                                    if err != nil {
+                                    	return nil, err
+                                    }
+                                    return {{call $method.ClientMethodCaller "c" "req" $}}
+								{{ else -}}
+									req := new({{goTypeForNew $method.RequestType}})
+                                	return {{call $method.ClientMethodCaller "c" "req" $}}
+								{{ end -}}
+							}
+							ictx := &{{interceptorsPkg}}.Context{
+								Service: "{{$service.Name}}",
+								Method: "{{$method.Name}}",
+								Params: p,
+							}
+							req, err := ih.ResolveArgs(ictx, func(ictx *{{interceptorsPkg}}.Context, next {{interceptorsPkg}}.ResolveArgsInvoker) (result interface{}, err error) {
+								{{ if $method.RequestResolver -}}
+                                	return {{call $method.RequestResolver "p.Args" $}}{{- if not $method.RequestResolverWithErr -}}, error(nil){{end}}
+								{{ else -}}
+									return new({{goTypeForNew $method.RequestType}}), nil
+								{{ end -}}
+							})
+							if err != nil {
+								return nil, {{errorsPkg}}.Wrap(err, "failed to resolve args")
+							}
+							return ih.Call(ictx, req, func(ictx *{{interceptorsPkg}}.Context, req interface{}, next {{interceptorsPkg}}.CallMethodInvoker) (result interface{}, err error) {
+								r, ok := req.({{goType $method.RequestType}})
+								if !ok {
+									return nil, {{errorsPkg}}.New({{fmtPkg}}.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: {{goType $method.RequestType}}", req))
+								}
+								{{if $method.PayloadErrorChecker -}}
+                                    res, err := {{call $method.ClientMethodCaller "c" "r" $}}
+                                    if err != nil {
+                                        return nil, err
+                                    }
+                                	if {{call $method.PayloadErrorChecker "res"}} {
+                                        {{ if $method.PayloadErrorAccessor -}}
+                                            ictx.PayloadError = {{call $method.PayloadErrorAccessor "res"}}
+                                        {{ else -}}
+                                            ictx.PayloadError = res
+                                        {{ end -}}
+									}
+									return res, err
+                                {{else -}}
+                                    return {{call $method.ClientMethodCaller "c" "r" $}}
+								{{end -}}
+							})
+						},
+					},
+				{{ end -}}
+			}
+		{{else -}}
+			return nil
+		{{end -}}
+	}
+{{ end -}}

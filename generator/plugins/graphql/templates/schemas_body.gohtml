@@ -1,0 +1,47 @@
+type {{$.SchemaName}}SchemaClients struct {
+	{{ range $service := $.Services -}}
+		{{$service.Name}}Client {{goType $service.ClientGoType}}
+	{{ end -}}
+}
+func Get{{$.SchemaName}}Schema(cls {{$.SchemaName}}SchemaClients, ih *{{interceptorsPkg}}.InterceptorHandler{{- if $.TracerEnabled -}}, tr {{tracerPkg}}.Tracer{{- end -}}) ({{gqlPkg}}.Schema, error) {
+	{{ range $service := $.Services -}}
+		var {{$service.Name}}Fields = {{serviceConstructor $service $}}(cls.{{$service.Name}}Client, ih{{- if $.TracerEnabled -}}, tr{{- end -}})
+		var _ = {{$service.Name}}Fields
+	{{ end -}}
+	{{ range $object := $.Objects -}}
+		var {{$object.Name}} = {{gqlPkg}}.NewObject({{gqlPkg}}.ObjectConfig{
+			Name: "{{$object.Name}}",
+			{{ if ne $object.QuotedComment "" -}}
+				Comment: {{$object.QuotedComment}},
+			{{ end -}}
+			Fields: {{gqlPkg}}.Fields{
+				{{ if len $object.Fields -}}
+					{{ range $fld := $object.Fields -}}
+						{{ if $fld.Service -}}
+                            "{{$fld.Name}}": {{$fld.Service.Name}}Fields["{{$fld.Name}}"],
+						{{ else -}}
+							"{{$fld.Name}}": &{{gqlPkg}}.Field{
+								Name: "{{$fld.Name}}",
+								Type: {{$fld.Object.Name}},
+								Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
+									return struct{}{}, nil
+								},
+							},
+						{{ end -}}
+					{{ end -}}
+				{{ else -}}
+					"noFields": &{{gqlPkg}}.Field{
+						Name: "noFields",
+						Type: {{gqlPkg}}.String,
+					},
+				{{ end -}}
+			},
+		})
+	{{ end -}}
+	return {{gqlPkg}}.NewSchema({{gqlPkg}}.SchemaConfig{
+		Query: {{$.QueryObject}},
+		{{ if $.MutationObject -}}
+			Mutation: {{$.MutationObject}},
+		{{ end -}}
+	})
+}

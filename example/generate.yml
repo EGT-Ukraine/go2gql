@@ -1,0 +1,40 @@
+proto2gql:
+  paths:
+    - "vendor"
+    - "$GOPATH/src"
+  files:
+    - name: "Google Timestamp"
+      proto_path: "$GOPATH/src/github.com/golang/protobuf/ptypes/timestamp/timestamp.proto"
+      proto_go_package: "github.com/golang/protobuf/ptypes/timestamp"
+      output_path: "./out/well_known/"
+      output_package: "well_known"
+
+    - proto_path: "./proto/example.proto"
+      output_path: "./out/example"
+      output_package: "example"
+      gql_messages_prefix: "Exmpl"
+      gql_enums_prefix: "Exmpl"
+      imports_aliases:
+        - google/protobuf/timestamp.proto:  "github.com/golang/protobuf/ptypes/timestamp/timestamp.proto"
+      services:
+        ServiceExample:
+          methods:
+            queryMethod:
+              request_type: "QUERY"
+            getMutatuionMethod:
+              request_type: "MUTATION"
+      messages:
+        - A:
+            fields:
+              message_with_oneoffs: {context_key: "a_msg_with_oneoffs"}
+
+graphql_schemas:
+  - name: "ExampleSchema"
+    output_path: "./out/schema/example.go"
+    output_package: "schema"
+    queries:
+      type: "SERVICE"
+      service: "ServiceExample"
+    mutations:
+      type: "SERVICE"
+      service: "ServiceExampleMutations"

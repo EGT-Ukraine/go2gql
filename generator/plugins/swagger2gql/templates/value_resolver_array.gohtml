@@ -1,0 +1,20 @@
+func (arg interface{}) ({{call $.resultType}}, error) {
+	elements, ok := arg.([]interface{})
+	if !ok {
+		return nil, {{errorsPkg}}.New("argument is not array")
+	}
+	res := make({{call $.resultType}}, len(elements))
+	for i, element := range elements{
+		_ = element
+		{{ if $.elemResolverWithErr -}}
+			elVal, err := {{call $.elemResolver "element" $.rootCtx}}
+			if err != nil{
+            	return nil, {{errorsPkg}}.Wrap(err, "can't resolve array element")
+			}
+			res[i] = elVal
+		{{ else -}}
+			res[i] += {{call $.elemResolver "element" $.rootCtx}}
+		{{ end -}}
+	}
+	return res, nil
+}({{$.arg}})

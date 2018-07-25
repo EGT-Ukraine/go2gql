@@ -1,0 +1,14 @@
+func(arg interface{}) (*{{strfmtPkg}}.DateTime, error) {
+    if arg == nil {
+        return nil, nil
+    }
+    a := arg.(map[string]interface{})
+    if a["seconds"] == nil || a["nanos"] == nil {
+        return nil, {{errorsPkg}}.New(\"not all datetime parameters passed\")
+    }
+    t := {{timePkg}}.Unix(a["seconds"].(int64), int64(a["nanos"].(int32)))
+    return (*{{strfmtPkg}}.DateTime)(&t), nil
+}({{arg}})
+
+
+

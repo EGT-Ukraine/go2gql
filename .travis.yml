@@ -1,0 +1,15 @@
+language: go
+
+go:
+  - "1.9"
+  - "1.10.x"
+  - master
+
+install:
+  - go get github.com/mattn/goveralls
+  - go get github.com/golang/dep/cmd/dep
+  - dep ensure -vendor-only
+
+script:
+  - go test ./...
+  - goveralls -race -service=travis-ci -repotoken $COVERALLS_TOKEN

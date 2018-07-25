@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "common/common.proto";
+option go_package = "github.com/EGT-Ukraine/go2gql/testdata";
+
+// Service, which do smth
+service AnotherServiceExample {
+    rpc getEmptiesMsg (common.CommonMessage) returns (common.CommonMessage);
+}
+enum someEnum {
+    Val1 = 0;
+    Val2 = 1;
+}

@@ -1,0 +1,76 @@
+syntax = "proto3";
+package example;
+
+import "google/protobuf/timestamp.proto";
+
+// Service, which do smth
+service ServiceExample {
+    rpc getQueryMethod (AOneOffs) returns (B); // methods with prefix "get" is queries
+    rpc mutationMethod (B) returns (A); // methods without prefix "get" is mutation
+    rpc queryMethod (google.protobuf.Timestamp) returns (google.protobuf.Timestamp); // in generate.yml we mark, that this method is QUERY
+    rpc getMutatuionMethod (MsgWithEmpty) returns (MsgWithEmpty); // in generate.yml we mark, that this method is MUTATION
+    rpc getEmptiesMsg (Empty) returns (Empty);
+
+
+}
+enum someEnum {
+    Val1 = 0;
+    Val2 = 1;
+}
+message A {
+    enum someEnum3 {
+        Val5 = 0;
+        Val6 = 1;
+    }
+    map<int32, someEnum> map_enum = 1; // Map with enum value
+    map<int32, int32> map_scalar = 2; // Map with scalar value
+    map<int32, google.protobuf.Timestamp> map_msg = 3; // Map with Message value
+    repeated google.protobuf.Timestamp r_msg = 4; // repeated Message
+    repeated int32 r_scalar = 5; // repeated Scalar
+    repeated someEnum r_enum = 6; // repeated Enum
+    someEnum3 n_r_enum = 7; // non-repeated Enum
+    int32 n_r_scalar = 8; // non-repeated Scalar
+    google.protobuf.Timestamp n_r_msg = 9; // non-repeated Message
+    int32 scalar_from_context = 10;
+    someEnum enum_from_context = 11;
+    google.protobuf.Timestamp message_from_context = 12;
+    //    repeated bytes r_bytes = 13; // TODO
+    //    bytes n_r_bytes = 14; // TODO
+    AOneOffs message_with_oneoffs = 13;
+}
+message AOneOffs {
+    oneof firstEnum {
+        someEnum e_n_r_enum = 7; // non-repeated Enum
+        int32 e_n_r_scalar = 8; // non-repeated Scalar
+        google.protobuf.Timestamp e_n_r_msg = 9; // non-repeated Message
+    };
+    oneof firstScalar {
+        int32 s_n_r_scalar = 10; // non-repeated Scalar
+        someEnum s_n_r_enum = 11; // non-repeated Enum
+
+        google.protobuf.Timestamp s_n_r_msg = 12; // non-repeated Message
+    }
+    oneof firstMessage {
+        google.protobuf.Timestamp m_n_r_msg = 13; // non-repeated Message
+        int32 m_n_r_scalar = 14; // non-repeated Scalar
+        someEnum m_n_r_enum = 15; // non-repeated Enum
+    }
+}
+message MsgWithEmpty {
+    Empty empty_field = 1;
+}
+message Empty {
+
+}
+
+message B {
+    map<int32, someEnum> map_enum = 1; // Map with enum value
+    map<int32, int32> map_scalar = 2; // Map with scalar value
+    map<int32, google.protobuf.Timestamp> map_msg = 3; // Map with Message value
+    repeated google.protobuf.Timestamp r_msg = 4; // repeated Message
+    repeated int32 r_scalar = 5; // repeated Scalar
+    repeated someEnum r_enum = 6; // repeated Enum
+    someEnum n_r_enum = 7; // non-repeated Enum
+    int32 n_r_scalar = 8; // non-repeated Scalar
+    google.protobuf.Timestamp n_r_msg = 9; // non-repeated Message
+}
