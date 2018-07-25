@@ -5,7 +5,7 @@ Tool, which generates GraphQL Schema for [graphql-go](https://github.com/saturn4
 
 ## Installation
 ```bash
-$ go get github.com/EGT-Ukraine/go2gql/cmd/proto2gql
+$ go get github.com/EGT-Ukraine/go2gql/cmd/go2gql
 ```
 
 ## Usage

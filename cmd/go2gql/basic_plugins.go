@@ -1,4 +1,4 @@
-// +build NOT (linux ORd darwin)
+// +build NOT (linux OR darwin)
 
 package main
 
