@@ -4,7 +4,7 @@ func(arg interface{}) (_ {{strfmtPkg}}.DateTime, err error) {
     }
     a := arg.(map[string]interface{})
     if a["seconds"] == nil || a["nanos"] == nil {
-        err = {{errorsPkg}}.New(\"not all datetime parameters passed\")
+        err = {{errorsPkg}}.New("not all datetime parameters passed")
         return
     }
     t := {{timePkg}}.Unix(a["seconds"].(int64), int64(a["nanos"].(int32)))
