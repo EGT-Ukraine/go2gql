@@ -8,7 +8,7 @@ func(arg interface{}) (*{{strfmtPkg}}.DateTime, error) {
     }
     t := {{timePkg}}.Unix(a["seconds"].(int64), int64(a["nanos"].(int32)))
     return (*{{strfmtPkg}}.DateTime)(&t), nil
-}({{arg}})
+}({{$.arg}})
 
 
 
