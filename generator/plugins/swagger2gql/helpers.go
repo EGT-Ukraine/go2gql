@@ -21,7 +21,7 @@ const (
 var scalarsGoTypesNames = map[parser.Kind]string{
 	parser.KindString:  "string",
 	parser.KindFloat32: "float32",
-	parser.KindFloat64: "float65",
+	parser.KindFloat64: "float64",
 	parser.KindInt64:   "int64",
 	parser.KindInt32:   "int32",
 	parser.KindBoolean: "bool",
