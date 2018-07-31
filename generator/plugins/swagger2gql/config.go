@@ -24,10 +24,18 @@ type TagConfig struct {
 	Methods         map[string]map[string]MethodConfig `mapstructure:"methods"`
 }
 type Config struct {
-	Files []*SwaggerFileConfig `mapstructure:"files"`
-
-	Messages []map[string]ObjectConfig `mapstructure:"messages"`
+	Files      []*SwaggerFileConfig      `mapstructure:"files"`
+	OutputPath string                    `mapstructure:"output_path"`
+	Messages   []map[string]ObjectConfig `mapstructure:"messages"`
 }
+
+func (c *Config) GetOutputPath() string {
+	if c == nil {
+		return ""
+	}
+	return c.OutputPath
+}
+
 type SwaggerFileConfig struct {
 	Name string `mapstructure:"name"`
 

@@ -137,6 +137,9 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 	var res []graphql.Service
 	for _, tag := range file.File.Tags {
 		tagCfg := file.Config.Tags[tag.Name]
+		if tagCfg.ClientGoPackage == "" {
+			return nil, errors.Errorf("file: `%s`. Need to specify tag %s `client_go_package` option", file.Config.Name, tag.Name)
+		}
 		queriesMethods, err := p.tagQueriesMethods(tagCfg, file, tag)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get tag queries methods")
@@ -152,7 +155,7 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 				Kind: reflect.Ptr,
 				ElemType: &graphql.GoType{
 					Kind: reflect.Interface,
-					Pkg:  file.Config.Tags[tag.Name].ClientGoPackage,
+					Pkg:  tagCfg.ClientGoPackage,
 					Name: "Client",
 				},
 			},
@@ -168,7 +171,7 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 				Kind: reflect.Ptr,
 				ElemType: &graphql.GoType{
 					Kind: reflect.Interface,
-					Pkg:  file.Config.Tags[tag.Name].ClientGoPackage,
+					Pkg:  tagCfg.ClientGoPackage,
 					Name: "Client",
 				},
 			},

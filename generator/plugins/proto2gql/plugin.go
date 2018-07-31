@@ -81,6 +81,7 @@ func (p *Plugin) Prepare() error {
 	pr := new(Proto2GraphQL)
 	pr.VendorPath = p.generateConfig.VendorPath
 	pr.GenerateTracers = p.generateConfig.GenerateTraces
+	pr.OutputPath = p.config.GetOutputPath()
 	for _, file := range p.config.Files {
 		err := p.prepareFileConfig(file)
 		if err != nil {

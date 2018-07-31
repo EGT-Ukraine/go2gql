@@ -31,9 +31,18 @@ type Config struct {
 
 	// Global configs for proto files
 	Paths          []string                   `mapstructure:"paths"`
+	OutputPath     string                     `mapstructure:"output_path"`
 	ImportsAliases []map[string]string        `mapstructure:"imports_aliases"`
 	Messages       []map[string]MessageConfig `mapstructure:"messages"`
 }
+
+func (c *Config) GetOutputPath() string {
+	if c == nil {
+		return ""
+	}
+	return c.OutputPath
+}
+
 type ProtoFileConfig struct {
 	Name string `mapstructure:"name"`
 

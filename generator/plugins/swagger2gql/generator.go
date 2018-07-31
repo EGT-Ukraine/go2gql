@@ -19,6 +19,9 @@ type parsedFile struct {
 
 func (p *Plugin) fileOutputPath(cfg *SwaggerFileConfig) (string, error) {
 	if cfg.GetOutputPath() == "" {
+		if p.config.GetOutputPath() == "" {
+			return "", errors.Errorf("need to specify global output_path")
+		}
 		absFilePath, err := filepath.Abs(cfg.Path)
 		if err != nil {
 			return "", errors.Wrap(err, "failed to resolve file absolute path")
@@ -27,9 +30,9 @@ func (p *Plugin) fileOutputPath(cfg *SwaggerFileConfig) (string, error) {
 		pkg, err := GoPackageByPath(filepath.Dir(absFilePath), p.generateConfig.VendorPath)
 		var res string
 		if err != nil {
-			res, err = filepath.Abs(filepath.Join("./out/", "./"+filepath.Dir(absFilePath), strings.TrimSuffix(fileName, ".json")+".go"))
+			res, err = filepath.Abs(filepath.Join("./"+p.config.GetOutputPath()+"/", "./"+filepath.Dir(absFilePath), strings.TrimSuffix(fileName, ".json")+".go"))
 		} else {
-			res, err = filepath.Abs(filepath.Join("./out/", "./"+pkg, strings.TrimSuffix(fileName, ".json")+".go"))
+			res, err = filepath.Abs(filepath.Join("./"+p.config.GetOutputPath()+"/", "./"+pkg, strings.TrimSuffix(fileName, ".json")+".go"))
 		}
 		if err != nil {
 			return "", errors.Wrap(err, "failed to resolve absolute output path")

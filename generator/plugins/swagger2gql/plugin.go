@@ -49,6 +49,9 @@ func (p *Plugin) Infos() map[string]string {
 	return nil
 }
 func (p *Plugin) prepareTypesFile(file *parsedFile) (*graphql.TypesFile, error) {
+	if file.Config.ModelsGoPath == "" {
+		return nil, errors.Errorf("file: `%s`. Need to specify `models_go_path` option", file.Config.Name)
+	}
 	inputs, err := p.fileInputObjects(file)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare file input objects")
