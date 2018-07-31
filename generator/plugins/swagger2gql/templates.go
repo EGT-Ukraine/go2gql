@@ -167,7 +167,7 @@ func templatesValue_resolver_ptr_datetimeGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/value_resolver_ptr_datetime.gohtml", size: 414, mode: os.FileMode(420), modTime: time.Unix(1532704779, 0)}
+	info := bindataFileInfo{name: "templates/value_resolver_ptr_datetime.gohtml", size: 414, mode: os.FileMode(420), modTime: time.Unix(1532705209, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

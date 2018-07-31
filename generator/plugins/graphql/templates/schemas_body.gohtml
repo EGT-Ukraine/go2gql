@@ -5,6 +5,11 @@ type {{$.SchemaName}}SchemaClients struct {
 }
 func Get{{$.SchemaName}}Schema(cls {{$.SchemaName}}SchemaClients, ih *{{interceptorsPkg}}.InterceptorHandler{{- if $.TracerEnabled -}}, tr {{tracerPkg}}.Tracer{{- end -}}) ({{gqlPkg}}.Schema, error) {
 	{{ range $service := $.Services -}}
+		if cls.{{$service.Name}}Client == nil {
+			return {{gqlPkg}}.Schema{}, {{errorsPkg}}.Errorf("Service client {{$service.Name}} can't be nil nil")
+		}
+	{{ end -}}
+	{{ range $service := $.Services -}}
 		var {{$service.Name}}Fields = {{serviceConstructor $service $}}(cls.{{$service.Name}}Client, ih{{- if $.TracerEnabled -}}, tr{{- end -}})
 		var _ = {{$service.Name}}Fields
 	{{ end -}}
