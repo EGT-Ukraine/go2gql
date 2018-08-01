@@ -23,6 +23,7 @@ const (
 	OpentracingPkgPath   = "github.com/opentracing/opentracing-go"
 	TracerPkgPath        = "github.com/EGT-Ukraine/go2gql/api/tracer"
 	ErrorsPkgPath        = "github.com/pkg/errors"
+	LogPkg               = "github.com/opentracing/opentracing-go/log"
 )
 
 type typesGenerator struct {
@@ -63,6 +64,7 @@ func (g typesGenerator) bodyTemplateFuncs() map[string]interface{} {
 		"ctxPkg":          g.importFunc("context"),
 		"debugPkg":        g.importFunc("runtime/debug"),
 		"fmtPkg":          g.importFunc("fmt"),
+		"logPkg":          g.importFunc(LogPkg),
 		"errorsPkg":       g.importFunc(ErrorsPkgPath),
 		"gqlPkg":          g.importFunc(GraphqlPkgPath),
 		"scalarsPkg":      g.importFunc(ScalarsPkgPath),
