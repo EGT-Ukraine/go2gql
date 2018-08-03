@@ -25,7 +25,8 @@ func (f *File) parseGoPackage() {
 			continue
 		}
 		if option.Name == "go_package" {
-			f.GoPackage = option.Constant.Source
+			parts := strings.Split(option.Constant.Source, ";")
+			f.GoPackage = parts[0]
 		}
 	}
 }
