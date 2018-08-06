@@ -308,7 +308,7 @@ func {{$resolver.FunctionName}}({{ if $.TracerEnabled }} tr {{tracerPkg}}.Tracer
 							{{ if $.TracerEnabled -}}
 								span := tr.CreateChildSpanFromContext(p.Context, "{{$service.Name}}.{{$method.Name}} Resolver")
 								defer span.Finish()
-                                p.Context = tr.ContextWithSpan(ctx, span)
+                                p.Context = {{opentracingPkg}}.ContextWithSpan(ctx, span)
 								defer func(){
 									if rerr != nil {
 										span.SetTag("error", true).LogFields({{logPkg}}.Error(rerr))

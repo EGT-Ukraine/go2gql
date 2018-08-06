@@ -94,8 +94,9 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 		}, false, true, nil
 	case *parser.MessageType:
 		return func(arg string, ctx graphql.BodyContext) string {
+
 			if ctx.TracerEnabled {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType.Message) + "(tr, tr.ContextWithSpan(ctx,span), " + arg + ")"
+				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType.Message) + "(tr, " + ctx.Importer.New(graphql.OpentracingPkgPath) + ".ContextWithSpan(ctx,span), " + arg + ")"
 			} else {
 				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType.Message) + "(ctx, " + arg + ")"
 			}
@@ -104,7 +105,7 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 	case *parser.MapType:
 		return func(arg string, ctx graphql.BodyContext) string {
 			if ctx.TracerEnabled {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType.Map) + "(tr, tr.ContextWithSpan(ctx,span), " + arg + ")"
+				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType.Map) + "(tr, " + ctx.Importer.New(graphql.OpentracingPkgPath) + ".ContextWithSpan(ctx,span), " + arg + ")"
 			} else {
 				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType.Map) + "(ctx, " + arg + ")"
 			}
