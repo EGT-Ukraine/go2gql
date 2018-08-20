@@ -29,6 +29,8 @@ var scalarsResolvers = map[string]graphql.TypeResolver{
 
 	"uint64":  graphql.GqlUInt64TypeResolver,
 	"fixed64": graphql.GqlUInt64TypeResolver,
+
+	"bytes": graphql.GqlBytesTypeResolver,
 }
 
 type parsedFile struct {

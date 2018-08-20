@@ -1,6 +1,7 @@
 package scalars
 
 import (
+	"encoding/base64"
 	"strconv"
 
 	"github.com/saturn4er/graphql"
@@ -352,6 +353,38 @@ var GraphQLFloat64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			return float64(val)
 		}
 
+		return nil
+	},
+})
+var GraphQLBytesScalar = graphql.NewScalar(graphql.ScalarConfig{
+	Name: "Bytes",
+	Serialize: func(value interface{}) interface{} {
+		switch value.(type) {
+		case string:
+			return base64.StdEncoding.EncodeToString(value.([]byte))
+		}
+		return nil
+	},
+	ParseValue: func(value interface{}) interface{} {
+		switch value.(type) {
+		case string:
+			data, err := base64.StdEncoding.DecodeString(value.(string))
+			if err != nil {
+				return nil
+			}
+			return data
+		}
+		return nil
+	},
+	ParseLiteral: func(valueAST ast.Value) interface{} {
+		switch valueAST.GetKind() {
+		case kinds.StringValue:
+			data, err := base64.StdEncoding.DecodeString(valueAST.GetValue().(string))
+			if err != nil {
+				return nil
+			}
+			return data
+		}
 		return nil
 	},
 })

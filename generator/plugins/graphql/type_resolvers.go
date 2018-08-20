@@ -47,6 +47,9 @@ func GqlFloat32TypeResolver(ctx BodyContext) string {
 func GqlFloat64TypeResolver(ctx BodyContext) string {
 	return ctx.Importer.New(ScalarsPkgPath) + ".GraphQLFloat64Scalar"
 }
+func GqlBytesTypeResolver(ctx BodyContext) string {
+	return ctx.Importer.New(ScalarsPkgPath) + ".GraphQLBytesScalar"
+}
 func GqlMultipartFileTypeResolver(ctx BodyContext) string {
 	return ctx.Importer.New(ScalarsPkgPath) + ".MultipartFile"
 }
