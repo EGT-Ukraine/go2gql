@@ -1,6 +1,7 @@
 package swagger2gql
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
 	"strings"
@@ -12,6 +13,8 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/swagger2gql/parser"
 )
 
+var ErrMultipleSuccessResponses = errors.New("method  contains multiple success responses")
+
 func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag parser.Tag, method parser.Method) (*graphql.Method, error) {
 	name := method.OperationID
 	if methodCfg.Alias != "" {
@@ -22,7 +25,7 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 	for _, resp := range method.Responses {
 		if resp.StatusCode/100 == 2 {
 			if successResponseFound {
-				return nil, errors.New("method  contains multiple success responses")
+				return nil, ErrMultipleSuccessResponses
 			}
 
 			successResponse = resp
@@ -103,6 +106,10 @@ func (p *Plugin) tagQueriesMethods(tagCfg TagConfig, file *parsedFile, tag parse
 		}
 		meth, err := p.graphqlMethod(methodCfg, file, tag, method)
 		if err != nil {
+			if err == ErrMultipleSuccessResponses {
+				fmt.Println("Warning: Method: ", method.Path, "have multiple successful responses. I'll skip it")
+				continue
+			}
 			return nil, errors.Wrap(err, "failed to resolve graphql method")
 		}
 		res = append(res, *meth)
@@ -124,6 +131,10 @@ func (p *Plugin) tagMutationsMethods(tagCfg TagConfig, file *parsedFile, tag par
 		}
 		meth, err := p.graphqlMethod(methodCfg, file, tag, method)
 		if err != nil {
+			if err == ErrMultipleSuccessResponses {
+				fmt.Println("Warning: Method: ", method.Path, "have multiple successful responses. I'll skip it")
+				continue
+			}
 			return nil, errors.Wrap(err, "failed to resolve graphql method")
 		}
 		res = append(res, *meth)
