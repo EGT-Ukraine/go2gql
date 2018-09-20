@@ -99,7 +99,6 @@ func (p *Plugin) TypeValueResolver(file *parsedFile, typ parser.Type, required b
 			return nil, false, false, errors.Errorf("scalar %s is not implemented", typ.Kind())
 		}
 		return func(arg string, ctx graphql.BodyContext) string {
-			return arg + ".(" + goTyp + ")"
 			if !required {
 				return arg + ".(" + goTyp + ")"
 			}
