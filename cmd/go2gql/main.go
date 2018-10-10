@@ -9,6 +9,10 @@ import (
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/proto2gql"
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/swagger2gql"
+
 	"github.com/EGT-Ukraine/go2gql/generator"
 )
 
@@ -40,7 +44,11 @@ func main() {
 				Config: gc,
 			}
 
-			for _, plugin := range Plugins(c) {
+			for _, plugin := range []generator.Plugin{
+				new(graphql.Plugin),
+				new(proto2gql.Plugin),
+				new(swagger2gql.Plugin),
+			} {
 				err := g.RegisterPlugin(plugin)
 				if err != nil {
 					panic(err.Error())

@@ -14,6 +14,8 @@ proto2gql:
       output_package: "example"
       gql_messages_prefix: "Exmpl"
       gql_enums_prefix: "Exmpl"
+      paths:
+        - "./proto"
       imports_aliases:
         - google/protobuf/timestamp.proto:  "github.com/golang/protobuf/ptypes/timestamp/timestamp.proto"
       services:

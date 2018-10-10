@@ -2,11 +2,11 @@
 package schema
 
 import (
-	graphql "github.com/saturn4er/graphql"
-
 	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	example "github.com/EGT-Ukraine/go2gql/example/out/example"
 	proto "github.com/EGT-Ukraine/go2gql/example/proto"
+	errors "github.com/pkg/errors"
+	graphql "github.com/saturn4er/graphql"
 )
 
 type ExampleSchemaSchemaClients struct {
@@ -15,6 +15,12 @@ type ExampleSchemaSchemaClients struct {
 }
 
 func GetExampleSchemaSchema(cls ExampleSchemaSchemaClients, ih *interceptors.InterceptorHandler) (graphql.Schema, error) {
+	if cls.ServiceExampleClient == nil {
+		return graphql.Schema{}, errors.Errorf("Service client ServiceExample can't be nil nil")
+	}
+	if cls.ServiceExampleMutationsClient == nil {
+		return graphql.Schema{}, errors.Errorf("Service client ServiceExampleMutations can't be nil nil")
+	}
 	var ServiceExampleFields = example.GetServiceExampleServiceMethods(cls.ServiceExampleClient, ih)
 	var _ = ServiceExampleFields
 	var ServiceExampleMutationsFields = example.GetServiceExampleMutationsServiceMethods(cls.ServiceExampleMutationsClient, ih)

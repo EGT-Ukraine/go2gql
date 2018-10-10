@@ -1,0 +1,7 @@
+syntax = "proto3";
+package example.hello.a;
+
+enum HelloEnum{
+    Val1 = 0;
+    Val2 = 1;
+}

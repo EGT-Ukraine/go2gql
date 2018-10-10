@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/emicklei/proto"
@@ -68,6 +69,34 @@ func (f *File) findTypeInMessage(msg *Message, typ string) (Type, bool) {
 }
 
 func (f *File) findType(typ string) (Type, bool) {
+	t, found := f.findLocalType(typ)
+	if found {
+		return t, true
+	}
+	if typ == "hello.a.HelloEnum" {
+		fmt.Println(123)
+	}
+	parts := strings.Split(typ, ".")
+	pkgParts := strings.Split(f.PkgName, ".")
+	for i := 0; i < len(parts)-1; i++ {
+		pkg, typ := strings.Join(parts[:i+1], "."), strings.Join(parts[i+1:], ".")
+		for i := 0; i < len(pkgParts); i++ {
+			parentPkg := pkgParts[:i+1]
+			_ = parentPkg
+			for _, imp := range f.Imports {
+
+				if imp.PkgName == pkg {
+					t, ok := imp.findLocalType(typ)
+					if ok {
+						return t, ok
+					}
+				}
+			}
+		}
+	}
+	return nil, false
+}
+func (f *File) findLocalType(typ string) (Type, bool) {
 	if typeIsScalar(typ) {
 		return &ScalarType{ScalarName: typ, file: f}, true
 	}
@@ -80,22 +109,12 @@ func (f *File) findType(typ string) (Type, bool) {
 	if ok {
 		return en.Type, true
 	}
+
 	for _, imp := range f.Imports {
 		if imp.PkgName == f.PkgName {
 			it, ok := imp.findType(typ)
 			if ok {
 				return it, true
-			}
-		}
-	}
-	for i := 0; i < len(parts)-1; i++ {
-		pkg, typ := strings.Join(parts[:i+1], "."), strings.Join(parts[i+1:], ".")
-		for _, imp := range f.Imports {
-			if imp.PkgName == pkg {
-				t, ok := imp.findType(typ)
-				if ok {
-					return t, ok
-				}
 			}
 		}
 	}

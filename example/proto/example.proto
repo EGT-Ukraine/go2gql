@@ -1,7 +1,9 @@
 syntax = "proto3";
-package example;
+package example.hello;
 
 import "google/protobuf/timestamp.proto";
+import "a/a.proto";
+import "hello/hello.proto";
 
 // Service, which do smth
 service ServiceExample {
@@ -37,6 +39,7 @@ message A {
     //    repeated bytes r_bytes = 13; // TODO
     //    bytes n_r_bytes = 14; // TODO
     AOneOffs message_with_oneoffs = 13;
+    .hello.a.HelloEnum enum_from_other = 14;
 }
 message AOneOffs {
     oneof firstEnum {
