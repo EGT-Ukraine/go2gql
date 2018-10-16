@@ -9,8 +9,9 @@ import (
 	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 	tracer "github.com/EGT-Ukraine/go2gql/api/tracer"
-	testdata "github.com/EGT-Ukraine/go2gql/testdata"
+	testdata_1 "github.com/EGT-Ukraine/go2gql/testdata"
 	common_1 "github.com/EGT-Ukraine/go2gql/testdata/common"
+	testdata "github.com/EGT-Ukraine/go2gql/testdata/out/test/github.com/EGT-Ukraine/go2gql/testdata"
 	common "github.com/EGT-Ukraine/go2gql/testdata/out/test/github.com/EGT-Ukraine/go2gql/testdata/common"
 	opentracing_go "github.com/opentracing/opentracing-go"
 	log "github.com/opentracing/opentracing-go/log"
@@ -82,6 +83,8 @@ func init() {
 	ExmplRootMessageInput.Fields()["n_r_msg"] = &graphql.InputObjectField{PrivateName: "n_r_msg", Type: common.CommonMessageInput}
 	ExmplRootMessageInput.Fields()["scalar_from_context"] = &graphql.InputObjectField{PrivateName: "scalar_from_context", Type: scalars.GraphQLInt32Scalar}
 	ExmplRootMessageInput.Fields()["n_r_empty_msg"] = &graphql.InputObjectField{PrivateName: "n_r_empty_msg", Type: scalars.NoDataScalar}
+	ExmplRootMessageInput.Fields()["leading_dot"] = &graphql.InputObjectField{PrivateName: "leading_dot", Type: common.CommonMessageInput}
+	ExmplRootMessageInput.Fields()["parent_scope"] = &graphql.InputObjectField{PrivateName: "parent_scope", Type: testdata.ParentScopeEnum}
 	ExmplRootMessageInput.Fields()["map_enum"] = &graphql.InputObjectField{PrivateName: "map_enum", Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapEnum))}
 	ExmplRootMessageInput.Fields()["map_scalar"] = &graphql.InputObjectField{PrivateName: "map_scalar", Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapScalar))}
 	ExmplRootMessageInput.Fields()["map_msg"] = &graphql.InputObjectField{PrivateName: "map_msg", Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapMsg))}
@@ -134,7 +137,7 @@ func init() {
 }
 
 // Input objects resolvers
-func ResolveExmplRootMessageInput(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata.RootMessage, rerr error) {
+func ResolveExmplRootMessageInput(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata_1.RootMessage, rerr error) {
 	span := tr.CreateChildSpanFromContext(ctx, "ResolveExmplRootMessageInput")
 	defer span.Finish()
 	defer func() {
@@ -150,10 +153,10 @@ func ResolveExmplRootMessageInput(tr tracer.Tracer, ctx context.Context, i inter
 	}
 	args := i.(map[string]interface{})
 	_ = args
-	var result = new(testdata.RootMessage)
+	var result = new(testdata_1.RootMessage)
 	if args["r_msg"] != nil {
 		in := args["r_msg"].([]interface{})
-		result.RMsg = make([]*testdata.RootMessage_NestedMessage, len(in))
+		result.RMsg = make([]*testdata_1.RootMessage_NestedMessage, len(in))
 		for i, val := range in {
 
 			v, err := ResolveExmplRootMessageNestedMessageInput(tr, opentracing_go.ContextWithSpan(ctx, span), val)
@@ -172,14 +175,14 @@ func ResolveExmplRootMessageInput(tr tracer.Tracer, ctx context.Context, i inter
 	}
 	if args["r_enum"] != nil {
 		in := args["r_enum"].([]interface{})
-		result.REnum = make([]testdata.RootEnum, len(in))
+		result.REnum = make([]testdata_1.RootEnum, len(in))
 		for i, val := range in {
-			result.REnum[i] = testdata.RootEnum(val.(int))
+			result.REnum[i] = testdata_1.RootEnum(val.(int))
 		}
 	}
 	if args["r_empty_msg"] != nil {
 		in := args["r_empty_msg"].([]interface{})
-		result.REmptyMsg = make([]*testdata.Empty, len(in))
+		result.REmptyMsg = make([]*testdata_1.Empty, len(in))
 		for i, val := range in {
 
 			v, err := ResolveExmplEmptyInput(tr, opentracing_go.ContextWithSpan(ctx, span), val)
@@ -210,6 +213,16 @@ func ResolveExmplRootMessageInput(tr tracer.Tracer, ctx context.Context, i inter
 		}
 		result.NREmptyMsg = v
 	}
+	if args["leading_dot"] != nil {
+		v, err := common.ResolveCommonMessageInput(tr, opentracing_go.ContextWithSpan(ctx, span), args["leading_dot"])
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to resolve input object field")
+		}
+		result.LeadingDot = v
+	}
+	if args["parent_scope"] != nil {
+		result.ParentScope = testdata_1.ParentScopeEnum(args["parent_scope"].(int))
+	}
 	if args["map_enum"] != nil {
 		v, err := ResolveExmplRootMessageInput__MapEnum(tr, opentracing_go.ContextWithSpan(ctx, span), args["map_enum"])
 		if err != nil {
@@ -231,88 +244,88 @@ func ResolveExmplRootMessageInput(tr tracer.Tracer, ctx context.Context, i inter
 		}
 		result.MapMsg = v
 	}
-	result.CtxMap = ctx.Value("ctx_map").(map[string]*testdata.RootMessage_NestedMessage)
-	result.CtxMapEnum = ctx.Value("ctx_map_enum").(map[string]testdata.RootMessage_NestedEnum)
+	result.CtxMap = ctx.Value("ctx_map").(map[string]*testdata_1.RootMessage_NestedMessage)
+	result.CtxMapEnum = ctx.Value("ctx_map_enum").(map[string]testdata_1.RootMessage_NestedEnum)
 	if e_f_o_e_, ok := args["e_f_o_e"]; ok && e_f_o_e_ != nil {
 		v := common_1.CommonEnum(e_f_o_e_.(int))
-		result.EnumFirstOneoff = &testdata.RootMessage_EFOE{v}
+		result.EnumFirstOneoff = &testdata_1.RootMessage_EFOE{v}
 	} else if e_f_o_s_, ok := args["e_f_o_s"]; ok && e_f_o_s_ != nil {
 		v := e_f_o_s_.(int32)
-		result.EnumFirstOneoff = &testdata.RootMessage_EFOS{v}
+		result.EnumFirstOneoff = &testdata_1.RootMessage_EFOS{v}
 	} else if e_f_o_m_, ok := args["e_f_o_m"]; ok && e_f_o_m_ != nil {
 		v, err := common.ResolveCommonMessageInput(tr, opentracing_go.ContextWithSpan(ctx, span), e_f_o_m_)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve oneOf object field e_f_o_m")
 		}
-		result.EnumFirstOneoff = &testdata.RootMessage_EFOM{v}
+		result.EnumFirstOneoff = &testdata_1.RootMessage_EFOM{v}
 	} else if e_f_o_em_, ok := args["e_f_o_em"]; ok && e_f_o_em_ != nil {
 		v, err := ResolveExmplEmptyInput(tr, opentracing_go.ContextWithSpan(ctx, span), e_f_o_em_)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve oneOf object field e_f_o_em")
 		}
-		result.EnumFirstOneoff = &testdata.RootMessage_EFOEm{v}
+		result.EnumFirstOneoff = &testdata_1.RootMessage_EFOEm{v}
 	}
 	if s_f_o_s_, ok := args["s_f_o_s"]; ok && s_f_o_s_ != nil {
 		v := s_f_o_s_.(int32)
-		result.ScalarFirstOneoff = &testdata.RootMessage_SFOS{v}
+		result.ScalarFirstOneoff = &testdata_1.RootMessage_SFOS{v}
 	} else if s_f_o_e_, ok := args["s_f_o_e"]; ok && s_f_o_e_ != nil {
-		v := testdata.RootEnum(s_f_o_e_.(int))
-		result.ScalarFirstOneoff = &testdata.RootMessage_SFOE{v}
+		v := testdata_1.RootEnum(s_f_o_e_.(int))
+		result.ScalarFirstOneoff = &testdata_1.RootMessage_SFOE{v}
 	} else if s_f_o_mes_, ok := args["s_f_o_mes"]; ok && s_f_o_mes_ != nil {
 		v, err := ResolveExmplRootMessage2Input(tr, opentracing_go.ContextWithSpan(ctx, span), s_f_o_mes_)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve oneOf object field s_f_o_mes")
 		}
-		result.ScalarFirstOneoff = &testdata.RootMessage_SFOMes{v}
+		result.ScalarFirstOneoff = &testdata_1.RootMessage_SFOMes{v}
 	} else if s_f_o_m_, ok := args["s_f_o_m"]; ok && s_f_o_m_ != nil {
 		v, err := ResolveExmplEmptyInput(tr, opentracing_go.ContextWithSpan(ctx, span), s_f_o_m_)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve oneOf object field s_f_o_m")
 		}
-		result.ScalarFirstOneoff = &testdata.RootMessage_SFOM{v}
+		result.ScalarFirstOneoff = &testdata_1.RootMessage_SFOM{v}
 	}
 	if m_f_o_m_, ok := args["m_f_o_m"]; ok && m_f_o_m_ != nil {
 		v, err := ResolveExmplRootMessage2Input(tr, opentracing_go.ContextWithSpan(ctx, span), m_f_o_m_)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve oneOf object field m_f_o_m")
 		}
-		result.MessageFirstOneoff = &testdata.RootMessage_MFOM{v}
+		result.MessageFirstOneoff = &testdata_1.RootMessage_MFOM{v}
 	} else if m_f_o_s_, ok := args["m_f_o_s"]; ok && m_f_o_s_ != nil {
 		v := m_f_o_s_.(int32)
-		result.MessageFirstOneoff = &testdata.RootMessage_MFOS{v}
+		result.MessageFirstOneoff = &testdata_1.RootMessage_MFOS{v}
 	} else if m_f_o_e_, ok := args["m_f_o_e"]; ok && m_f_o_e_ != nil {
-		v := testdata.RootEnum(m_f_o_e_.(int))
-		result.MessageFirstOneoff = &testdata.RootMessage_MFOE{v}
+		v := testdata_1.RootEnum(m_f_o_e_.(int))
+		result.MessageFirstOneoff = &testdata_1.RootMessage_MFOE{v}
 	} else if m_f_o_em_, ok := args["m_f_o_em"]; ok && m_f_o_em_ != nil {
 		v, err := ResolveExmplEmptyInput(tr, opentracing_go.ContextWithSpan(ctx, span), m_f_o_em_)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve oneOf object field m_f_o_em")
 		}
-		result.MessageFirstOneoff = &testdata.RootMessage_MFOEm{v}
+		result.MessageFirstOneoff = &testdata_1.RootMessage_MFOEm{v}
 	}
 	if em_f_o_em_, ok := args["em_f_o_em"]; ok && em_f_o_em_ != nil {
 		v, err := ResolveExmplEmptyInput(tr, opentracing_go.ContextWithSpan(ctx, span), em_f_o_em_)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve oneOf object field em_f_o_em")
 		}
-		result.EmptyFirstOneoff = &testdata.RootMessage_EmFOEm{v}
+		result.EmptyFirstOneoff = &testdata_1.RootMessage_EmFOEm{v}
 	} else if em_f_o_s_, ok := args["em_f_o_s"]; ok && em_f_o_s_ != nil {
 		v := em_f_o_s_.(int32)
-		result.EmptyFirstOneoff = &testdata.RootMessage_EmFOS{v}
+		result.EmptyFirstOneoff = &testdata_1.RootMessage_EmFOS{v}
 	} else if em_f_o_en_, ok := args["em_f_o_en"]; ok && em_f_o_en_ != nil {
-		v := testdata.RootEnum(em_f_o_en_.(int))
-		result.EmptyFirstOneoff = &testdata.RootMessage_EmFOEn{v}
+		v := testdata_1.RootEnum(em_f_o_en_.(int))
+		result.EmptyFirstOneoff = &testdata_1.RootMessage_EmFOEn{v}
 	} else if em_f_o_m_, ok := args["em_f_o_m"]; ok && em_f_o_m_ != nil {
 		v, err := ResolveExmplRootMessage2Input(tr, opentracing_go.ContextWithSpan(ctx, span), em_f_o_m_)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve oneOf object field em_f_o_m")
 		}
-		result.EmptyFirstOneoff = &testdata.RootMessage_EmFOM{v}
+		result.EmptyFirstOneoff = &testdata_1.RootMessage_EmFOM{v}
 	}
 
 	return result, nil
 }
-func ResolveExmplRootMessageNestedMessageInput(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata.RootMessage_NestedMessage, rerr error) {
+func ResolveExmplRootMessageNestedMessageInput(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata_1.RootMessage_NestedMessage, rerr error) {
 	span := tr.CreateChildSpanFromContext(ctx, "ResolveExmplRootMessageNestedMessageInput")
 	defer span.Finish()
 	defer func() {
@@ -328,25 +341,25 @@ func ResolveExmplRootMessageNestedMessageInput(tr tracer.Tracer, ctx context.Con
 	}
 	args := i.(map[string]interface{})
 	_ = args
-	var result = new(testdata.RootMessage_NestedMessage)
+	var result = new(testdata_1.RootMessage_NestedMessage)
 	if args["sub_r_enum"] != nil {
 		in := args["sub_r_enum"].([]interface{})
-		result.SubREnum = make([]testdata.RootMessage_NestedEnum, len(in))
+		result.SubREnum = make([]testdata_1.RootMessage_NestedEnum, len(in))
 		for i, val := range in {
-			result.SubREnum[i] = testdata.RootMessage_NestedEnum(val.(int))
+			result.SubREnum[i] = testdata_1.RootMessage_NestedEnum(val.(int))
 		}
 	}
 	if args["sub_sub_r_enum"] != nil {
 		in := args["sub_sub_r_enum"].([]interface{})
-		result.SubSubREnum = make([]testdata.RootMessage_NestedMessage_NestedNestedEnum, len(in))
+		result.SubSubREnum = make([]testdata_1.RootMessage_NestedMessage_NestedNestedEnum, len(in))
 		for i, val := range in {
-			result.SubSubREnum[i] = testdata.RootMessage_NestedMessage_NestedNestedEnum(val.(int))
+			result.SubSubREnum[i] = testdata_1.RootMessage_NestedMessage_NestedNestedEnum(val.(int))
 		}
 	}
 
 	return result, nil
 }
-func ResolveExmplEmptyInput(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata.Empty, rerr error) {
+func ResolveExmplEmptyInput(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata_1.Empty, rerr error) {
 	span := tr.CreateChildSpanFromContext(ctx, "ResolveExmplEmptyInput")
 	defer span.Finish()
 	defer func() {
@@ -362,11 +375,11 @@ func ResolveExmplEmptyInput(tr tracer.Tracer, ctx context.Context, i interface{}
 	}
 	args := i.(map[string]interface{})
 	_ = args
-	var result = new(testdata.Empty)
+	var result = new(testdata_1.Empty)
 
 	return result, nil
 }
-func ResolveExmplMessageWithEmptyInput(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata.MessageWithEmpty, rerr error) {
+func ResolveExmplMessageWithEmptyInput(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata_1.MessageWithEmpty, rerr error) {
 	span := tr.CreateChildSpanFromContext(ctx, "ResolveExmplMessageWithEmptyInput")
 	defer span.Finish()
 	defer func() {
@@ -382,7 +395,7 @@ func ResolveExmplMessageWithEmptyInput(tr tracer.Tracer, ctx context.Context, i 
 	}
 	args := i.(map[string]interface{})
 	_ = args
-	var result = new(testdata.MessageWithEmpty)
+	var result = new(testdata_1.MessageWithEmpty)
 	if args["empt"] != nil {
 		v, err := ResolveExmplEmptyInput(tr, opentracing_go.ContextWithSpan(ctx, span), args["empt"])
 		if err != nil {
@@ -393,7 +406,7 @@ func ResolveExmplMessageWithEmptyInput(tr tracer.Tracer, ctx context.Context, i 
 
 	return result, nil
 }
-func ResolveExmplRootMessage2Input(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata.RootMessage2, rerr error) {
+func ResolveExmplRootMessage2Input(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *testdata_1.RootMessage2, rerr error) {
 	span := tr.CreateChildSpanFromContext(ctx, "ResolveExmplRootMessage2Input")
 	defer span.Finish()
 	defer func() {
@@ -409,7 +422,7 @@ func ResolveExmplRootMessage2Input(tr tracer.Tracer, ctx context.Context, i inte
 	}
 	args := i.(map[string]interface{})
 	_ = args
-	var result = new(testdata.RootMessage2)
+	var result = new(testdata_1.RootMessage2)
 	if args["some_field"] != nil {
 		result.SomeField = args["some_field"].(int32)
 	}
@@ -429,13 +442,13 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessage_NestedMessage)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.RMsg, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.RMsg, nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -446,13 +459,13 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(scalars.GraphQLInt32Scalar)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.RScalar, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.RScalar, nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -463,20 +476,20 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(ExmplRootEnum)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
-				return func(arg []testdata.RootEnum) []int {
+				return func(arg []testdata_1.RootEnum) []int {
 					res := make([]int, len(arg))
 					for i, val := range arg {
 						res[i] = int(val)
 					}
 					return res
 				}(s.GetREnum()), nil
-			case testdata.RootMessage:
-				return func(arg []testdata.RootEnum) []int {
+			case testdata_1.RootMessage:
+				return func(arg []testdata_1.RootEnum) []int {
 					res := make([]int, len(arg))
 					for i, val := range arg {
 						res[i] = int(val)
@@ -492,13 +505,13 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(scalars.NoDataScalar)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.REmptyMsg, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.REmptyMsg, nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -509,13 +522,13 @@ func init() {
 		Type: common.CommonEnum,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return int(s.GetNREnum()), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return int(src.GetNREnum()), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -526,13 +539,13 @@ func init() {
 		Type: scalars.GraphQLInt32Scalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.NRScalar, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.NRScalar, nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -543,13 +556,13 @@ func init() {
 		Type: common.CommonMessage,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.NRMsg, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.NRMsg, nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -560,13 +573,13 @@ func init() {
 		Type: scalars.GraphQLInt32Scalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.ScalarFromContext, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.ScalarFromContext, nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -577,14 +590,48 @@ func init() {
 		Type: scalars.NoDataScalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.NREmptyMsg, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.NREmptyMsg, nil
+			}
+			return nil, errors.New("source of unknown type")
+		},
+	})
+	ExmplRootMessage.AddFieldConfig("leading_dot", &graphql.Field{
+		Name: "leading_dot",
+		Type: common.CommonMessage,
+		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			switch src := p.Source.(type) {
+			case *testdata_1.RootMessage:
+				if src == nil {
+					return nil, nil
+				}
+				s := *src
+				return s.LeadingDot, nil
+			case testdata_1.RootMessage:
+				return src.LeadingDot, nil
+			}
+			return nil, errors.New("source of unknown type")
+		},
+	})
+	ExmplRootMessage.AddFieldConfig("parent_scope", &graphql.Field{
+		Name: "parent_scope",
+		Type: testdata.ParentScopeEnum,
+		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			switch src := p.Source.(type) {
+			case *testdata_1.RootMessage:
+				if src == nil {
+					return nil, nil
+				}
+				s := *src
+				return int(s.GetParentScope()), nil
+			case testdata_1.RootMessage:
+				return int(src.GetParentScope()), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -594,13 +641,13 @@ func init() {
 		Type: common.CommonEnum,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetEFOE(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetEFOE(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -611,13 +658,13 @@ func init() {
 		Type: scalars.GraphQLInt32Scalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetEFOS(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetEFOS(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -628,13 +675,13 @@ func init() {
 		Type: common.CommonMessage,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetEFOM(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetEFOM(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -645,13 +692,13 @@ func init() {
 		Type: scalars.NoDataScalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetEFOEm(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetEFOEm(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -662,13 +709,13 @@ func init() {
 		Type: scalars.GraphQLInt32Scalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetSFOS(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetSFOS(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -679,13 +726,13 @@ func init() {
 		Type: ExmplRootEnum,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetSFOE(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetSFOE(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -696,13 +743,13 @@ func init() {
 		Type: ExmplRootMessage2,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetSFOMes(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetSFOMes(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -713,13 +760,13 @@ func init() {
 		Type: scalars.NoDataScalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetSFOM(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetSFOM(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -730,13 +777,13 @@ func init() {
 		Type: ExmplRootMessage2,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetMFOM(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetMFOM(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -747,13 +794,13 @@ func init() {
 		Type: scalars.GraphQLInt32Scalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetMFOS(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetMFOS(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -764,13 +811,13 @@ func init() {
 		Type: ExmplRootEnum,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetMFOE(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetMFOE(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -781,13 +828,13 @@ func init() {
 		Type: scalars.NoDataScalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetMFOEm(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetMFOEm(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -798,13 +845,13 @@ func init() {
 		Type: scalars.NoDataScalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetEmFOEm(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetEmFOEm(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -815,13 +862,13 @@ func init() {
 		Type: scalars.GraphQLInt32Scalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetEmFOS(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetEmFOS(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -832,13 +879,13 @@ func init() {
 		Type: ExmplRootEnum,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetEmFOEn(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetEmFOEn(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -849,13 +896,13 @@ func init() {
 		Type: ExmplRootMessage2,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.GetEmFOM(), nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				return src.GetEmFOM(), nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -866,7 +913,7 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessage__map_enum)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
@@ -879,7 +926,7 @@ func init() {
 					})
 				}
 				return res, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				var res []map[string]interface{}
 				for key, value := range src.MapEnum {
 					res = append(res, map[string]interface{}{
@@ -897,7 +944,7 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessage__map_scalar)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
@@ -910,7 +957,7 @@ func init() {
 					})
 				}
 				return res, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				var res []map[string]interface{}
 				for key, value := range src.MapScalar {
 					res = append(res, map[string]interface{}{
@@ -928,7 +975,7 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessage__map_msg)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
@@ -941,7 +988,7 @@ func init() {
 					})
 				}
 				return res, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				var res []map[string]interface{}
 				for key, value := range src.MapMsg {
 					res = append(res, map[string]interface{}{
@@ -959,7 +1006,7 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessage__ctx_map_enum)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage:
+			case *testdata_1.RootMessage:
 				if src == nil {
 					return nil, nil
 				}
@@ -972,7 +1019,7 @@ func init() {
 					})
 				}
 				return res, nil
-			case testdata.RootMessage:
+			case testdata_1.RootMessage:
 				var res []map[string]interface{}
 				for key, value := range src.CtxMapEnum {
 					res = append(res, map[string]interface{}{
@@ -998,20 +1045,20 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageNestedEnum)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage_NestedMessage:
+			case *testdata_1.RootMessage_NestedMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
-				return func(arg []testdata.RootMessage_NestedEnum) []int {
+				return func(arg []testdata_1.RootMessage_NestedEnum) []int {
 					res := make([]int, len(arg))
 					for i, val := range arg {
 						res[i] = int(val)
 					}
 					return res
 				}(s.GetSubREnum()), nil
-			case testdata.RootMessage_NestedMessage:
-				return func(arg []testdata.RootMessage_NestedEnum) []int {
+			case testdata_1.RootMessage_NestedMessage:
+				return func(arg []testdata_1.RootMessage_NestedEnum) []int {
 					res := make([]int, len(arg))
 					for i, val := range arg {
 						res[i] = int(val)
@@ -1027,20 +1074,20 @@ func init() {
 		Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageNestedMessageNestedNestedEnum)),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage_NestedMessage:
+			case *testdata_1.RootMessage_NestedMessage:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
-				return func(arg []testdata.RootMessage_NestedMessage_NestedNestedEnum) []int {
+				return func(arg []testdata_1.RootMessage_NestedMessage_NestedNestedEnum) []int {
 					res := make([]int, len(arg))
 					for i, val := range arg {
 						res[i] = int(val)
 					}
 					return res
 				}(s.GetSubSubREnum()), nil
-			case testdata.RootMessage_NestedMessage:
-				return func(arg []testdata.RootMessage_NestedMessage_NestedNestedEnum) []int {
+			case testdata_1.RootMessage_NestedMessage:
+				return func(arg []testdata_1.RootMessage_NestedMessage_NestedNestedEnum) []int {
 					res := make([]int, len(arg))
 					for i, val := range arg {
 						res[i] = int(val)
@@ -1064,13 +1111,13 @@ func init() {
 		Type: scalars.NoDataScalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.MessageWithEmpty:
+			case *testdata_1.MessageWithEmpty:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.Empt, nil
-			case testdata.MessageWithEmpty:
+			case testdata_1.MessageWithEmpty:
 				return src.Empt, nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -1089,13 +1136,13 @@ func init() {
 		Type: scalars.GraphQLInt32Scalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
-			case *testdata.RootMessage2:
+			case *testdata_1.RootMessage2:
 				if src == nil {
 					return nil, nil
 				}
 				s := *src
 				return s.SomeField, nil
-			case testdata.RootMessage2:
+			case testdata_1.RootMessage2:
 				return src.SomeField, nil
 			}
 			return nil, errors.New("source of unknown type")
@@ -1151,7 +1198,7 @@ var ExmplRootMessageInput__CtxMapEnum = graphql.NewInputObject(graphql.InputObje
 })
 
 // Maps input objects resolvers
-func ResolveExmplRootMessageInput__MapEnum(tr tracer.Tracer, ctx context.Context, i interface{}) (_ map[int32]testdata.RootMessage_NestedEnum, rerr error) {
+func ResolveExmplRootMessageInput__MapEnum(tr tracer.Tracer, ctx context.Context, i interface{}) (_ map[int32]testdata_1.RootMessage_NestedEnum, rerr error) {
 	span := tr.CreateChildSpanFromContext(ctx, "ResolveExmplRootMessageInput__MapEnum")
 	defer span.Finish()
 	defer func() {
@@ -1166,14 +1213,14 @@ func ResolveExmplRootMessageInput__MapEnum(tr tracer.Tracer, ctx context.Context
 		return nil, nil
 	}
 	in := i.([]interface{})
-	result := make(map[int32]testdata.RootMessage_NestedEnum)
+	result := make(map[int32]testdata_1.RootMessage_NestedEnum)
 	for i, ival := range in {
 		_ = i
 		val := ival.(map[string]interface{})
 		k, v := val["key"], val["value"]
 		_, _ = k, v
 		kk := k.(int32)
-		vv := testdata.RootMessage_NestedEnum(v.(int))
+		vv := testdata_1.RootMessage_NestedEnum(v.(int))
 		result[kk] = vv
 	}
 	return result, nil
@@ -1205,7 +1252,7 @@ func ResolveExmplRootMessageInput__MapScalar(tr tracer.Tracer, ctx context.Conte
 	}
 	return result, nil
 }
-func ResolveExmplRootMessageInput__MapMsg(tr tracer.Tracer, ctx context.Context, i interface{}) (_ map[string]*testdata.RootMessage_NestedMessage, rerr error) {
+func ResolveExmplRootMessageInput__MapMsg(tr tracer.Tracer, ctx context.Context, i interface{}) (_ map[string]*testdata_1.RootMessage_NestedMessage, rerr error) {
 	span := tr.CreateChildSpanFromContext(ctx, "ResolveExmplRootMessageInput__MapMsg")
 	defer span.Finish()
 	defer func() {
@@ -1220,7 +1267,7 @@ func ResolveExmplRootMessageInput__MapMsg(tr tracer.Tracer, ctx context.Context,
 		return nil, nil
 	}
 	in := i.([]interface{})
-	result := make(map[string]*testdata.RootMessage_NestedMessage)
+	result := make(map[string]*testdata_1.RootMessage_NestedMessage)
 	for i, ival := range in {
 		_ = i
 		val := ival.(map[string]interface{})
@@ -1235,7 +1282,7 @@ func ResolveExmplRootMessageInput__MapMsg(tr tracer.Tracer, ctx context.Context,
 	}
 	return result, nil
 }
-func ResolveExmplRootMessageInput__CtxMap(tr tracer.Tracer, ctx context.Context, i interface{}) (_ map[string]*testdata.RootMessage_NestedMessage, rerr error) {
+func ResolveExmplRootMessageInput__CtxMap(tr tracer.Tracer, ctx context.Context, i interface{}) (_ map[string]*testdata_1.RootMessage_NestedMessage, rerr error) {
 	span := tr.CreateChildSpanFromContext(ctx, "ResolveExmplRootMessageInput__CtxMap")
 	defer span.Finish()
 	defer func() {
@@ -1250,7 +1297,7 @@ func ResolveExmplRootMessageInput__CtxMap(tr tracer.Tracer, ctx context.Context,
 		return nil, nil
 	}
 	in := i.([]interface{})
-	result := make(map[string]*testdata.RootMessage_NestedMessage)
+	result := make(map[string]*testdata_1.RootMessage_NestedMessage)
 	for i, ival := range in {
 		_ = i
 		val := ival.(map[string]interface{})
@@ -1265,7 +1312,7 @@ func ResolveExmplRootMessageInput__CtxMap(tr tracer.Tracer, ctx context.Context,
 	}
 	return result, nil
 }
-func ResolveExmplRootMessageInput__CtxMapEnum(tr tracer.Tracer, ctx context.Context, i interface{}) (_ map[string]testdata.RootMessage_NestedEnum, rerr error) {
+func ResolveExmplRootMessageInput__CtxMapEnum(tr tracer.Tracer, ctx context.Context, i interface{}) (_ map[string]testdata_1.RootMessage_NestedEnum, rerr error) {
 	span := tr.CreateChildSpanFromContext(ctx, "ResolveExmplRootMessageInput__CtxMapEnum")
 	defer span.Finish()
 	defer func() {
@@ -1280,14 +1327,14 @@ func ResolveExmplRootMessageInput__CtxMapEnum(tr tracer.Tracer, ctx context.Cont
 		return nil, nil
 	}
 	in := i.([]interface{})
-	result := make(map[string]testdata.RootMessage_NestedEnum)
+	result := make(map[string]testdata_1.RootMessage_NestedEnum)
 	for i, ival := range in {
 		_ = i
 		val := ival.(map[string]interface{})
 		k, v := val["key"], val["value"]
 		_, _ = k, v
 		kk := k.(string)
-		vv := testdata.RootMessage_NestedEnum(v.(int))
+		vv := testdata_1.RootMessage_NestedEnum(v.(int))
 		result[kk] = vv
 	}
 	return result, nil
@@ -1445,7 +1492,7 @@ func init() {
 }
 
 // Services
-func GetServiceExampleServiceMethods(c testdata.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr tracer.Tracer) graphql.Fields {
+func GetServiceExampleServiceMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr tracer.Tracer) graphql.Fields {
 	return graphql.Fields{
 		"getQueryMethod": &graphql.Field{
 			Name: "getQueryMethod",
@@ -1460,6 +1507,8 @@ func GetServiceExampleServiceMethods(c testdata.ServiceExampleClient, ih *interc
 				"n_r_msg":             &graphql.ArgumentConfig{Type: common.CommonMessageInput},
 				"scalar_from_context": &graphql.ArgumentConfig{Type: scalars.GraphQLInt32Scalar},
 				"n_r_empty_msg":       &graphql.ArgumentConfig{Type: scalars.NoDataScalar},
+				"leading_dot":         &graphql.ArgumentConfig{Type: common.CommonMessageInput},
+				"parent_scope":        &graphql.ArgumentConfig{Type: testdata.ParentScopeEnum},
 				"map_enum":            &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapEnum))},
 				"map_scalar":          &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapScalar))},
 				"map_msg":             &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapMsg))},
@@ -1496,9 +1545,9 @@ func GetServiceExampleServiceMethods(c testdata.ServiceExampleClient, ih *interc
 					return nil, errors.Wrap(err, "failed to resolve args")
 				}
 				return ih.Call(ictx, req, func(ictx *interceptors.Context, req interface{}, next interceptors.CallMethodInvoker) (result interface{}, err error) {
-					r, ok := req.(*testdata.RootMessage)
+					r, ok := req.(*testdata_1.RootMessage)
 					if !ok {
-						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata.RootMessage", req))
+						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata_1.RootMessage", req))
 					}
 					res, err := c.GetQueryMethod(ctx, r)
 					if err != nil {
@@ -1513,7 +1562,7 @@ func GetServiceExampleServiceMethods(c testdata.ServiceExampleClient, ih *interc
 		},
 	}
 }
-func GetServiceExampleMutationsServiceMethods(c testdata.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr tracer.Tracer) graphql.Fields {
+func GetServiceExampleMutationsServiceMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr tracer.Tracer) graphql.Fields {
 	return graphql.Fields{
 		"mutationMethod": &graphql.Field{
 			Name: "mutationMethod",
@@ -1551,9 +1600,9 @@ func GetServiceExampleMutationsServiceMethods(c testdata.ServiceExampleClient, i
 					return nil, errors.Wrap(err, "failed to resolve args")
 				}
 				return ih.Call(ictx, req, func(ictx *interceptors.Context, req interface{}, next interceptors.CallMethodInvoker) (result interface{}, err error) {
-					r, ok := req.(*testdata.RootMessage2)
+					r, ok := req.(*testdata_1.RootMessage2)
 					if !ok {
-						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata.RootMessage2", req))
+						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata_1.RootMessage2", req))
 					}
 					return c.MutationMethod(ctx, r)
 				})
@@ -1592,9 +1641,9 @@ func GetServiceExampleMutationsServiceMethods(c testdata.ServiceExampleClient, i
 					return nil, errors.Wrap(err, "failed to resolve args")
 				}
 				return ih.Call(ictx, req, func(ictx *interceptors.Context, req interface{}, next interceptors.CallMethodInvoker) (result interface{}, err error) {
-					r, ok := req.(*testdata.Empty)
+					r, ok := req.(*testdata_1.Empty)
 					if !ok {
-						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata.Empty", req))
+						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata_1.Empty", req))
 					}
 					return c.EmptyMsgs(ctx, r)
 				})
@@ -1636,9 +1685,9 @@ func GetServiceExampleMutationsServiceMethods(c testdata.ServiceExampleClient, i
 					return nil, errors.Wrap(err, "failed to resolve args")
 				}
 				return ih.Call(ictx, req, func(ictx *interceptors.Context, req interface{}, next interceptors.CallMethodInvoker) (result interface{}, err error) {
-					r, ok := req.(*testdata.MessageWithEmpty)
+					r, ok := req.(*testdata_1.MessageWithEmpty)
 					if !ok {
-						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata.MessageWithEmpty", req))
+						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata_1.MessageWithEmpty", req))
 					}
 					return c.MsgsWithEpmty(ctx, r)
 				})

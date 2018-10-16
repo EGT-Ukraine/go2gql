@@ -86,9 +86,10 @@ func (p *Parser) Parse(path string, importAliases []map[string]string, paths []s
 		return nil, errors.Wrap(err, "failed to parse File")
 	}
 	result := &File{
-		FilePath:  absPath,
-		protoFile: f,
-		PkgName:   resolveFilePkgName(f),
+		FilePath:    absPath,
+		protoFile:   f,
+		PkgName:     resolveFilePkgName(f),
+		Descriptors: map[string]*Type{},
 	}
 	result.parseGoPackage()
 	err = p.parseFileImports(result, importAliases, paths)

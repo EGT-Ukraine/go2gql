@@ -1,5 +1,7 @@
 package parser
 
+import "strings"
+
 type Kind byte
 
 const (
@@ -14,6 +16,7 @@ type Type interface {
 	Kind() Kind
 	String() string
 	File() *File
+	GetFullName() string
 }
 
 type ScalarType struct {
@@ -33,6 +36,10 @@ func (t ScalarType) File() *File {
 	return t.file
 }
 
+func (t ScalarType) GetFullName() string {
+	return ""
+}
+
 type EnumType struct {
 	file *File
 	Enum *Enum
@@ -48,6 +55,14 @@ func (t EnumType) String() string {
 
 func (t EnumType) File() *File {
 	return t.file
+}
+
+func (t EnumType) GetFullName() string {
+	if t.file.PkgName != "" {
+		return t.file.PkgName + "." + strings.Join(t.Enum.TypeName, ".")
+	} else {
+		return strings.Join(t.Enum.TypeName, ".")
+	}
 }
 
 type MapType struct {
@@ -67,6 +82,10 @@ func (t MapType) File() *File {
 	return t.file
 }
 
+func (t MapType) GetFullName() string {
+	return ""
+}
+
 type MessageType struct {
 	file    *File
 	Message *Message
@@ -82,4 +101,20 @@ func (t MessageType) String() string {
 
 func (t MessageType) File() *File {
 	return t.file
+}
+
+func (t MessageType) GetFullName() string {
+	parentMessage := t.Message.parentMsg
+
+	if parentMessage != nil {
+		parentMessageName := parentMessage.Type.GetFullName()
+
+		return parentMessageName + "." + t.Message.Name
+	} else {
+		if t.file.PkgName != "" {
+			return t.file.PkgName + "." + t.Message.Name
+		} else {
+			return t.Message.Name
+		}
+	}
 }
