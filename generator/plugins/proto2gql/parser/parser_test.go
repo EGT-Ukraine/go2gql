@@ -9,6 +9,7 @@ import (
 
 func testFileInfo(file *File) *File {
 	var Int32Type = &ScalarType{ScalarName: "int32"}
+	var StringType = &ScalarType{file: file, ScalarName: "string"}
 	var RootMessage = file.Messages[0]
 	var RootMessage2 = file.Messages[4]
 	var RootMessage2Type = &MessageType{file: file, Message: RootMessage2}
@@ -112,8 +113,32 @@ func testFileInfo(file *File) *File {
 							file: file,
 							Map: &Map{
 								Message:   RootMessage,
-								KeyType:   Int32Type,
+								KeyType:   StringType,
 								ValueType: NestedMessageType,
+							},
+						},
+					},
+					{
+						Name:          "ctx_map",
+						QuotedComment: `""`,
+						Type: &MapType{
+							file: file,
+							Map: &Map{
+								Message:   RootMessage,
+								KeyType:   StringType,
+								ValueType: NestedMessageType,
+							},
+						},
+					},
+					{
+						Name:          "ctx_map_enum",
+						QuotedComment: `""`,
+						Type: &MapType{
+							file: file,
+							Map: &Map{
+								Message:   RootMessage,
+								KeyType:   StringType,
+								ValueType: NestedEnumType,
 							},
 						},
 					},
@@ -193,12 +218,12 @@ func testFileInfo(file *File) *File {
 }
 
 func TestParser_Parse(t *testing.T) {
-	SkipConvey("Test Parser.Parse", t, func() {
+	Convey("Test Parser.Parse", t, func() {
 		parser := Parser{}
-		test, err := parser.Parse("../testdata/test.proto", []map[string]string{{"common/commo.proto": "common/common.proto"}}, []string{"../testdata"})
+		test, err := parser.Parse("../../../../testdata/test.proto", nil, []string{"../../../../testdata"})
 		So(err, ShouldBeNil)
 		So(test, ShouldNotBeNil)
-		test2, err := parser.Parse("../testdata/test2.proto", []map[string]string{{"common/commo.proto": "common/common.proto"}}, []string{"../testdata"})
+		test2, err := parser.Parse("../../../../testdata/test2.proto", nil, []string{"../../../../testdata"})
 		So(err, ShouldBeNil)
 		So(test2, ShouldNotBeNil)
 		So(test, ShouldNotEqual, test2)
@@ -209,11 +234,12 @@ func TestParser_Parse(t *testing.T) {
 			So(test.Imports[0], ShouldEqual, test2.Imports[0])
 		})
 		Convey("If we trying to parse same File, it should return pointer to parsed one", func() {
-			test22, err := parser.Parse("../testdata/test2.proto", []map[string]string{{"common/commo.proto": "common/common.proto"}}, []string{"../testdata"})
+			test22, err := parser.Parse("../../../../testdata/test2.proto", nil, []string{"../../../../testdata"})
 			So(err, ShouldBeNil)
 			So(test22, ShouldEqual, test2)
 		})
 		f := testFileInfo(test)
+
 		Convey("test.proto Should contains valid enums", func() {
 			So(test.Enums, ShouldHaveLength, len(f.Enums))
 			for i, enum := range test.Enums {
@@ -222,7 +248,7 @@ func TestParser_Parse(t *testing.T) {
 					So(enum.File, ShouldEqual, validEnum.File)
 					So(enum.Name, ShouldEqual, validEnum.Name)
 					So(enum.Type.(*EnumType).Enum, ShouldEqual, enum)
-					So(enum.Type.File, ShouldEqual, test)
+					So(enum.Type.File(), ShouldEqual, test)
 					So(enum.TypeName, ShouldResemble, validEnum.TypeName)
 					So(enum.QuotedComment, ShouldEqual, validEnum.QuotedComment)
 					Convey(validEnum.Name+" enum should contains valid values", func() {
@@ -248,7 +274,7 @@ func TestParser_Parse(t *testing.T) {
 					So(msg.File, ShouldEqual, validMsg.File)
 					So(msg.Name, ShouldEqual, validMsg.Name)
 					So(msg.Type.(*MessageType).Message, ShouldEqual, msg)
-					So(msg.Type.File, ShouldEqual, test)
+					So(msg.Type.File(), ShouldEqual, test)
 					So(msg.TypeName, ShouldResemble, validMsg.TypeName)
 					So(msg.QuotedComment, ShouldEqual, validMsg.QuotedComment)
 					So(msg.Fields, ShouldHaveLength, len(validMsg.Fields))
@@ -325,18 +351,20 @@ func CompareTypes(t1, t2 Type) {
 	So(t2, ShouldNotBeNil)
 
 	switch t1.(type) {
-	case ScalarType:
+	case *ScalarType:
 		So(t1.(*ScalarType).ScalarName, ShouldEqual, t2.(*ScalarType).ScalarName)
-	case MessageType:
+	case *MessageType:
 		So(t1.(*MessageType).Message, ShouldEqual, t2.(*MessageType).Message)
 		So(t1.File(), ShouldEqual, t2.File())
-	case EnumType:
-		So(t1.(EnumType).Enum, ShouldEqual, t2.(EnumType).Enum)
+	case *EnumType:
+		So(t1.(*EnumType).Enum, ShouldEqual, t2.(*EnumType).Enum)
 		So(t1.File, ShouldEqual, t2.File)
-	case MapType:
-		So(t1.(MapType).Map.Message, ShouldEqual, t2.(MapType).Map.Message)
-		CompareTypes(t1.(MapType).Map.KeyType, t2.(MapType).Map.KeyType)
-		CompareTypes(t1.(MapType).Map.ValueType, t2.(MapType).Map.ValueType)
+	case *MapType:
+		So(t1.(*MapType).Map.Message, ShouldEqual, t2.(*MapType).Map.Message)
+		CompareTypes(t1.(*MapType).Map.KeyType, t2.(*MapType).Map.KeyType)
+		CompareTypes(t1.(*MapType).Map.ValueType, t2.(*MapType).Map.ValueType)
 		So(t1.File, ShouldEqual, t2.File)
+	default:
+		panic("Undefined type")
 	}
 }
