@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package example.test_scope;
+
+option go_package = "github.com/EGT-Ukraine/go2gql/testdata";
+
+enum ParentScopeEnum {
+    TestEnumVal0 = 0;
+}

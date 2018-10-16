@@ -25,6 +25,8 @@ func testFileInfo(file *File) *File {
 	var CommonCommonEnumType = &EnumType{file: file.Imports[0], Enum: file.Imports[0].Enums[0]}
 	var CommonCommonMessageType = &MessageType{file: file.Imports[0], Message: file.Imports[0].Messages[0]}
 
+	var ParentScopeEnumType = &EnumType{file: file.Imports[1], Enum: file.Imports[1].Enums[0]}
+
 	return &File{
 		Services: []*Service{
 			{
@@ -54,6 +56,8 @@ func testFileInfo(file *File) *File {
 					{Name: "n_r_msg", Type: CommonCommonMessageType, QuotedComment: `"non-repeated Message"`},
 					{Name: "scalar_from_context", Type: Int32Type, QuotedComment: `"field from context"`},
 					{Name: "n_r_empty_msg", Type: EmptyMessageType, QuotedComment: `"non-repeated empty message field"`},
+					{Name: "leading_dot", Type: CommonCommonMessageType, QuotedComment: `"leading dot in type name"`},
+					{Name: "parent_scope", Type: ParentScopeEnumType, QuotedComment: `"parent scope"`},
 				},
 				OneOffs: []*OneOf{
 					{Name: "enum_first_oneoff", Fields: []*Field{
@@ -229,7 +233,7 @@ func TestParser_Parse(t *testing.T) {
 		So(test, ShouldNotEqual, test2)
 
 		Convey("Imports should be the same", func() {
-			So(len(test.Imports), ShouldEqual, 1)
+			So(len(test.Imports), ShouldEqual, 2)
 			So(len(test2.Imports), ShouldEqual, 1)
 			So(test.Imports[0], ShouldEqual, test2.Imports[0])
 		})

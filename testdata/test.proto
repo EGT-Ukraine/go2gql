@@ -1,7 +1,8 @@
 syntax = "proto3";
-package example;
+package example.package;
 
 import "common/common.proto";
+import "test_scope.proto";
 option go_package = "github.com/EGT-Ukraine/go2gql/testdata";
 
 // Service, which do smth
@@ -89,6 +90,11 @@ message RootMessage {
         RootEnum em_f_o_en = 26; // non-repeated Enum
         RootMessage2 em_f_o_m = 27; // non-repeated Message
     }
+
+    // leading dot in type name
+    .common.CommonMessage leading_dot = 29;
+    // parent scope
+    test_scope.ParentScopeEnum parent_scope = 32;
 }
 message Empty {
 

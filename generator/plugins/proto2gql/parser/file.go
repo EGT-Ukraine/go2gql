@@ -1,21 +1,21 @@
 package parser
 
 import (
-	"strings"
-
 	"github.com/emicklei/proto"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 type File struct {
-	GoPackage string
-	FilePath  string
-	protoFile *proto.Proto
-	PkgName   string
-	Services  []*Service
-	Messages  []*Message
-	Enums     []*Enum
-	Imports   []*File
+	GoPackage   string
+	FilePath    string
+	protoFile   *proto.Proto
+	PkgName     string
+	Services    []*Service
+	Messages    []*Message
+	Enums       []*Enum
+	Imports     []*File
+	Descriptors map[string]*Type
 }
 
 func (f *File) parseGoPackage() {
@@ -31,75 +31,71 @@ func (f *File) parseGoPackage() {
 	}
 }
 
-func (f *File) messageByTypeName(typeName TypeName) (*Message, bool) {
-	for _, msg := range f.Messages {
-		if msg.TypeName.Equal(typeName) {
-			return msg, true
-		}
-	}
-	return nil, false
-}
-
-func (f *File) enumByTypeName(typeName TypeName) (*Enum, bool) {
-	for _, e := range f.Enums {
-		if e.TypeName.Equal(typeName) {
-			return e, true
-		}
-	}
-	return nil, false
-}
 func (f *File) findTypeInMessage(msg *Message, typ string) (Type, bool) {
 	if typeIsScalar(typ) {
 		return &ScalarType{ScalarName: typ, file: f}, true
 	}
-	ms, ok := f.messageByTypeName(msg.TypeName.NewSubTypeName(typ))
-	if ok {
-		return ms.Type, true
-	}
-
-	enum, ok := f.enumByTypeName(msg.TypeName.NewSubTypeName(typ))
-	if ok {
-		return enum.Type, true
-	}
-	if msg.parentMsg != nil {
-		return f.findTypeInMessage(msg.parentMsg, typ)
-	}
-	return f.findType(typ)
+	return f.findType(typ, msg.Type.GetFullName())
 }
 
-func (f *File) findType(typ string) (Type, bool) {
-	if typeIsScalar(typ) {
-		return &ScalarType{ScalarName: typ, file: f}, true
-	}
-	parts := strings.Split(typ, ".")
-	msg, ok := f.messageByTypeName(parts)
-	if ok {
-		return msg.Type, true
-	}
-	en, ok := f.enumByTypeName(parts)
-	if ok {
-		return en.Type, true
-	}
-	for _, imp := range f.Imports {
-		if imp.PkgName == f.PkgName {
-			it, ok := imp.findType(typ)
-			if ok {
-				return it, true
+func (f *File) findSymbol(fullName string) (Type, bool) {
+	symbol, ok := f.Descriptors[fullName]
+
+	if ok == true {
+		return *symbol, ok
+	} else {
+		for _, importedFile := range f.Imports {
+			symbol, ok := importedFile.findSymbol(fullName)
+
+			if ok == true {
+				return symbol, ok
 			}
 		}
+
+		return nil, false
 	}
-	for i := 0; i < len(parts)-1; i++ {
-		pkg, typ := strings.Join(parts[:i+1], "."), strings.Join(parts[i+1:], ".")
-		for _, imp := range f.Imports {
-			if imp.PkgName == pkg {
-				t, ok := imp.findType(typ)
-				if ok {
-					return t, ok
+}
+
+func (f *File) findType(name string, relativeToFullName string) (Type, bool) {
+	var result Type
+	var ok bool
+
+	if strings.HasPrefix(name, ".") {
+		// Fully-qualified name.
+		result, ok = f.findSymbol(name[1:])
+	} else {
+		// We will search each parent scope of "relativeTo" looking for the
+		// symbol.
+		var scopeToTry = relativeToFullName + "."
+
+		for {
+			// Chop off the last component of the scope.
+			var dotpos = strings.LastIndex(scopeToTry, ".")
+
+			if dotpos == -1 {
+				result, ok = f.findSymbol(name)
+				break
+			} else {
+				scopeToTryRunes := []rune(scopeToTry)
+
+				scopeToTry = string(scopeToTryRunes[0 : dotpos+1])
+
+				// Append name and try to find.
+				scopeToTry += name
+
+				result, ok = f.findSymbol(scopeToTry)
+
+				if ok == true {
+					break
 				}
+
+				// Not found.  Remove the name so we can try again.
+				scopeToTry = string(scopeToTryRunes[0:dotpos])
 			}
 		}
 	}
-	return nil, false
+
+	return result, ok
 }
 
 func (f *File) parseServices() error {
@@ -117,11 +113,11 @@ func (f *File) parseServices() error {
 			if !ok || method.StreamsRequest || method.StreamsReturns {
 				continue
 			}
-			reqTyp, ok := f.findType(method.RequestType)
+			reqTyp, ok := f.findType(method.RequestType, f.PkgName)
 			if !ok {
 				return errors.Errorf("can't find request message %s", method.RequestType)
 			}
-			retTyp, ok := f.findType(method.ReturnsType)
+			retTyp, ok := f.findType(method.ReturnsType, f.PkgName)
 			if !ok {
 				return errors.Errorf("can't find request message %s", method.RequestType)
 			}
@@ -219,6 +215,7 @@ func (f *File) parseMessages() {
 		m := message(f, msg, TypeName{msg.Name}, nil)
 		f.Messages = append(f.Messages, m)
 		f.parseMessagesInMessage(TypeName{msg.Name}, m)
+		f.Descriptors[m.Type.GetFullName()] = &m.Type
 	}
 }
 
@@ -229,6 +226,7 @@ func (f *File) parseMessagesInMessage(msgTypeName TypeName, msg *Message) {
 			tn := msgTypeName.NewSubTypeName(elv.Name)
 			m := message(f, elv, tn, msg)
 			f.Messages = append(f.Messages, m)
+			f.Descriptors[m.Type.GetFullName()] = &m.Type
 			f.parseMessagesInMessage(tn, m)
 		}
 	}
@@ -238,7 +236,9 @@ func (f *File) parseEnums() {
 	for _, el := range f.protoFile.Elements {
 		switch val := el.(type) {
 		case *proto.Enum:
-			f.Enums = append(f.Enums, newEnum(f, val, TypeName{val.Name}))
+			var enum = newEnum(f, val, TypeName{val.Name})
+			f.Enums = append(f.Enums, enum)
+			f.Descriptors[enum.Type.GetFullName()] = &enum.Type
 		case *proto.Message:
 			f.parseEnumsInMessage(TypeName{val.Name}, val)
 		}
@@ -252,7 +252,9 @@ func (f *File) parseEnumsInMessage(msgTypeName TypeName, msg *proto.Message) {
 		case *proto.Message:
 			f.parseEnumsInMessage(msgTypeName.NewSubTypeName(elv.Name), elv)
 		case *proto.Enum:
-			f.Enums = append(f.Enums, newEnum(f, elv, msgTypeName.NewSubTypeName(elv.Name)))
+			var enum = newEnum(f, elv, msgTypeName.NewSubTypeName(elv.Name))
+			f.Enums = append(f.Enums, enum)
+			f.Descriptors[enum.Type.GetFullName()] = &enum.Type
 		}
 	}
 }
