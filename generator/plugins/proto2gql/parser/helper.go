@@ -37,9 +37,9 @@ func message(file *File, msg *proto.Message, typeName []string, parent *Message)
 		QuotedComment: quoteComment(msg.Comment),
 		Descriptor:    msg,
 		TypeName:      typeName,
-		File:          file,
+		file:          file,
 		parentMsg:     parent,
 	}
-	m.Type = &MessageType{file: file, Message: m}
+
 	return m
 }

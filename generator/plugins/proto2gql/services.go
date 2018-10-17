@@ -31,11 +31,11 @@ func (g Proto2GraphQL) serviceMethodArguments(cfg MethodConfig, method *parser.M
 		})
 	}
 	for _, field := range method.InputMessage.MapFields {
-		typeFile, err := g.parsedFile(field.Type.File())
+		typeFile, err := g.parsedFile(field.Map.File())
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve field '%s' file", field.Name)
 		}
-		typResolver, err := g.TypeInputTypeResolver(typeFile, field.Type)
+		typResolver, err := g.TypeInputTypeResolver(typeFile, field.Map)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to prepare input type resolver")
 		}
@@ -47,7 +47,7 @@ func (g Proto2GraphQL) serviceMethodArguments(cfg MethodConfig, method *parser.M
 	return args, nil
 }
 func (g Proto2GraphQL) messagePayloadErrorParams(message *parser.Message) (checker graphql.PayloadErrorChecker, accessor graphql.PayloadErrorAccessor, err error) {
-	outMsgCfg, err := g.fileConfig(message.File).MessageConfig(dotedTypeName(message.TypeName))
+	outMsgCfg, err := g.fileConfig(message.File()).MessageConfig(dotedTypeName(message.TypeName))
 	if err != nil {
 		err = errors.Wrap(err, "failed to resolve output message config")
 		return
@@ -86,7 +86,7 @@ func (g Proto2GraphQL) messagePayloadErrorParams(message *parser.Message) (check
 	}
 	for _, fld := range message.MapFields {
 		if fld.Name == outMsgCfg.ErrorField {
-			errorChecker := errorCheckerByType(false, fld.Type)
+			errorChecker := errorCheckerByType(false, fld.Map)
 			if errorChecker == nil {
 				return nil, nil, nil
 			}
@@ -113,15 +113,15 @@ func (g Proto2GraphQL) methodName(cfg MethodConfig, method *parser.Method) strin
 	return method.Name
 }
 func (g Proto2GraphQL) serviceMethod(cfg MethodConfig, file *parsedFile, method *parser.Method) (*graphql.Method, error) {
-	outputMsgTypeFile, err := g.parsedFile(method.OutputMessage.File)
+	outputMsgTypeFile, err := g.parsedFile(method.OutputMessage.File())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to resolve file type file")
 	}
-	outType, err := g.TypeOutputTypeResolver(outputMsgTypeFile, method.OutputMessage.Type)
+	outType, err := g.TypeOutputTypeResolver(outputMsgTypeFile, method.OutputMessage)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get output type resolver for method: %s", method.Name)
 	}
-	requestType, err := g.goTypeByParserType(method.InputMessage.Type)
+	requestType, err := g.goTypeByParserType(method.InputMessage)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get request go type for method: %s", method.Name)
 	}
@@ -133,11 +133,11 @@ func (g Proto2GraphQL) serviceMethod(cfg MethodConfig, file *parsedFile, method 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to resolve message payload error params")
 	}
-	inputMessageFile, err := g.parsedFile(method.InputMessage.File)
+	inputMessageFile, err := g.parsedFile(method.InputMessage.File())
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to resolve message '%s' parsed file", dotedTypeName(method.InputMessage.TypeName))
 	}
-	valueResolver, valueResolverWithErr, _, err := g.TypeValueResolver(inputMessageFile, method.InputMessage.Type, "")
+	valueResolver, valueResolverWithErr, _, err := g.TypeValueResolver(inputMessageFile, method.InputMessage, "")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to resolve message value resolver")
 	}

@@ -8,24 +8,21 @@ import (
 )
 
 func testFileInfo(file *File) *File {
-	var Int32Type = &ScalarType{ScalarName: "int32"}
-	var StringType = &ScalarType{file: file, ScalarName: "string"}
+	var Int32Type = &Scalar{file: file, ScalarName: "int32"}
+	var StringType = &Scalar{file: file, ScalarName: "string"}
 	var RootMessage = file.Messages[0]
 	var RootMessage2 = file.Messages[4]
-	var RootMessage2Type = &MessageType{file: file, Message: RootMessage2}
-	var RootEnumType = &EnumType{file: file, Enum: file.Enums[0]}
+	var RootEnum = file.Enums[0]
 	var EmptyMessage = file.Messages[2]
-	var EmptyMessageType = &MessageType{file: file, Message: EmptyMessage}
 	var NestedMessage = file.Messages[1]
-	var NestedMessageType = &MessageType{file: file, Message: file.Messages[1]}
-	var NestedEnumType = &EnumType{file: file, Enum: file.Enums[1]}
-	var NestedNestedEnumType = &EnumType{file: file, Enum: file.Enums[2]}
+	var NestedEnum = file.Enums[1]
+	var NestedNestedEnum = file.Enums[2]
 	var MessageWithEmpty = file.Messages[3]
 
-	var CommonCommonEnumType = &EnumType{file: file.Imports[0], Enum: file.Imports[0].Enums[0]}
-	var CommonCommonMessageType = &MessageType{file: file.Imports[0], Message: file.Imports[0].Messages[0]}
+	var CommonCommonEnum = file.Imports[0].Enums[0]
+	var CommonCommonMessage = file.Imports[0].Messages[0]
 
-	var ParentScopeEnumType = &EnumType{file: file.Imports[1], Enum: file.Imports[1].Enums[0]}
+	var ParentScopeEnum = file.Imports[1].Enums[0]
 
 	return &File{
 		Services: []*Service{
@@ -42,139 +39,129 @@ func testFileInfo(file *File) *File {
 		},
 		Messages: []*Message{
 			{
-				File:          file,
+				file:          file,
 				Name:          "RootMessage",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootMessage"},
 				Fields: []*Field{
-					{Name: "r_msg", Type: NestedMessageType, Repeated: true, QuotedComment: `"repeated Message"`},
+					{Name: "r_msg", Type: NestedMessage, Repeated: true, QuotedComment: `"repeated Message"`},
 					{Name: "r_scalar", Type: Int32Type, Repeated: true, QuotedComment: `"repeated Scalar"`},
-					{Name: "r_enum", Type: RootEnumType, Repeated: true, QuotedComment: `"repeated Enum"`},
-					{Name: "r_empty_msg", Type: EmptyMessageType, Repeated: true, QuotedComment: `"repeated empty message"`},
-					{Name: "n_r_enum", Type: CommonCommonEnumType, QuotedComment: `"non-repeated Enum"`},
+					{Name: "r_enum", Type: RootEnum, Repeated: true, QuotedComment: `"repeated Enum"`},
+					{Name: "r_empty_msg", Type: EmptyMessage, Repeated: true, QuotedComment: `"repeated empty message"`},
+					{Name: "n_r_enum", Type: CommonCommonEnum, QuotedComment: `"non-repeated Enum"`},
 					{Name: "n_r_scalar", Type: Int32Type, QuotedComment: `"non-repeated Scalar"`},
-					{Name: "n_r_msg", Type: CommonCommonMessageType, QuotedComment: `"non-repeated Message"`},
+					{Name: "n_r_msg", Type: CommonCommonMessage, QuotedComment: `"non-repeated Message"`},
 					{Name: "scalar_from_context", Type: Int32Type, QuotedComment: `"field from context"`},
-					{Name: "n_r_empty_msg", Type: EmptyMessageType, QuotedComment: `"non-repeated empty message field"`},
-					{Name: "leading_dot", Type: CommonCommonMessageType, QuotedComment: `"leading dot in type name"`},
-					{Name: "parent_scope", Type: ParentScopeEnumType, QuotedComment: `"parent scope"`},
+					{Name: "n_r_empty_msg", Type: EmptyMessage, QuotedComment: `"non-repeated empty message field"`},
+					{Name: "leading_dot", Type: CommonCommonMessage, QuotedComment: `"leading dot in type name"`},
+					{Name: "parent_scope", Type: ParentScopeEnum, QuotedComment: `"parent scope"`},
 				},
 				OneOffs: []*OneOf{
 					{Name: "enum_first_oneoff", Fields: []*Field{
-						{Name: "e_f_o_e", Type: CommonCommonEnumType, QuotedComment: `""`},
+						{Name: "e_f_o_e", Type: CommonCommonEnum, QuotedComment: `""`},
 						{Name: "e_f_o_s", Type: Int32Type, QuotedComment: `""`},
-						{Name: "e_f_o_m", Type: CommonCommonMessageType, QuotedComment: `""`},
-						{Name: "e_f_o_em", Type: EmptyMessageType, QuotedComment: `""`},
+						{Name: "e_f_o_m", Type: CommonCommonMessage, QuotedComment: `""`},
+						{Name: "e_f_o_em", Type: EmptyMessage, QuotedComment: `""`},
 					}},
 					{Name: "scalar_first_oneoff", Fields: []*Field{
 						{Name: "s_f_o_s", Type: Int32Type, QuotedComment: `""`},
-						{Name: "s_f_o_e", Type: RootEnumType, QuotedComment: `""`},
-						{Name: "s_f_o_mes", Type: RootMessage2Type, QuotedComment: `""`},
-						{Name: "s_f_o_m", Type: EmptyMessageType, QuotedComment: `""`},
+						{Name: "s_f_o_e", Type: RootEnum, QuotedComment: `""`},
+						{Name: "s_f_o_mes", Type: RootMessage2, QuotedComment: `""`},
+						{Name: "s_f_o_m", Type: EmptyMessage, QuotedComment: `""`},
 					}},
 					{Name: "message_first_oneoff", Fields: []*Field{
-						{Name: "m_f_o_m", Type: RootMessage2Type, QuotedComment: `""`},
+						{Name: "m_f_o_m", Type: RootMessage2, QuotedComment: `""`},
 						{Name: "m_f_o_s", Type: Int32Type, QuotedComment: `""`},
-						{Name: "m_f_o_e", Type: RootEnumType, QuotedComment: `""`},
-						{Name: "m_f_o_em", Type: EmptyMessageType, QuotedComment: `""`},
+						{Name: "m_f_o_e", Type: RootEnum, QuotedComment: `""`},
+						{Name: "m_f_o_em", Type: EmptyMessage, QuotedComment: `""`},
 					}},
 					{Name: "empty_first_oneoff", Fields: []*Field{
-						{Name: "em_f_o_em", Type: EmptyMessageType, QuotedComment: `""`},
+						{Name: "em_f_o_em", Type: EmptyMessage, QuotedComment: `""`},
 						{Name: "em_f_o_s", Type: Int32Type, QuotedComment: `""`},
-						{Name: "em_f_o_en", Type: RootEnumType, QuotedComment: `""`},
-						{Name: "em_f_o_m", Type: RootMessage2Type, QuotedComment: `""`},
+						{Name: "em_f_o_en", Type: RootEnum, QuotedComment: `""`},
+						{Name: "em_f_o_m", Type: RootMessage2, QuotedComment: `""`},
 					}},
 				},
 				MapFields: []*MapField{
 					{
 						Name:          "map_enum",
 						QuotedComment: `"enum_map"`,
-						Type: &MapType{
-							file: file,
-							Map: &Map{
-								Message:   RootMessage,
-								KeyType:   Int32Type,
-								ValueType: NestedEnumType,
-							},
+						Map: &Map{
+							Message:   RootMessage,
+							KeyType:   Int32Type,
+							ValueType: NestedEnum,
+							file:      file,
 						},
 					},
 					{
 						Name:          "map_scalar",
 						QuotedComment: `"scalar map"`,
-						Type: &MapType{
-							file: file,
-							Map: &Map{
-								Message:   RootMessage,
-								KeyType:   Int32Type,
-								ValueType: Int32Type,
-							},
+						Map: &Map{
+							Message:   RootMessage,
+							KeyType:   Int32Type,
+							ValueType: Int32Type,
+							file:      file,
 						},
 					},
 					{
 						Name:          "map_msg",
 						QuotedComment: `""`,
-						Type: &MapType{
-							file: file,
-							Map: &Map{
-								Message:   RootMessage,
-								KeyType:   StringType,
-								ValueType: NestedMessageType,
-							},
+						Map: &Map{
+							Message:   RootMessage,
+							KeyType:   StringType,
+							ValueType: NestedMessage,
+							file:      file,
 						},
 					},
 					{
 						Name:          "ctx_map",
 						QuotedComment: `""`,
-						Type: &MapType{
-							file: file,
-							Map: &Map{
-								Message:   RootMessage,
-								KeyType:   StringType,
-								ValueType: NestedMessageType,
-							},
+						Map: &Map{
+							Message:   RootMessage,
+							KeyType:   StringType,
+							ValueType: NestedMessage,
+							file:      file,
 						},
 					},
 					{
 						Name:          "ctx_map_enum",
 						QuotedComment: `""`,
-						Type: &MapType{
-							file: file,
-							Map: &Map{
-								Message:   RootMessage,
-								KeyType:   StringType,
-								ValueType: NestedEnumType,
-							},
+						Map: &Map{
+							Message:   RootMessage,
+							KeyType:   StringType,
+							ValueType: NestedEnum,
+							file:      file,
 						},
 					},
 				},
 			},
 			{
-				File:          file,
+				file:          file,
 				Name:          "NestedMessage",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootMessage", "NestedMessage"},
 				Fields: []*Field{
-					{Name: "sub_r_enum", Type: NestedEnumType, Repeated: true, QuotedComment: `""`},
-					{Name: "sub_sub_r_enum", Type: NestedNestedEnumType, Repeated: true, QuotedComment: `""`},
+					{Name: "sub_r_enum", Type: NestedEnum, Repeated: true, QuotedComment: `""`},
+					{Name: "sub_sub_r_enum", Type: NestedNestedEnum, Repeated: true, QuotedComment: `""`},
 				},
 			},
 			{
-				File:          file,
+				file:          file,
 				Name:          "Empty",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"Empty"},
 			},
 			{
-				File:          file,
+				file:          file,
 				Name:          "MessageWithEmpty",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"MessageWithEmpty"},
 				Fields: []*Field{
-					{Name: "empt", Type: EmptyMessageType, QuotedComment: `""`},
+					{Name: "empt", Type: EmptyMessage, QuotedComment: `""`},
 				},
 			},
 			{
-				File:          file,
+				file:          file,
 				Name:          "RootMessage2",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootMessage2"},
@@ -185,7 +172,7 @@ func testFileInfo(file *File) *File {
 		},
 		Enums: []*Enum{
 			{
-				File:          file,
+				file:          file,
 				Name:          "RootEnum",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootEnum"},
@@ -196,7 +183,7 @@ func testFileInfo(file *File) *File {
 				},
 			},
 			{
-				File:          file,
+				file:          file,
 				Name:          "NestedEnum",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootMessage", "NestedEnum"},
@@ -206,7 +193,7 @@ func testFileInfo(file *File) *File {
 				},
 			},
 			{
-				File:          file,
+				file:          file,
 				Name:          "NestedNestedEnum",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootMessage", "NestedMessage", "NestedNestedEnum"},
@@ -251,8 +238,8 @@ func TestParser_Parse(t *testing.T) {
 				Convey("Should contain "+validEnum.Name, func() {
 					So(enum.File, ShouldEqual, validEnum.File)
 					So(enum.Name, ShouldEqual, validEnum.Name)
-					So(enum.Type.(*EnumType).Enum, ShouldEqual, enum)
-					So(enum.Type.File(), ShouldEqual, test)
+					So(enum, ShouldEqual, enum)
+					So(enum.File(), ShouldEqual, test)
 					So(enum.TypeName, ShouldResemble, validEnum.TypeName)
 					So(enum.QuotedComment, ShouldEqual, validEnum.QuotedComment)
 					Convey(validEnum.Name+" enum should contains valid values", func() {
@@ -277,8 +264,8 @@ func TestParser_Parse(t *testing.T) {
 				Convey("Should have valid parsed "+strings.Join(validMsg.TypeName, "_")+" message ", func() {
 					So(msg.File, ShouldEqual, validMsg.File)
 					So(msg.Name, ShouldEqual, validMsg.Name)
-					So(msg.Type.(*MessageType).Message, ShouldEqual, msg)
-					So(msg.Type.File(), ShouldEqual, test)
+					So(msg, ShouldEqual, msg)
+					So(msg.File(), ShouldEqual, test)
 					So(msg.TypeName, ShouldResemble, validMsg.TypeName)
 					So(msg.QuotedComment, ShouldEqual, validMsg.QuotedComment)
 					So(msg.Fields, ShouldHaveLength, len(validMsg.Fields))
@@ -297,7 +284,7 @@ func TestParser_Parse(t *testing.T) {
 						Convey("Should have valid parsed "+strings.Join(validMsg.TypeName, "_")+"."+validFld.Name+" field", func() {
 							So(fld.Name, ShouldEqual, validFld.Name)
 							So(fld.QuotedComment, ShouldEqual, validFld.QuotedComment)
-							CompareTypes(fld.Type, validFld.Type)
+							CompareTypes(fld.Map, validFld.Map)
 						})
 					}
 					So(msg.OneOffs, ShouldHaveLength, len(validMsg.OneOffs))
@@ -336,10 +323,10 @@ func TestParser_Parse(t *testing.T) {
 								So(method.Name, ShouldEqual, validMethod.Name)
 								So(method.QuotedComment, ShouldEqual, validMethod.QuotedComment)
 								Convey(validSrv.Name+"."+validMethod.Name+" should have valid input message type", func() {
-									CompareTypes(method.InputMessage.Type, validMethod.InputMessage.Type)
+									CompareTypes(method.InputMessage, validMethod.InputMessage)
 								})
 								Convey(validSrv.Name+"."+validMethod.Name+" should have valid output message type", func() {
-									CompareTypes(method.OutputMessage.Type, validMethod.OutputMessage.Type)
+									CompareTypes(method.OutputMessage, validMethod.OutputMessage)
 								})
 							})
 						}
@@ -355,19 +342,19 @@ func CompareTypes(t1, t2 Type) {
 	So(t2, ShouldNotBeNil)
 
 	switch t1.(type) {
-	case *ScalarType:
-		So(t1.(*ScalarType).ScalarName, ShouldEqual, t2.(*ScalarType).ScalarName)
-	case *MessageType:
-		So(t1.(*MessageType).Message, ShouldEqual, t2.(*MessageType).Message)
+	case *Scalar:
+		So(t1.(*Scalar).ScalarName, ShouldEqual, t2.(*Scalar).ScalarName)
+	case *Message:
+		So(t1, ShouldEqual, t2)
 		So(t1.File(), ShouldEqual, t2.File())
-	case *EnumType:
-		So(t1.(*EnumType).Enum, ShouldEqual, t2.(*EnumType).Enum)
-		So(t1.File, ShouldEqual, t2.File)
-	case *MapType:
-		So(t1.(*MapType).Map.Message, ShouldEqual, t2.(*MapType).Map.Message)
-		CompareTypes(t1.(*MapType).Map.KeyType, t2.(*MapType).Map.KeyType)
-		CompareTypes(t1.(*MapType).Map.ValueType, t2.(*MapType).Map.ValueType)
-		So(t1.File, ShouldEqual, t2.File)
+	case *Enum:
+		So(t1, ShouldEqual, t2)
+		So(t1.File(), ShouldEqual, t2.File())
+	case *Map:
+		So(t1.(*Map).Message, ShouldEqual, t2.(*Map).Message)
+		CompareTypes(t1.(*Map).KeyType, t2.(*Map).KeyType)
+		CompareTypes(t1.(*Map).ValueType, t2.(*Map).ValueType)
+		So(t1.File(), ShouldEqual, t2.File())
 	default:
 		panic("Undefined type")
 	}

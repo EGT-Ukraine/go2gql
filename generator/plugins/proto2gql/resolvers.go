@@ -9,62 +9,62 @@ import (
 
 func (g *Proto2GraphQL) TypeOutputTypeResolver(typeFile *parsedFile, typ parser.Type) (graphql.TypeResolver, error) {
 	switch pType := typ.(type) {
-	case *parser.ScalarType:
+	case *parser.Scalar:
 		resolver, ok := scalarsResolvers[pType.ScalarName]
 		if !ok {
 			return nil, errors.Errorf("unimplemented scalar type: %s", pType.ScalarName)
 		}
 		return resolver, nil
-	case *parser.MessageType:
-		msgCfg, err := typeFile.Config.MessageConfig(pType.Message.Name)
+	case *parser.Message:
+		msgCfg, err := typeFile.Config.MessageConfig(pType.Name)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to resolve message %s config", pType.Message.Name)
+			return nil, errors.Wrapf(err, "failed to resolve message %s config", pType.Name)
 		}
-		if !pType.Message.HaveFieldsExcept(msgCfg.ErrorField) {
+		if !pType.HaveFieldsExcept(msgCfg.ErrorField) {
 			return graphql.GqlNoDataTypeResolver, nil
 		}
-		res, err := g.outputMessageTypeResolver(typeFile, pType.Message)
+		res, err := g.outputMessageTypeResolver(typeFile, pType)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get message type resolver")
 		}
 		return res, nil
-	case *parser.EnumType:
+	case *parser.Enum:
 		file, err := g.parsedFile(pType.File())
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve type parsed file")
 		}
-		res, err := g.enumTypeResolver(file, pType.Enum)
+		res, err := g.enumTypeResolver(file, pType)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get enum type resolver")
 		}
 		return res, nil
-	case *parser.MapType:
-		return g.outputObjectMapFieldTypeResolver(typeFile, pType.Map)
+	case *parser.Map:
+		return g.outputObjectMapFieldTypeResolver(typeFile, pType)
 	}
 	return nil, errors.New("not implemented " + typ.String())
 }
 func (g *Proto2GraphQL) TypeInputTypeResolver(typeFile *parsedFile, typ parser.Type) (graphql.TypeResolver, error) {
 	switch pType := typ.(type) {
-	case *parser.ScalarType:
+	case *parser.Scalar:
 		resolver, ok := scalarsResolvers[pType.ScalarName]
 		if !ok {
-			return nil, errors.Errorf("unimplemented scalar type: %s", typ.(*parser.ScalarType).ScalarName)
+			return nil, errors.Errorf("unimplemented scalar type: %s", typ.(*parser.Scalar).ScalarName)
 		}
 		return resolver, nil
-	case *parser.MessageType:
-		res, err := g.inputMessageTypeResolver(typeFile, pType.Message)
+	case *parser.Message:
+		res, err := g.inputMessageTypeResolver(typeFile, pType)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get message type resolver")
 		}
 		return res, nil
-	case *parser.EnumType:
-		res, err := g.enumTypeResolver(typeFile, pType.Enum)
+	case *parser.Enum:
+		res, err := g.enumTypeResolver(typeFile, pType)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get enum type resolver")
 		}
 		return res, nil
-	case *parser.MapType:
-		return g.inputObjectMapFieldTypeResolver(typeFile, pType.Map)
+	case *parser.Map:
+		return g.inputObjectMapFieldTypeResolver(typeFile, pType)
 
 	}
 	return nil, errors.New("not implemented " + typ.String())
@@ -80,7 +80,7 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 		}, false, false, nil
 	}
 	switch pType := typ.(type) {
-	case *parser.ScalarType:
+	case *parser.Scalar:
 		gt, ok := goTypesScalars[pType.ScalarName]
 		if !ok {
 			panic("unknown scalar: " + pType.ScalarName)
@@ -88,26 +88,26 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 		return func(arg string, ctx graphql.BodyContext) string {
 			return arg + ".(" + gt.Kind.String() + ")"
 		}, false, true, nil
-	case *parser.EnumType:
+	case *parser.Enum:
 		return func(arg string, ctx graphql.BodyContext) string {
-			return ctx.Importer.Prefix(typeFile.GRPCSourcesPkg) + snakeCamelCaseSlice(pType.Enum.TypeName) + "(" + arg + ".(int))"
+			return ctx.Importer.Prefix(typeFile.GRPCSourcesPkg) + snakeCamelCaseSlice(pType.TypeName) + "(" + arg + ".(int))"
 		}, false, true, nil
-	case *parser.MessageType:
+	case *parser.Message:
 		return func(arg string, ctx graphql.BodyContext) string {
 
 			if ctx.TracerEnabled {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType.Message) + "(tr, " + ctx.Importer.New(graphql.OpentracingPkgPath) + ".ContextWithSpan(ctx,span), " + arg + ")"
+				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType) + "(tr, " + ctx.Importer.New(graphql.OpentracingPkgPath) + ".ContextWithSpan(ctx,span), " + arg + ")"
 			} else {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType.Message) + "(ctx, " + arg + ")"
+				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType) + "(ctx, " + arg + ")"
 			}
 		}, true, true, nil
 
-	case *parser.MapType:
+	case *parser.Map:
 		return func(arg string, ctx graphql.BodyContext) string {
 			if ctx.TracerEnabled {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType.Map) + "(tr, " + ctx.Importer.New(graphql.OpentracingPkgPath) + ".ContextWithSpan(ctx,span), " + arg + ")"
+				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType) + "(tr, " + ctx.Importer.New(graphql.OpentracingPkgPath) + ".ContextWithSpan(ctx,span), " + arg + ")"
 			} else {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType.Map) + "(ctx, " + arg + ")"
+				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType) + "(ctx, " + arg + ")"
 			}
 		}, true, true, nil
 	}
@@ -120,16 +120,16 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 
 func (g *Proto2GraphQL) FieldOutputValueResolver(fieldFile *parsedFile, fieldName string, fieldRepeated bool, fieldType parser.Type) (_ graphql.ValueResolver, err error) {
 	switch ft := fieldType.(type) {
-	case *parser.ScalarType:
+	case *parser.Scalar:
 		return graphql.IdentAccessValueResolver(camelCase(fieldName)), nil
-	case *parser.MessageType:
+	case *parser.Message:
 		return graphql.IdentAccessValueResolver(camelCase(fieldName)), nil
-	case *parser.MapType:
-		goKeyTyp, err := g.goTypeByParserType(ft.Map.KeyType)
+	case *parser.Map:
+		goKeyTyp, err := g.goTypeByParserType(ft.KeyType)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve field key go type")
 		}
-		goValueTyp, err := g.goTypeByParserType(ft.Map.ValueType)
+		goValueTyp, err := g.goTypeByParserType(ft.ValueType)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve field value go type")
 		}
@@ -142,7 +142,7 @@ func (g *Proto2GraphQL) FieldOutputValueResolver(fieldFile *parsedFile, fieldNam
 				"\n 	return res" +
 				"\n	}(" + arg + ".Get" + camelCase(fieldName) + "())"
 		}, nil
-	case *parser.EnumType:
+	case *parser.Enum:
 		if fieldRepeated {
 			goTyp, err := g.goTypeByParserType(fieldType)
 			if err != nil {

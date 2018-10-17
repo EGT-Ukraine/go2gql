@@ -15,7 +15,7 @@ type File struct {
 	Messages    []*Message
 	Enums       []*Enum
 	Imports     []*File
-	Descriptors map[string]*Type
+	Descriptors map[string]Type
 }
 
 func (f *File) parseGoPackage() {
@@ -33,16 +33,16 @@ func (f *File) parseGoPackage() {
 
 func (f *File) findTypeInMessage(msg *Message, typ string) (Type, bool) {
 	if typeIsScalar(typ) {
-		return &ScalarType{ScalarName: typ, file: f}, true
+		return &Scalar{ScalarName: typ, file: f}, true
 	}
-	return f.findType(typ, msg.Type.GetFullName())
+	return f.findType(typ, msg.GetFullName())
 }
 
 func (f *File) findSymbol(fullName string) (Type, bool) {
 	symbol, ok := f.Descriptors[fullName]
 
 	if ok == true {
-		return *symbol, ok
+		return symbol, ok
 	} else {
 		for _, importedFile := range f.Imports {
 			symbol, ok := importedFile.findSymbol(fullName)
@@ -124,8 +124,8 @@ func (f *File) parseServices() error {
 			mtd := &Method{
 				Name:          method.Name,
 				QuotedComment: quoteComment(method.Comment),
-				InputMessage:  reqTyp.(*MessageType).Message,
-				OutputMessage: retTyp.(*MessageType).Message,
+				InputMessage:  reqTyp.(*Message),
+				OutputMessage: retTyp.(*Message),
 				Service:       srv,
 			}
 			srv.Methods = append(srv.Methods, mtd)
@@ -166,15 +166,12 @@ func (f *File) parseMessagesFields() error {
 					KeyType:   ktyp,
 					ValueType: vtyp,
 					Field:     fld,
-					File:      f,
+					file:      f,
 				}
-				t := &MapType{Map: mp, file: f}
-				mp.Type = t
 				mf := &MapField{
 					Name:          fld.Name,
 					QuotedComment: quoteComment(fld.Comment),
 					descriptor:    fld,
-					Type:          t,
 					Map:           mp,
 				}
 				msg.MapFields = append(msg.MapFields, mf)
@@ -215,7 +212,7 @@ func (f *File) parseMessages() {
 		m := message(f, msg, TypeName{msg.Name}, nil)
 		f.Messages = append(f.Messages, m)
 		f.parseMessagesInMessage(TypeName{msg.Name}, m)
-		f.Descriptors[m.Type.GetFullName()] = &m.Type
+		f.Descriptors[m.GetFullName()] = m
 	}
 }
 
@@ -226,7 +223,7 @@ func (f *File) parseMessagesInMessage(msgTypeName TypeName, msg *Message) {
 			tn := msgTypeName.NewSubTypeName(elv.Name)
 			m := message(f, elv, tn, msg)
 			f.Messages = append(f.Messages, m)
-			f.Descriptors[m.Type.GetFullName()] = &m.Type
+			f.Descriptors[m.GetFullName()] = m
 			f.parseMessagesInMessage(tn, m)
 		}
 	}
@@ -238,7 +235,7 @@ func (f *File) parseEnums() {
 		case *proto.Enum:
 			var enum = newEnum(f, val, TypeName{val.Name})
 			f.Enums = append(f.Enums, enum)
-			f.Descriptors[enum.Type.GetFullName()] = &enum.Type
+			f.Descriptors[enum.GetFullName()] = enum
 		case *proto.Message:
 			f.parseEnumsInMessage(TypeName{val.Name}, val)
 		}
@@ -254,7 +251,7 @@ func (f *File) parseEnumsInMessage(msgTypeName TypeName, msg *proto.Message) {
 		case *proto.Enum:
 			var enum = newEnum(f, elv, msgTypeName.NewSubTypeName(elv.Name))
 			f.Enums = append(f.Enums, enum)
-			f.Descriptors[enum.Type.GetFullName()] = &enum.Type
+			f.Descriptors[enum.GetFullName()] = enum
 		}
 	}
 }

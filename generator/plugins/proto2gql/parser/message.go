@@ -24,10 +24,9 @@ type Message struct {
 	Fields        []*Field
 	MapFields     []*MapField
 	OneOffs       []*OneOf
-	Type          Type
 	Descriptor    *proto.Message
 	TypeName      TypeName
-	File          *File
+	file          *File
 	parentMsg     *Message
 }
 
@@ -63,6 +62,34 @@ func (m Message) HaveFieldsExcept(field string) bool {
 	return false
 }
 
+func (m Message) File() *File {
+	return m.file
+}
+
+func (m Message) Kind() TypeKind {
+	return TypeMessage
+}
+
+func (m Message) String() string {
+	return m.Name + " message"
+}
+
+func (m Message) GetFullName() string {
+	parentMessage := m.parentMsg
+
+	if parentMessage != nil {
+		parentMessageName := parentMessage.GetFullName()
+
+		return parentMessageName + "." + m.Name
+	}
+
+	if m.file.PkgName != "" {
+		return m.file.PkgName + "." + m.Name
+	}
+
+	return m.Name
+}
+
 type Field struct {
 	Name          string
 	QuotedComment string
@@ -75,7 +102,6 @@ type MapField struct {
 	Name          string
 	QuotedComment string
 	descriptor    *proto.MapField
-	Type          Type
 	Map           *Map
 }
 
@@ -85,10 +111,21 @@ type OneOf struct {
 }
 
 type Map struct {
-	Type      Type
 	Message   *Message
 	KeyType   Type
 	ValueType Type
 	Field     *proto.MapField
-	File      *File
+	file      *File
+}
+
+func (m Map) File() *File {
+	return m.file
+}
+
+func (m Map) Kind() TypeKind {
+	return TypeMap
+}
+
+func (m Map) String() string {
+	return m.Message.Name + "." + m.Field.Name + " map"
 }
