@@ -35,6 +35,71 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 	}
 	p.schemaConfigs = cfgs
 	p.generateCfg = config
+
+	if err = p.parseImports(); err != nil {
+		return errors.Wrap(err, "failed to decode imports")
+	}
+
+	return nil
+}
+
+func (p *Plugin) parseImports() error {
+	for _, pluginsConfigsImports := range p.generateCfg.PluginsConfigsImports {
+		cfg := new([]*SchemaConfig)
+
+		if err := mapstructure.Decode(pluginsConfigsImports[SchemasConfigsKey], cfg); err != nil {
+			return errors.Wrap(err, "failed to decode config")
+		}
+
+		for _, schema := range *cfg {
+			if err := p.parseImportedSchema(schema); err != nil {
+				return errors.Wrap(err, "Failed to parse imported schema")
+			}
+		}
+	}
+
+	return nil
+}
+
+func (p *Plugin) parseImportedSchema(cfg *SchemaConfig) error {
+	if cfg == nil {
+		return nil
+	}
+
+	var importedSchemaName = cfg.Name
+
+	schema := p.findSchemaByName(importedSchemaName)
+
+	if schema == nil {
+		return errors.New("Schema " + importedSchemaName + " not defined")
+	}
+
+	if cfg.Queries != nil && schema.Queries.Type == SchemaNodeTypeService {
+		return errors.New("Cannot merge object with service in query")
+	}
+
+	if cfg.Mutations != nil && schema.Mutations.Type == SchemaNodeTypeService {
+		return errors.New("Cannot merge object with service in mutations")
+	}
+
+	if cfg.Queries != nil {
+		schema.Queries.Fields = append(schema.Queries.Fields, cfg.Queries.Fields...)
+	}
+
+	if cfg.Mutations != nil {
+		schema.Mutations.Fields = append(schema.Mutations.Fields, cfg.Mutations.Fields...)
+	}
+
+	return nil
+}
+
+func (p *Plugin) findSchemaByName(name string) *SchemaConfig {
+	for _, schema := range p.schemaConfigs {
+		if schema.Name == name {
+			return &schema
+		}
+	}
+
 	return nil
 }
 
