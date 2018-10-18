@@ -82,7 +82,7 @@ func (g *Proto2GraphQL) outputMessageMapFields(msgCfg MessageConfig, file *parse
 		if msgCfg.ErrorField == field.Name {
 			continue
 		}
-		typeResolver, err := g.TypeOutputTypeResolver(file, field.Type)
+		typeResolver, err := g.TypeOutputTypeResolver(file, field.Map)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare message %s field %s output type resolver", msg.Name, field.Name)
 		}

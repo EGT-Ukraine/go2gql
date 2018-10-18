@@ -35,19 +35,19 @@ var goTypesScalars = map[string]graphql.GoType{
 
 func (g *Proto2GraphQL) goTypeByParserType(typ parser.Type) (_ graphql.GoType, err error) {
 	switch pType := typ.(type) {
-	case *parser.ScalarType:
+	case *parser.Scalar:
 		res, ok := goTypesScalars[pType.ScalarName]
 		if !ok {
 			err = errors.New("unknown scalar")
 			return
 		}
 		return res, nil
-	case *parser.MapType:
-		keyT, err := g.goTypeByParserType(pType.Map.KeyType)
+	case *parser.Map:
+		keyT, err := g.goTypeByParserType(pType.KeyType)
 		if err != nil {
 			return graphql.GoType{}, errors.Wrap(err, "failed to resolve key type")
 		}
-		valueT, err := g.goTypeByParserType(pType.Map.ValueType)
+		valueT, err := g.goTypeByParserType(pType.ValueType)
 		if err != nil {
 			return graphql.GoType{}, errors.Wrap(err, "failed to resolve value type")
 		}
@@ -57,7 +57,7 @@ func (g *Proto2GraphQL) goTypeByParserType(typ parser.Type) (_ graphql.GoType, e
 			ElemType:  &keyT,
 			Elem2Type: &valueT,
 		}, nil
-	case *parser.MessageType:
+	case *parser.Message:
 		file, err := g.parsedFile(pType.File())
 		if err != nil {
 			err = errors.Wrap(err, "failed to resolve type parsed file")
@@ -65,7 +65,7 @@ func (g *Proto2GraphQL) goTypeByParserType(typ parser.Type) (_ graphql.GoType, e
 		}
 		msgType := &graphql.GoType{
 			Pkg:  file.GRPCSourcesPkg,
-			Name: snakeCamelCaseSlice(pType.Message.TypeName),
+			Name: snakeCamelCaseSlice(pType.TypeName),
 			Kind: reflect.Struct,
 		}
 		return graphql.GoType{
@@ -74,7 +74,7 @@ func (g *Proto2GraphQL) goTypeByParserType(typ parser.Type) (_ graphql.GoType, e
 			ElemType: msgType,
 		}, nil
 
-	case *parser.EnumType:
+	case *parser.Enum:
 		file, err := g.parsedFile(pType.File())
 		if err != nil {
 			err = errors.Wrap(err, "failed to resolve type parsed file")
@@ -82,7 +82,7 @@ func (g *Proto2GraphQL) goTypeByParserType(typ parser.Type) (_ graphql.GoType, e
 		}
 		return graphql.GoType{
 			Pkg:  file.GRPCSourcesPkg,
-			Name: snakeCamelCaseSlice(pType.Enum.TypeName),
+			Name: snakeCamelCaseSlice(pType.TypeName),
 			Kind: reflect.Int32,
 		}, nil
 	}

@@ -1,13 +1,16 @@
 package parser
 
-import "github.com/emicklei/proto"
+import (
+	"strings"
+
+	"github.com/emicklei/proto"
+)
 
 type Enum struct {
 	Name          string
 	QuotedComment string
 	Values        []*EnumValue
-	Type          Type
-	File          *File
+	file          *File
 	TypeName      TypeName
 	Descriptor    *proto.Enum
 }
@@ -24,10 +27,8 @@ func newEnum(file *File, enum *proto.Enum, typeName []string) *Enum {
 		QuotedComment: quoteComment(enum.Comment),
 		Descriptor:    enum,
 		TypeName:      typeName,
-		File:          file,
+		file:          file,
 	}
-	enumType := &EnumType{file: file, Enum: m}
-	m.Type = enumType
 	for _, v := range enum.Elements {
 		value, ok := v.(*proto.EnumField)
 		if !ok {
@@ -40,4 +41,24 @@ func newEnum(file *File, enum *proto.Enum, typeName []string) *Enum {
 		})
 	}
 	return m
+}
+
+func (e Enum) Kind() TypeKind {
+	return TypeEnum
+}
+
+func (e Enum) String() string {
+	return e.Name + " enum"
+}
+
+func (e Enum) File() *File {
+	return e.file
+}
+
+func (e Enum) GetFullName() string {
+	if e.file.PkgName == "" {
+		return strings.Join(e.TypeName, ".")
+	}
+
+	return e.file.PkgName + "." + strings.Join(e.TypeName, ".")
 }
