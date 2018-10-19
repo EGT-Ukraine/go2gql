@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/pkg/errors"
@@ -23,38 +24,36 @@ func main() {
 	app := cli.App{
 		Flags: appFlags,
 		Before: func(c *cli.Context) error {
-			cfgFile, err := os.Open(c.String("config"))
+			cfg, err := ioutil.ReadFile(c.String("config"))
 			if err != nil {
-				panic(err)
-			}
-			cfg, err := ioutil.ReadAll(cfgFile)
-			if err != nil {
-				panic(err)
+				return errors.Wrap(err, "Failed to read config file")
 			}
 			gc := new(generator.GenerateConfig)
-			err = yaml.Unmarshal(cfg, gc)
-			if err != nil {
-				panic(err)
+			if err = yaml.Unmarshal(cfg, gc); err != nil {
+				return errors.Wrap(err, "Failed to unmarshal config file")
 			}
+
+			if err = gc.ParseImports(); err != nil {
+				return errors.Wrap(err, "Failed to parse config file imports")
+			}
+
 			g := &generator.Generator{
 				Config: gc,
 			}
 
 			for _, plugin := range Plugins(c) {
-				err := g.RegisterPlugin(plugin)
-				if err != nil {
-					panic(err.Error())
+				if err := g.RegisterPlugin(plugin); err != nil {
+					return errors.Wrap(err, "Failed to register plugin")
 				}
 			}
-			err = g.Init()
-			if err != nil {
-				panic(errors.Wrap(err, "failed to initialize generator"))
+			if err = g.Init(); err != nil {
+				return errors.Wrap(err, "failed to initialize generator")
 			}
-			err = g.Prepare()
-			if err != nil {
-				panic(errors.Wrap(err, "failed to prepare generator"))
+			if err = g.Prepare(); err != nil {
+				return errors.Wrap(err, "failed to prepare generator")
 			}
 			c.App.Metadata["generator"] = g
+
 			return nil
 		},
 		Commands: []cli.Command{
@@ -97,5 +96,8 @@ func main() {
 			}
 		},
 	}
-	app.Run(os.Args)
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
 }

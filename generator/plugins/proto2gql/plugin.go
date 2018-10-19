@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	PluginName      = "proto2gql"
-	PluginConfigKey = "proto2gql"
+	PluginName            = "proto2gql"
+	PluginConfigKey       = "proto2gql"
+	PluginImportConfigKey = "proto2gql_files"
 )
 
 type Plugin struct {
@@ -39,12 +40,32 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 	}
 	p.generateConfig = config
 	p.config = cfg
+
+	if err = p.parseImports(); err != nil {
+		return errors.Wrap(err, "failed to decode imports")
+	}
+
 	err = p.normalizeGenerateConfigPaths()
 	if err != nil {
 		return errors.Wrap(err, "failed to normalize config paths")
 	}
+
 	return nil
 }
+
+func (p *Plugin) parseImports() error {
+	for _, pluginsConfigsImports := range p.generateConfig.PluginsConfigsImports {
+		cfg := new([]*ProtoFileConfig)
+		if err := mapstructure.Decode(pluginsConfigsImports[PluginImportConfigKey], cfg); err != nil {
+			return errors.Wrap(err, "failed to decode config")
+		}
+
+		p.config.Files = append(p.config.Files, *cfg...)
+	}
+
+	return nil
+}
+
 func (p *Plugin) normalizeGenerateConfigPaths() error {
 	for i, path := range p.config.Paths {
 		normalizedPath := os.ExpandEnv(path)
@@ -63,32 +84,33 @@ func (p *Plugin) normalizeGenerateConfigPaths() error {
 		p.config.Files[i].ProtoPath = normalizedPath
 
 	}
+
 	return nil
 }
-func (p *Plugin) prepareFileConfig(fileCfg *ProtoFileConfig) error {
+
+func (p *Plugin) prepareFileConfig(fileCfg *ProtoFileConfig) {
 	fileCfg.Paths = append(fileCfg.Paths, p.config.Paths...)
 	for _, aliases := range p.config.ImportsAliases {
 		fileCfg.ImportsAliases = append(fileCfg.ImportsAliases, aliases)
 	}
-	return nil
 }
+
 func (p *Plugin) PrintInfo(info generator.Infos) {
 }
+
 func (p *Plugin) Infos() map[string]string {
 	return nil
 }
+
 func (p *Plugin) Prepare() error {
 	pr := new(Proto2GraphQL)
 	pr.VendorPath = p.generateConfig.VendorPath
 	pr.GenerateTracers = p.generateConfig.GenerateTraces
 	pr.OutputPath = p.config.GetOutputPath()
 	for _, file := range p.config.Files {
-		err := p.prepareFileConfig(file)
-		if err != nil {
-			return errors.Wrapf(err, "failed to prepare file %s config", file.ProtoPath)
-		}
-		err = pr.AddSourceByConfig(file)
-		if err != nil {
+		p.prepareFileConfig(file)
+
+		if err := pr.AddSourceByConfig(file); err != nil {
 			return errors.Wrap(err, "failed to parse file "+file.ProtoPath)
 		}
 	}
@@ -104,6 +126,7 @@ func (p *Plugin) Prepare() error {
 		}
 		p.graphql.AddTypesFile(pf.OutputPath, commonFile)
 	}
+
 	return nil
 }
 
