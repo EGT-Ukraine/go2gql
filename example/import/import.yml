@@ -1,0 +1,27 @@
+proto2gql_files:
+  - name: "Import"
+    proto_path: "proto/import.proto"
+    services:
+      ServiceImport:
+        methods:
+          queryImportMethod:
+            request_type: "QUERY"
+          getMutatuionImportMethod:
+            request_type: "MUTATION"
+
+graphql_schemas:
+  - name: "ExampleSchema"
+    queries:
+      type: "OBJECT"
+      fields:
+        - field: "import"
+          type: "SERVICE"
+          object_name: "Import"
+          service: "ServiceImport"
+    mutations:
+      type: "OBJECT"
+      fields:
+        - field: "import"
+          type: "SERVICE"
+          object_name: "ImportMutation"
+          service: "ServiceImportMutations"

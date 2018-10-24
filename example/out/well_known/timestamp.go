@@ -4,11 +4,10 @@ package well_known
 import (
 	context "context"
 
+	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	errors "github.com/pkg/errors"
 	graphql "github.com/saturn4er/graphql"
-
-	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 )
 
 // Enums
