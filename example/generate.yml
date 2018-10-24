@@ -1,4 +1,8 @@
+imports:
+  - "./import/import.yml"
+
 proto2gql:
+  output_path: "./out"
   paths:
     - "vendor"
     - "$GOPATH/src"
@@ -33,8 +37,16 @@ graphql_schemas:
     output_path: "./out/schema/example.go"
     output_package: "schema"
     queries:
-      type: "SERVICE"
-      service: "ServiceExample"
+      type: "OBJECT"
+      fields:
+        - field: "example"
+          type: "SERVICE"
+          object_name: "Example"
+          service: "ServiceExample"
     mutations:
-      type: "SERVICE"
-      service: "ServiceExampleMutations"
+      type: "OBJECT"
+      fields:
+        - field: "example"
+          type: "SERVICE"
+          object_name: "ExampleMutation"
+          service: "ServiceExampleMutations"

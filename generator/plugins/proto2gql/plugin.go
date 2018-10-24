@@ -55,12 +55,19 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 
 func (p *Plugin) parseImports() error {
 	for _, pluginsConfigsImports := range p.generateConfig.PluginsConfigsImports {
-		cfg := new([]*ProtoFileConfig)
-		if err := mapstructure.Decode(pluginsConfigsImports[PluginImportConfigKey], cfg); err != nil {
+		configs := new([]*ProtoFileConfig)
+		if err := mapstructure.Decode(pluginsConfigsImports.PluginsConfigs[PluginImportConfigKey], configs); err != nil {
 			return errors.Wrap(err, "failed to decode config")
 		}
 
-		p.config.Files = append(p.config.Files, *cfg...)
+		for _, config := range *configs {
+			var importFileDir = filepath.Dir(pluginsConfigsImports.Path)
+			var protoPath = filepath.Join(importFileDir, config.ProtoPath)
+
+			config.ProtoPath = protoPath
+			config.Paths = append(config.Paths, importFileDir)
+			p.config.Files = append(p.config.Files, config)
+		}
 	}
 
 	return nil

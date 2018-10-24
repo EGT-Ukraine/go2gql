@@ -47,7 +47,7 @@ func (p *Plugin) parseImports() error {
 	for _, pluginsConfigsImports := range p.generateCfg.PluginsConfigsImports {
 		cfg := new([]*SchemaConfig)
 
-		if err := mapstructure.Decode(pluginsConfigsImports[SchemasConfigsKey], cfg); err != nil {
+		if err := mapstructure.Decode(pluginsConfigsImports.PluginsConfigs[SchemasConfigsKey], cfg); err != nil {
 			return errors.Wrap(err, "failed to decode config")
 		}
 

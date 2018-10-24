@@ -5,14 +5,13 @@ import (
 	context "context"
 	fmt "fmt"
 
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	errors "github.com/pkg/errors"
-	graphql "github.com/saturn4er/graphql"
-
 	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 	well_known "github.com/EGT-Ukraine/go2gql/example/out/well_known"
 	proto "github.com/EGT-Ukraine/go2gql/example/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	errors "github.com/pkg/errors"
+	graphql "github.com/saturn4er/graphql"
 )
 
 // Enums
@@ -1047,7 +1046,7 @@ var ExmplAInput__MapMsg = graphql.NewInputObject(graphql.InputObjectConfig{
 	Fields: graphql.InputObjectConfigFieldMapThunk(func() graphql.InputObjectConfigFieldMap {
 		return graphql.InputObjectConfigFieldMap{
 			"key":   &graphql.InputObjectFieldConfig{Type: scalars.GraphQLInt32Scalar},
-			"value": &graphql.InputObjectFieldConfig{Type: well_known.Timestamp},
+			"value": &graphql.InputObjectFieldConfig{Type: well_known.TimestampInput},
 		}
 	}),
 })
@@ -1074,7 +1073,7 @@ var ExmplBInput__MapMsg = graphql.NewInputObject(graphql.InputObjectConfig{
 	Fields: graphql.InputObjectConfigFieldMapThunk(func() graphql.InputObjectConfigFieldMap {
 		return graphql.InputObjectConfigFieldMap{
 			"key":   &graphql.InputObjectFieldConfig{Type: scalars.GraphQLInt32Scalar},
-			"value": &graphql.InputObjectFieldConfig{Type: well_known.Timestamp},
+			"value": &graphql.InputObjectFieldConfig{Type: well_known.TimestampInput},
 		}
 	}),
 })
