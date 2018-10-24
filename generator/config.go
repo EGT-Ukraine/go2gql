@@ -9,12 +9,17 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type ImportedPluginsConfigs struct {
+	Path           string
+	PluginsConfigs PluginsConfigs
+}
+
 type PluginsConfigs map[string]interface{}
 type GenerateConfig struct {
 	GenerateTraces        bool     `yaml:"generate_tracer"`
 	VendorPath            string   `yaml:"vendor_path"`
 	Imports               []string `yaml:"imports"`
-	PluginsConfigsImports []PluginsConfigs
+	PluginsConfigsImports []ImportedPluginsConfigs
 	PluginsConfigs        `yaml:",inline"`
 }
 
@@ -32,12 +37,18 @@ func (gc *GenerateConfig) ParseImports() error {
 		}
 
 		pluginsConfig := PluginsConfigs{}
+
+		importedPluginsConfig := ImportedPluginsConfigs{
+			Path:           normalizedPath,
+			PluginsConfigs: pluginsConfig,
+		}
+
 		err = yaml.Unmarshal(cfg, pluginsConfig)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to unmarshal import '%s' file", normalizedPath)
 		}
 
-		gc.PluginsConfigsImports = append(gc.PluginsConfigsImports, pluginsConfig)
+		gc.PluginsConfigsImports = append(gc.PluginsConfigsImports, importedPluginsConfig)
 	}
 
 	return nil
