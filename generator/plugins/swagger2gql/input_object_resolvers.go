@@ -127,6 +127,12 @@ func (p *Plugin) fileInputMessagesResolvers(file *parsedFile) ([]graphql.InputOb
 		return nil
 	}
 	for _, tag := range file.File.Tags {
+		_, ok := file.Config.Tags[tag.Name]
+
+		if !ok {
+			continue
+		}
+
 		for _, method := range tag.Methods {
 			paramsResolver, err := p.methodParametersInputObjectResolver(file, tag.Name, method)
 			if err != nil {
