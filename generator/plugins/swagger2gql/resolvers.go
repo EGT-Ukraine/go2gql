@@ -84,7 +84,15 @@ func (p *Plugin) TypeValueResolver(file *parsedFile, typ parser.Type, required b
 			return nil, false, false, errors.Wrap(err, "failed to resolve go type")
 		}
 		return func(arg string, ctx graphql.BodyContext) string {
-			return `ctx.Value("` + ctxKey + `").(` + goType.String(ctx.Importer) + `)`
+			if !required {
+				return `ctx.Value("` + ctxKey + `").(` + goType.String(ctx.Importer) + `)`
+			}
+
+			return "func(arg interface{}) *" + goType.String(ctx.Importer) + "{\n" +
+				"val := arg.(" + goType.String(ctx.Importer) + ")\n" +
+				"return &val\n" +
+				"}(ctx.Value(\"" + ctxKey + "\"))"
+
 		}, false, false, nil
 	}
 	switch t := typ.(type) {
