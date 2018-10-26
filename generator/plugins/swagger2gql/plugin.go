@@ -3,6 +3,7 @@ package swagger2gql
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
@@ -58,13 +59,58 @@ func (p *Plugin) parseImports() error {
 			return errors.Wrap(err, "failed to decode config")
 		}
 
-		for _, config := range *configs {
-			var importFileDir = filepath.Dir(pluginsConfigsImports.Path)
-			var swaggerPath = filepath.Join(importFileDir, config.Path)
+		if err := p.processConfigs(pluginsConfigsImports.Path, *configs); err != nil {
+			return errors.Wrap(err, "failed to process configs")
+		}
+	}
 
-			config.Path = swaggerPath
+	return nil
+}
 
-			p.config.Files = append(p.config.Files, config)
+func (p *Plugin) processConfigs(path string, configs []*SwaggerFileConfig) error {
+	for _, config := range configs {
+		var importFileDir = filepath.Dir(path)
+		var swaggerPath = filepath.Join(importFileDir, config.Path)
+
+		if config.ModelsGoPath == "" {
+			goPkg, err := GoPackageByPath(importFileDir, p.generateConfig.VendorPath)
+
+			if err != nil {
+				return errors.Wrap(err, "failed to get go package by path "+importFileDir)
+			}
+
+			config.ModelsGoPath = goPkg + "/models"
+		}
+
+		if err := p.processTags(config, importFileDir); err != nil {
+			return errors.Wrap(err, "failed to process tags")
+		}
+
+		config.Path = swaggerPath
+
+		p.config.Files = append(p.config.Files, config)
+	}
+
+	return nil
+}
+
+func (p *Plugin) processTags(config *SwaggerFileConfig, importFileDir string) error {
+	for tagName, tag := range config.Tags {
+		goPkg, err := GoPackageByPath(importFileDir, p.generateConfig.VendorPath)
+
+		if err != nil {
+			return errors.Wrap(err, "failed to get go package by path "+importFileDir)
+		}
+
+		if tag == nil {
+			tag = new(TagConfig)
+			config.Tags[tagName] = tag
+		}
+
+		if tag.ClientGoPackage == "" {
+			controllerName := strings.Replace(tagName, "-", "_", -1)
+
+			tag.ClientGoPackage = goPkg + "/client/" + controllerName
 		}
 	}
 
