@@ -2,6 +2,7 @@ package swagger2gql
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
@@ -12,8 +13,9 @@ import (
 )
 
 const (
-	PluginName      = "swagger2gql"
-	PluginConfigKey = "swagger2gql"
+	PluginName            = "swagger2gql"
+	PluginConfigKey       = "swagger2gql"
+	PluginImportConfigKey = "swagger2gql_files"
 )
 
 type Plugin struct {
@@ -41,13 +43,41 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 	}
 	p.generateConfig = config
 	p.config = cfg
+
+	if err = p.parseImports(); err != nil {
+		return errors.Wrap(err, "failed to decode imports")
+	}
+
 	return nil
 }
+
+func (p *Plugin) parseImports() error {
+	for _, pluginsConfigsImports := range p.generateConfig.PluginsConfigsImports {
+		configs := new([]*SwaggerFileConfig)
+		if err := mapstructure.Decode(pluginsConfigsImports.PluginsConfigs[PluginImportConfigKey], configs); err != nil {
+			return errors.Wrap(err, "failed to decode config")
+		}
+
+		for _, config := range *configs {
+			var importFileDir = filepath.Dir(pluginsConfigsImports.Path)
+			var swaggerPath = filepath.Join(importFileDir, config.Path)
+
+			config.Path = swaggerPath
+
+			p.config.Files = append(p.config.Files, config)
+		}
+	}
+
+	return nil
+}
+
 func (p *Plugin) PrintInfo(info generator.Infos) {
 }
+
 func (p *Plugin) Infos() map[string]string {
 	return nil
 }
+
 func (p *Plugin) prepareTypesFile(file *parsedFile) (*graphql.TypesFile, error) {
 	if file.Config.ModelsGoPath == "" {
 		return nil, errors.Errorf("file: `%s`. Need to specify `models_go_path` option", file.Config.Name)
@@ -91,8 +121,10 @@ func (p *Plugin) prepareTypesFile(file *parsedFile) (*graphql.TypesFile, error) 
 		MapOutputObjects:        mapOutputs,
 		Services:                services,
 	}
+
 	return res, nil
 }
+
 func (p *Plugin) Prepare() error {
 	parser := parser.Parser{}
 	for _, cfg := range p.config.Files {
@@ -103,6 +135,7 @@ func (p *Plugin) Prepare() error {
 		pf, err := parser.Parse(cfg.Path, file)
 		if err != nil {
 			file.Close()
+
 			return errors.Wrap(err, "failed to parse swagger config")
 		}
 		err = file.Close()
