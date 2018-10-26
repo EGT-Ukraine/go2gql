@@ -157,7 +157,7 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 		if tagCfg.ClientGoPackage == "" {
 			return nil, errors.Errorf("file: `%s`. Need to specify tag %s `client_go_package` option", file.Config.Name, tag.Name)
 		}
-		queriesMethods, err := p.tagQueriesMethods(tagCfg, file, tag)
+		queriesMethods, err := p.tagQueriesMethods(*tagCfg, file, tag)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get tag queries methods")
 		}
@@ -177,7 +177,7 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 				},
 			},
 		})
-		mutationsMethods, err := p.tagMutationsMethods(tagCfg, file, tag)
+		mutationsMethods, err := p.tagMutationsMethods(*tagCfg, file, tag)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get tag mutations methods")
 		}

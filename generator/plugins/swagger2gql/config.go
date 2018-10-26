@@ -33,6 +33,7 @@ func (c *Config) GetOutputPath() string {
 	if c == nil {
 		return ""
 	}
+
 	return c.OutputPath
 }
 
@@ -48,7 +49,7 @@ type SwaggerFileConfig struct {
 
 	GQLObjectsPrefix string `mapstructure:"gql_objects_prefix"`
 
-	Tags    map[string]TagConfig      `mapstructure:"tags"`
+	Tags    map[string]*TagConfig     `mapstructure:"tags"`
 	Objects []map[string]ObjectConfig `mapstructure:"objects"`
 }
 
@@ -67,24 +68,31 @@ func (pc *SwaggerFileConfig) ObjectConfig(objName string) (ObjectConfig, error) 
 			}
 		}
 	}
+
 	return ObjectConfig{}, nil
 }
+
 func (pc *SwaggerFileConfig) GetName() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.Name
 }
+
 func (pc *SwaggerFileConfig) GetPath() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.Path
 }
+
 func (pc *SwaggerFileConfig) GetOutputPkg() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.OutputPkg
 }
 
@@ -92,23 +100,30 @@ func (pc *SwaggerFileConfig) GetOutputPath() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.OutputPath
 }
+
 func (pc *SwaggerFileConfig) GetGQLMessagePrefix() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.GQLObjectsPrefix
 }
-func (pc *SwaggerFileConfig) GetTags() map[string]TagConfig {
+
+func (pc *SwaggerFileConfig) GetTags() map[string]*TagConfig {
 	if pc == nil {
-		return map[string]TagConfig{}
+		return map[string]*TagConfig{}
 	}
+
 	return pc.Tags
 }
+
 func (pc *SwaggerFileConfig) GetObjects() []map[string]ObjectConfig {
 	if pc == nil {
 		return []map[string]ObjectConfig{}
 	}
+
 	return pc.Objects
 }
