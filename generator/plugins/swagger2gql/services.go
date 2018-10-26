@@ -147,7 +147,13 @@ func (p *Plugin) tagMutationsMethods(tagCfg TagConfig, file *parsedFile, tag par
 func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 	var res []graphql.Service
 	for _, tag := range file.File.Tags {
-		tagCfg := file.Config.Tags[tag.Name]
+		tagCfg, ok := file.Config.Tags[tag.Name]
+
+		if !ok {
+			fmt.Println("Warning: Skip tag:", tag.Name, "from", file.Config.Path)
+			continue
+		}
+
 		if tagCfg.ClientGoPackage == "" {
 			return nil, errors.Errorf("file: `%s`. Need to specify tag %s `client_go_package` option", file.Config.Name, tag.Name)
 		}
