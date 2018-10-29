@@ -23,8 +23,9 @@ type MethodConfig struct {
 	RequestType string `mapstructure:"request_type"` // QUERY | MUTATION
 }
 type ServiceConfig struct {
-	Alias   string                  `mapstructure:"alias"`
-	Methods map[string]MethodConfig `mapstructure:"methods"`
+	QueriesServiceName   string                  `mapstructure:"queries_service_name"`
+	MutationsServiceName string                  `mapstructure:"mutations_service_name"`
+	Methods              map[string]MethodConfig `mapstructure:"methods"`
 }
 type Config struct {
 	Files []*ProtoFileConfig `mapstructure:"files"`
@@ -40,6 +41,7 @@ func (c *Config) GetOutputPath() string {
 	if c == nil {
 		return ""
 	}
+
 	return c.OutputPath
 }
 
@@ -78,72 +80,95 @@ func (pc *ProtoFileConfig) MessageConfig(msgName string) (MessageConfig, error) 
 			}
 		}
 	}
+
 	return MessageConfig{}, nil
 }
+
 func (pc *ProtoFileConfig) GetName() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.Name
 }
+
 func (pc *ProtoFileConfig) GetPaths() []string {
 	if pc == nil {
 		return []string{}
 	}
+
 	return pc.Paths
 }
+
 func (pc *ProtoFileConfig) GetProtoPath() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.ProtoPath
 }
+
 func (pc *ProtoFileConfig) GetOutputPkg() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.OutputPkg
 }
+
 func (pc *ProtoFileConfig) GetGoPackage() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.ProtoGoPackage
 }
+
 func (pc *ProtoFileConfig) GetOutputPath() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.OutputPath
 }
+
 func (pc *ProtoFileConfig) GetGQLEnumsPrefix() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.GQLEnumsPrefix
 }
+
 func (pc *ProtoFileConfig) GetGQLMessagePrefix() string {
 	if pc == nil {
 		return ""
 	}
+
 	return pc.GQLMessagePrefix
 }
+
 func (pc *ProtoFileConfig) GetImportsAliases() []map[string]string {
 	if pc == nil {
 		return []map[string]string{}
 	}
+
 	return pc.ImportsAliases
 }
+
 func (pc *ProtoFileConfig) GetServices() map[string]ServiceConfig {
 	if pc == nil {
 		return map[string]ServiceConfig{}
 	}
+
 	return pc.Services
 }
+
 func (pc *ProtoFileConfig) GetMessages() []map[string]MessageConfig {
 	if pc == nil {
 		return []map[string]MessageConfig{}
 	}
+
 	return pc.Messages
 }
 

@@ -162,8 +162,10 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 			return nil, errors.Wrap(err, "failed to get tag queries methods")
 		}
 		name := pascalize(tag.Name)
-		if tagCfg.ServiceName != "" {
-			name = tagCfg.ServiceName
+		mutationsName := name + "Mutations"
+
+		if tagCfg.QueriesServiceName != "" {
+			name = tagCfg.QueriesServiceName
 		}
 		res = append(res, graphql.Service{
 			Name:    name,
@@ -181,8 +183,13 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get tag mutations methods")
 		}
+
+		if tagCfg.MutationsServiceName != "" {
+			mutationsName = tagCfg.MutationsServiceName
+		}
+
 		res = append(res, graphql.Service{
-			Name:    name + "Mutations",
+			Name:    mutationsName,
 			Methods: mutationsMethods,
 			CallInterface: graphql.GoType{
 				Kind: reflect.Ptr,
