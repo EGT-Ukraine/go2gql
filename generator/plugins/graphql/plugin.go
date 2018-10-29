@@ -83,14 +83,38 @@ func (p *Plugin) parseImportedSchema(cfg *SchemaConfig) error {
 	}
 
 	if cfg.Queries != nil {
-		schema.Queries.Fields = append(schema.Queries.Fields, cfg.Queries.Fields...)
+		schema.Queries.Fields = p.mergeFields(schema.Queries.Fields, cfg.Queries.Fields)
 	}
 
 	if cfg.Mutations != nil {
-		schema.Mutations.Fields = append(schema.Mutations.Fields, cfg.Mutations.Fields...)
+		schema.Mutations.Fields = p.mergeFields(schema.Mutations.Fields, cfg.Mutations.Fields)
 	}
 
 	return nil
+}
+
+func (p *Plugin) mergeFields(schemaFields []SchemaNodeConfig, importFields []SchemaNodeConfig) []SchemaNodeConfig {
+	for _, importField := range importFields {
+		nodeIdx := p.findNodeIndex(importField.Field, schemaFields)
+
+		if nodeIdx != -1 {
+			schemaFields[nodeIdx].Fields = p.mergeFields(schemaFields[nodeIdx].Fields, importField.Fields)
+		} else {
+			schemaFields = append(schemaFields, importField)
+		}
+	}
+
+	return schemaFields
+}
+
+func (p *Plugin) findNodeIndex(name string, schemaFields []SchemaNodeConfig) int {
+	for schemaFieldIdx, schemaField := range schemaFields {
+		if schemaField.Field == name {
+			return schemaFieldIdx
+		}
+	}
+
+	return -1
 }
 
 func (p *Plugin) findSchemaByName(name string) *SchemaConfig {
