@@ -37,14 +37,15 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 		return nil, errors.Wrap(err, "can't get response output type resolver")
 	}
 	gqlInputObjName := p.methodParamsInputObjectGQLName(file, method)
-	cfg, err := file.Config.ObjectConfig(gqlInputObjName)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to resolve object config")
-	}
 	var args []graphql.MethodArgument
 	for _, param := range method.Parameters {
 		gqlName := names.FilterNotSupportedFieldNameCharacters(param.Name)
-		paramCfg := cfg.Fields[gqlName]
+
+		paramCfg, err := file.Config.FieldConfig(gqlInputObjName, param.Name)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to resolve property %s config", param.Name)
+		}
+
 		if paramCfg.ContextKey != "" {
 			continue
 		}

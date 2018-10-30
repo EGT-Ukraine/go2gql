@@ -186,6 +186,9 @@ swagger2gql:
                 get:                          # request method (get/post/put/options...)
                   alias: "get"
                   request_type: "QUERY"       # request type (QUERY|MUTATIONS)
+        params_config:                        # file specific object parameters settings
+         - param_name: "user_id"
+           context_key: "user_id"          
         objects:                              # file specific objects settings
          - "Request$":
            fields:
