@@ -4,14 +4,15 @@ import (
 	"regexp"
 
 	"github.com/pkg/errors"
+
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/names"
 )
 
 type FieldConfig struct {
 	ContextKey string `mapstructure:"context_key"`
 }
 type ObjectConfig struct {
-	ErrorField string                 `mapstructure:"error_field"`
-	Fields     map[string]FieldConfig `mapstructure:"fields"`
+	Fields map[string]FieldConfig `mapstructure:"fields"`
 }
 
 type MethodConfig struct {
@@ -37,6 +38,11 @@ func (c *Config) GetOutputPath() string {
 	return c.OutputPath
 }
 
+type ParamConfig struct {
+	ParamName  string `mapstructure:"param_name"`
+	ContextKey string `mapstructure:"context_key"`
+}
+
 type SwaggerFileConfig struct {
 	Name string `mapstructure:"name"`
 
@@ -49,11 +55,12 @@ type SwaggerFileConfig struct {
 
 	GQLObjectsPrefix string `mapstructure:"gql_objects_prefix"`
 
-	Tags    map[string]*TagConfig     `mapstructure:"tags"`
-	Objects []map[string]ObjectConfig `mapstructure:"objects"`
+	Tags         map[string]*TagConfig     `mapstructure:"tags"`
+	Objects      []map[string]ObjectConfig `mapstructure:"objects"`
+	ParamsConfig []ParamConfig             `mapstructure:"params_config"`
 }
 
-func (pc *SwaggerFileConfig) ObjectConfig(objName string) (ObjectConfig, error) {
+func (pc *SwaggerFileConfig) objectConfig(objName string) (ObjectConfig, error) {
 	if pc == nil {
 		return ObjectConfig{}, nil
 	}
@@ -70,6 +77,32 @@ func (pc *SwaggerFileConfig) ObjectConfig(objName string) (ObjectConfig, error) 
 	}
 
 	return ObjectConfig{}, nil
+}
+
+func (pc *SwaggerFileConfig) FieldConfig(objName string, fieldName string) (FieldConfig, error) {
+	cfg, err := pc.objectConfig(objName)
+
+	if err != nil {
+		return FieldConfig{}, errors.Wrap(err, "failed to resolve property config")
+	}
+
+	if cfg.Fields != nil {
+		paramGqlName := names.FilterNotSupportedFieldNameCharacters(fieldName)
+
+		paramCfg, ok := cfg.Fields[paramGqlName]
+
+		if ok == true {
+			return paramCfg, nil
+		}
+	}
+
+	for _, paramConfig := range pc.ParamsConfig {
+		if paramConfig.ParamName == fieldName {
+			return FieldConfig{ContextKey: paramConfig.ContextKey}, nil
+		}
+	}
+
+	return FieldConfig{}, nil
 }
 
 func (pc *SwaggerFileConfig) GetName() string {

@@ -21,17 +21,19 @@ func (p *Plugin) methodParametersObjectResolverFuncName(file *parsedFile, method
 func (p *Plugin) methodParametersInputObjectResolver(file *parsedFile, tag string, method parser.Method) (*graphql.InputObjectResolver, error) {
 	var fields []graphql.InputObjectResolverField
 	gqlName := p.methodParamsInputObjectGQLName(file, method)
-	cfg, err := file.Config.ObjectConfig(gqlName)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to resolve property config")
-	}
+
 	for _, param := range method.Parameters {
 		// goTyp, err := p.goTypeByParserType(file, param.Type, true)
 		// if err != nil {
 		// 	return nil, errors.Wrap(err, "failed to resolve parameter go type")
 		// }
 		paramGqlName := names.FilterNotSupportedFieldNameCharacters(param.Name)
-		paramCfg, _ := cfg.Fields[paramGqlName]
+		paramCfg, err := file.Config.FieldConfig(gqlName, param.Name)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to resolve property config")
+		}
+
 		valueResolver, withErr, fromArgs, err := p.TypeValueResolver(file, param.Type, !param.Required, paramCfg.ContextKey)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get parameter value resolver")
@@ -76,21 +78,16 @@ func (p *Plugin) fileInputMessagesResolvers(file *parsedFile) ([]graphql.InputOb
 				return nil
 			}
 			gqlObjName := p.inputObjectGQLName(file, t)
-			objCfg, err := file.Config.ObjectConfig(gqlObjName)
-			if err != nil {
-				return errors.Wrap(err, "failed to resolve object config")
-			}
 			handledObjects[t] = struct{}{}
 			for _, property := range t.Properties {
 				gqlName := names.FilterNotSupportedFieldNameCharacters(property.Name)
-				paramCfg := FieldConfig{}
-				for fieldCfgName, cfg := range objCfg.Fields {
-					if fieldCfgName == gqlName {
-						paramCfg = cfg
-						break
-					}
+
+				paramCfg, err := file.Config.FieldConfig(gqlObjName, property.Name)
+				if err != nil {
+					return errors.Wrapf(err, "failed to resolve property %s config", property.Name)
 				}
-				err := handleType(property.Type)
+
+				err = handleType(property.Type)
 				if err != nil {
 					return errors.Wrapf(err, "failed to resolve property %s objects resolvers", property.Name)
 				}
