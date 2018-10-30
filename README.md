@@ -127,7 +127,8 @@ proto2gql:
           - google/protobuf/timestamp.proto:  "github.com/gogo/protobuf/protobuf/google/protobuf/timestamp.proto"
         services:                     # services settings
           "serviceName":              # service name
-            alias: "someAlias"        # service name alias
+            queries_service_name: "someAlias"   # queries service name alias
+            mutations_service_name: "someAliasMutations"   # mutations service name alias
             methods:
               "methodName":           # method name
                 alias: "methodAlias"
@@ -180,7 +181,8 @@ swagger2gql:
         tags:                                 # tags settings
           "some-swagger-tag":                 # tag name
             client_go_package: "github.com/myproject/service1/client/some_swagger_tag/client"   # go client package
-            service_name: "SomeSwaggerTag"    # tag service name
+            queries_service_name: "SomeSwaggerTag"               # queries service name alias
+            mutations_service_name: "SomeSwaggerTagMutations"    # mutations service name alias
             methods:                          # tag method settings
               "/somes":                       # request path
                 get:                          # request method (get/post/put/options...)
@@ -258,3 +260,16 @@ func Plugin() generator.Plugin {
 }
 func main(){}
 ```
+
+## UPGRADE FROM 1.x to 2.0
+
+### Swagger plugin
+
+`service_name` config field is removed.
+Use `queries_service_name` & `mutations_service_name` instead.
+
+### Proto plugin
+ 
+`alias` config field for services is removed.
+
+Use `queries_service_name` & `mutations_service_name` instead.

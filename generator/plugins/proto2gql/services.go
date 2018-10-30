@@ -196,14 +196,14 @@ func (g Proto2GraphQL) serviceMutationsMethods(cfg ServiceConfig, file *parsedFi
 	return res, nil
 }
 func (g Proto2GraphQL) serviceQueryName(sc ServiceConfig, service *parser.Service) string {
-	if sc.Alias != "" {
-		return sc.Alias
+	if sc.QueriesServiceName != "" {
+		return sc.QueriesServiceName
 	}
 	return service.Name
 }
 func (g Proto2GraphQL) serviceMutationName(sc ServiceConfig, service *parser.Service) string {
-	if sc.Alias != "" {
-		return sc.Alias + "Mutations"
+	if sc.MutationsServiceName != "" {
+		return sc.MutationsServiceName
 	}
 	return service.Name + "Mutations"
 }

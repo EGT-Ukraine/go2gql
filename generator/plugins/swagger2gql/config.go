@@ -20,9 +20,10 @@ type MethodConfig struct {
 	RequestType string `mapstructure:"request_type"` // QUERY | MUTATION
 }
 type TagConfig struct {
-	ClientGoPackage string                             `mapstructure:"client_go_package"`
-	ServiceName     string                             `mapstructure:"service_name"`
-	Methods         map[string]map[string]MethodConfig `mapstructure:"methods"`
+	ClientGoPackage      string                             `mapstructure:"client_go_package"`
+	QueriesServiceName   string                             `mapstructure:"queries_service_name"`
+	MutationsServiceName string                             `mapstructure:"mutations_service_name"`
+	Methods              map[string]map[string]MethodConfig `mapstructure:"methods"`
 }
 type Config struct {
 	Files      []*SwaggerFileConfig      `mapstructure:"files"`
