@@ -62,8 +62,17 @@ func (g *schemaGenerator) resolveObjectFields(nodeCfg SchemaNodeConfig, object *
 					continue
 				}
 
-				meths := make([]string, len(service.Methods))
-				for i, meth := range service.Methods {
+				var serviceMethods []Method
+
+				if object.QueryObject == true {
+					serviceMethods = service.QueryMethods
+				} else {
+					serviceMethods = service.MutationMethods
+				}
+
+				meths := make([]string, len(serviceMethods))
+
+				for i, meth := range serviceMethods {
 					meths[i] = meth.Name
 				}
 				fields := g.filterMethods(meths, nodeCfg.FilterMethods, nodeCfg.ExcludeMethods)
@@ -210,8 +219,8 @@ func (g schemaGenerator) bodyTemplateFuncs() map[string]interface{} {
 		"goType":       g.goTypeStr,
 		"goTypeForNew": g.goTypeForNew,
 
-		"serviceConstructor": func(service SchemaService, ctx SchemaBodyContext) string {
-			return ctx.Importer.Prefix(service.Pkg) + "Get" + service.Name + "ServiceMethods"
+		"serviceConstructor": func(filedType string, service SchemaService, ctx SchemaBodyContext) string {
+			return ctx.Importer.Prefix(service.Pkg) + "Get" + service.Name + "Service" + filedType + "Methods"
 		},
 	}
 }

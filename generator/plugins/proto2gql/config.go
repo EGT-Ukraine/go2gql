@@ -23,9 +23,8 @@ type MethodConfig struct {
 	RequestType string `mapstructure:"request_type"` // QUERY | MUTATION
 }
 type ServiceConfig struct {
-	QueriesServiceName   string                  `mapstructure:"queries_service_name"`
-	MutationsServiceName string                  `mapstructure:"mutations_service_name"`
-	Methods              map[string]MethodConfig `mapstructure:"methods"`
+	ServiceName string                  `mapstructure:"service_name"`
+	Methods     map[string]MethodConfig `mapstructure:"methods"`
 }
 type Config struct {
 	Files []*ProtoFileConfig `mapstructure:"files"`

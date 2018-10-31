@@ -90,4 +90,3 @@ func init() {
 // Maps input objects
 // Maps input objects resolvers
 // Maps output objects
-// Services

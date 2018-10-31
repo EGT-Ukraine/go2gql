@@ -18,18 +18,22 @@ func GetSomeSchemaSchema(cls SomeSchemaSchemaClients, ih *interceptors.Intercept
 	if cls.ServiceExampleClient == nil {
 		return graphql.Schema{}, errors.Errorf("Service client ServiceExample can't be nil nil")
 	}
-	var ServiceExampleFields = test.GetServiceExampleServiceMethods(cls.ServiceExampleClient, ih, tr)
-	var _ = ServiceExampleFields
+	var ServiceExampleQueryFields = test.GetServiceExampleServiceQueryMethods(cls.ServiceExampleClient, ih, tr)
+	var _ = ServiceExampleQueryFields
+	var ServiceExampleMutationFields = test.GetServiceExampleServiceMutationMethods(cls.ServiceExampleClient, ih, tr)
+	var _ = ServiceExampleMutationFields
 	var Query = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"getQueryMethod": ServiceExampleFields["getQueryMethod"],
+			"getQueryMethod": ServiceExampleQueryFields["getQueryMethod"],
 		},
 	})
 	var ServiceExampleMutations = graphql.NewObject(graphql.ObjectConfig{
 		Name: "ServiceExampleMutations",
 		Fields: graphql.Fields{
-			"getQueryMethod": ServiceExampleFields["getQueryMethod"],
+			"mutationMethod": ServiceExampleMutationFields["mutationMethod"],
+			"EmptyMsgs":      ServiceExampleMutationFields["EmptyMsgs"],
+			"MsgsWithEpmty":  ServiceExampleMutationFields["MsgsWithEpmty"],
 		},
 	})
 	var NestedExampleMutation = graphql.NewObject(graphql.ObjectConfig{

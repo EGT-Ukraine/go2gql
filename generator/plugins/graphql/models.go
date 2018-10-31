@@ -124,9 +124,10 @@ type MapOutputObject struct {
 	ValueObjectType TypeResolver
 }
 type Service struct {
-	Name          string
-	CallInterface GoType
-	Methods       []Method
+	Name            string
+	CallInterface   GoType
+	QueryMethods    []Method
+	MutationMethods []Method
 }
 type Method struct {
 	Name                   string
@@ -161,6 +162,15 @@ type BodyContext struct {
 	Importer      *importer.Importer
 	TracerEnabled bool
 }
+
+type ServiceContext struct {
+	Service        Service
+	TracerEnabled  bool
+	ServiceMethods []Method
+	FieldType      string
+	BodyContext    BodyContext
+}
+
 type SchemaBodyContext struct {
 	File           SchemaConfig
 	Importer       *importer.Importer
@@ -191,4 +201,12 @@ type gqlObject struct {
 	Name          string
 	QuotedComment string
 	Fields        []fieldConfig
+}
+
+func (gqlObject *gqlObject) TypeName() string {
+	if gqlObject.QueryObject == true {
+		return "Query"
+	}
+
+	return "Mutation"
 }

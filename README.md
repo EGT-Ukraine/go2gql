@@ -127,8 +127,7 @@ proto2gql:
           - google/protobuf/timestamp.proto:  "github.com/gogo/protobuf/protobuf/google/protobuf/timestamp.proto"
         services:                     # services settings
           "serviceName":              # service name
-            queries_service_name: "someAlias"   # queries service name alias
-            mutations_service_name: "someAliasMutations"   # mutations service name alias
+            service_name: "someAlias" # service name alias
             methods:
               "methodName":           # method name
                 alias: "methodAlias"
@@ -181,8 +180,7 @@ swagger2gql:
         tags:                                 # tags settings
           "some-swagger-tag":                 # tag name
             client_go_package: "github.com/myproject/service1/client/some_swagger_tag/client"   # go client package
-            queries_service_name: "SomeSwaggerTag"               # queries service name alias
-            mutations_service_name: "SomeSwaggerTagMutations"    # mutations service name alias
+            service_name: "SomeSwaggerTag"    # service name alias
             methods:                          # tag method settings
               "/somes":                       # request path
                 get:                          # request method (get/post/put/options...)
@@ -239,11 +237,11 @@ func (p plugin) Generate() error {
 	defer file.Close()
 	for _, typesFile := range p.gqlPlugin.Types() {
 		for _, service := range typesFile.Services {
-			if len(service.Methods) == 0 {
+			if len(service.QueryMethods) == 0 {
 				continue
 			}
 			file.WriteString(service.Name + ":\n")
-			for _, method := range service.Methods {
+			for _, method := range service.QueryMethods {
 				file.WriteString("   " + method.Name + ":\n")
 			}
 		}
@@ -273,3 +271,15 @@ Use `queries_service_name` & `mutations_service_name` instead.
 `alias` config field for services is removed.
 
 Use `queries_service_name` & `mutations_service_name` instead.
+
+## UPGRADE FROM 2.x to 3.0
+
+### Swagger plugin
+
+`queries_service_name` & `mutations_service_name` config fields is removed.
+Use `service_name` instead.
+
+### Proto plugin
+ 
+`queries_service_name` & `mutations_service_name` config fields is removed.
+Use `service_name` instead.

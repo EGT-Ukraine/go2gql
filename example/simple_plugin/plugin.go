@@ -33,11 +33,11 @@ func (p plugin) Generate() error {
 	defer file.Close()
 	for _, typesFile := range p.gqlPlugin.Types() {
 		for _, service := range typesFile.Services {
-			if len(service.Methods) == 0 {
+			if len(service.QueryMethods) == 0 {
 				continue
 			}
 			file.WriteString(service.Name + ":\n")
-			for _, method := range service.Methods {
+			for _, method := range service.QueryMethods {
 				file.WriteString("   " + method.Name + ":\n")
 			}
 		}

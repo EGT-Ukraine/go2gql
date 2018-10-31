@@ -1,0 +1,84 @@
+func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallInterface}}, ih *{{interceptorsPkg}}.InterceptorHandler {{ if $.TracerEnabled }} ,tr {{tracerPkg}}.Tracer {{end}}) {{gqlPkg}}.Fields {
+    {{ if .ServiceMethods -}}
+        return {{gqlPkg}}.Fields{
+            {{range $method := .ServiceMethods -}}
+                "{{$method.Name}}": &{{gqlPkg}}.Field{
+                    Name: "{{$method.Name}}",
+                    Type: {{call $method.GraphQLOutputType $.BodyContext}},
+                    {{ if $method.Arguments -}}
+                        Args: {{gqlPkg}}.FieldConfigArgument{
+                            {{ range $arg := $method.Arguments -}}
+                                "{{$arg.Name}}": &{{gqlPkg}}.ArgumentConfig{Type: {{call $arg.Type $.BodyContext}}},
+                            {{ end -}}
+                        },
+                    {{ end -}}
+                    Resolve: func(p {{gqlPkg}}.ResolveParams) (_ interface{}, rerr error) {
+                        ctx := p.Context
+                        _ = ctx
+                        {{ if $.TracerEnabled -}}
+                            span := tr.CreateChildSpanFromContext(p.Context, "{{$.Service.Name}}.{{$method.Name}} Resolver")
+                            defer span.Finish()
+                            p.Context = {{opentracingPkg}}.ContextWithSpan(ctx, span)
+                            defer func(){
+                                if rerr != nil {
+                                    span.SetTag("error", true).LogFields({{logPkg}}.Error(rerr))
+                                }
+                            }()
+                        {{end -}}
+                        if ih == nil {
+                            {{ if $method.RequestResolver -}}
+                                req, err := {{call $method.RequestResolver "p.Args" $.BodyContext}}{{- if not $method.RequestResolverWithErr -}}, error(nil){{end}}
+                                if err != nil {
+                                    return nil, err
+                                }
+                                return {{call $method.ClientMethodCaller "c" "req" $.BodyContext}}
+                            {{ else -}}
+                                req := new({{goTypeForNew $method.RequestType}})
+                                return {{call $method.ClientMethodCaller "c" "req" $.BodyContext}}
+                            {{ end -}}
+                        }
+                        ictx := &{{interceptorsPkg}}.Context{
+                            Service: "{{$.Service.Name}}",
+                            Method: "{{$method.Name}}",
+                            Params: p,
+                        }
+                        req, err := ih.ResolveArgs(ictx, func(ictx *{{interceptorsPkg}}.Context, next {{interceptorsPkg}}.ResolveArgsInvoker) (result interface{}, err error) {
+                            {{ if $method.RequestResolver -}}
+                                return {{call $method.RequestResolver "p.Args" $.BodyContext}}{{- if not $method.RequestResolverWithErr -}}, error(nil){{end}}
+                            {{ else -}}
+                                return new({{goTypeForNew $method.RequestType}}), nil
+                            {{ end -}}
+                        })
+                        if err != nil {
+                            return nil, {{errorsPkg}}.Wrap(err, "failed to resolve args")
+                        }
+                        return ih.Call(ictx, req, func(ictx *{{interceptorsPkg}}.Context, req interface{}, next {{interceptorsPkg}}.CallMethodInvoker) (result interface{}, err error) {
+                            r, ok := req.({{goType $method.RequestType}})
+                            if !ok {
+                                return nil, {{errorsPkg}}.New({{fmtPkg}}.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: {{goType $method.RequestType}}", req))
+                            }
+                            {{if $method.PayloadErrorChecker -}}
+                                res, err := {{call $method.ClientMethodCaller "c" "r" $.BodyContext}}
+                                if err != nil {
+                                    return nil, err
+                                }
+                                if {{call $method.PayloadErrorChecker "res"}} {
+                                    {{ if $method.PayloadErrorAccessor -}}
+                                        ictx.PayloadError = {{call $method.PayloadErrorAccessor "res"}}
+                                    {{ else -}}
+                                        ictx.PayloadError = res
+                                    {{ end -}}
+                                }
+                                return res, err
+                            {{else -}}
+                                return {{call $method.ClientMethodCaller "c" "r" $.BodyContext}}
+                            {{end -}}
+                        })
+                    },
+                },
+            {{ end -}}
+        }
+    {{else -}}
+        return nil
+    {{end -}}
+}
