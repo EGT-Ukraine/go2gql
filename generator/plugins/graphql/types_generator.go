@@ -37,6 +37,7 @@ func (g typesGenerator) importFunc(importPath string) func() string {
 		return g.imports.New(importPath)
 	}
 }
+
 func (g typesGenerator) bodyTemplateContext() interface{} {
 	return BodyContext{
 		File:          g.File,
@@ -45,6 +46,7 @@ func (g typesGenerator) bodyTemplateContext() interface{} {
 	}
 
 }
+
 func (g typesGenerator) goTypeStr(typ GoType) string {
 	return typ.String(g.imports)
 }
@@ -89,14 +91,16 @@ func (g typesGenerator) headTemplateContext() map[string]interface{} {
 	}
 
 }
+
 func (g typesGenerator) headTemplateFuncs() map[string]interface{} {
 	return nil
 }
+
 func (g typesGenerator) generateBody() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	tmpl, err := templatesTypes_bodyGohtmlBytes()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get head template")
+		return nil, errors.Wrap(err, "failed to get body template")
 	}
 	bodyTpl, err := template.New("body").Funcs(g.bodyTemplateFuncs()).Parse(string(tmpl))
 	if err != nil {
@@ -106,6 +110,49 @@ func (g typesGenerator) generateBody() ([]byte, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute template")
 	}
+
+	return buf.Bytes(), nil
+}
+
+func (g typesGenerator) generateServicesBody() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	tmpl, err := templatesTypes_serviceGohtmlBytes()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get services body template")
+	}
+	servicesTpl, err := template.New("service").Funcs(g.bodyTemplateFuncs()).Parse(string(tmpl))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse template")
+	}
+
+	for _, service := range g.File.Services {
+		queryServiceContext := ServiceContext{
+			Service:        service,
+			ServiceMethods: service.QueryMethods,
+			FieldType:      "Query",
+			TracerEnabled:  g.tracerEnabled,
+			BodyContext:    g.bodyTemplateContext().(BodyContext),
+		}
+
+		err = servicesTpl.Execute(buf, queryServiceContext)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to execute template")
+		}
+
+		mutationServiceContext := ServiceContext{
+			Service:        service,
+			ServiceMethods: service.MutationMethods,
+			FieldType:      "Mutation",
+			TracerEnabled:  g.tracerEnabled,
+			BodyContext:    g.bodyTemplateContext().(BodyContext),
+		}
+
+		err = servicesTpl.Execute(buf, mutationServiceContext)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to execute template")
+		}
+	}
+
 	return buf.Bytes(), nil
 }
 
@@ -123,12 +170,18 @@ func (g typesGenerator) generateHead() ([]byte, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute template")
 	}
+
 	return buf.Bytes(), nil
 }
+
 func (g typesGenerator) generate(out io.Writer) error {
 	body, err := g.generateBody()
 	if err != nil {
 		return errors.Wrap(err, "failed to generate body")
+	}
+	servicesBody, err := g.generateServicesBody()
+	if err != nil {
+		return errors.Wrap(err, "failed to generate services body")
 	}
 	head, err := g.generateHead()
 	if err != nil {
@@ -137,6 +190,7 @@ func (g typesGenerator) generate(out io.Writer) error {
 	r := bytes.Join([][]byte{
 		head,
 		body,
+		servicesBody,
 	}, nil)
 
 	res, err := imports.Process("file", r, &imports.Options{
@@ -152,5 +206,6 @@ func (g typesGenerator) generate(out io.Writer) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to write  output")
 	}
+
 	return nil
 }

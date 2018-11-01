@@ -162,36 +162,21 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get tag queries methods")
 		}
-		name := pascalize(tag.Name)
-		mutationsName := name + "Mutations"
 
-		if tagCfg.QueriesServiceName != "" {
-			name = tagCfg.QueriesServiceName
-		}
-		res = append(res, graphql.Service{
-			Name:    name,
-			Methods: queriesMethods,
-			CallInterface: graphql.GoType{
-				Kind: reflect.Ptr,
-				ElemType: &graphql.GoType{
-					Kind: reflect.Interface,
-					Pkg:  tagCfg.ClientGoPackage,
-					Name: "Client",
-				},
-			},
-		})
 		mutationsMethods, err := p.tagMutationsMethods(*tagCfg, file, tag)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get tag mutations methods")
 		}
 
-		if tagCfg.MutationsServiceName != "" {
-			mutationsName = tagCfg.MutationsServiceName
-		}
+		name := pascalize(tag.Name)
 
+		if tagCfg.ServiceName != "" {
+			name = tagCfg.ServiceName
+		}
 		res = append(res, graphql.Service{
-			Name:    mutationsName,
-			Methods: mutationsMethods,
+			Name:            name,
+			QueryMethods:    queriesMethods,
+			MutationMethods: mutationsMethods,
 			CallInterface: graphql.GoType{
 				Kind: reflect.Ptr,
 				ElemType: &graphql.GoType{

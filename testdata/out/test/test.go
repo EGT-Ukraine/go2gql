@@ -1490,9 +1490,7 @@ func init() {
 		},
 	})
 }
-
-// Services
-func GetServiceExampleServiceMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr tracer.Tracer) graphql.Fields {
+func GetServiceExampleServiceQueryMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr tracer.Tracer) graphql.Fields {
 	return graphql.Fields{
 		"getQueryMethod": &graphql.Field{
 			Name: "getQueryMethod",
@@ -1562,7 +1560,7 @@ func GetServiceExampleServiceMethods(c testdata_1.ServiceExampleClient, ih *inte
 		},
 	}
 }
-func GetServiceExampleMutationsServiceMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr tracer.Tracer) graphql.Fields {
+func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr tracer.Tracer) graphql.Fields {
 	return graphql.Fields{
 		"mutationMethod": &graphql.Field{
 			Name: "mutationMethod",
@@ -1573,7 +1571,7 @@ func GetServiceExampleMutationsServiceMethods(c testdata_1.ServiceExampleClient,
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				span := tr.CreateChildSpanFromContext(p.Context, "ServiceExampleMutations.mutationMethod Resolver")
+				span := tr.CreateChildSpanFromContext(p.Context, "ServiceExample.mutationMethod Resolver")
 				defer span.Finish()
 				p.Context = opentracing_go.ContextWithSpan(ctx, span)
 				defer func() {
@@ -1589,7 +1587,7 @@ func GetServiceExampleMutationsServiceMethods(c testdata_1.ServiceExampleClient,
 					return c.MutationMethod(ctx, req)
 				}
 				ictx := &interceptors.Context{
-					Service: "ServiceExampleMutations",
+					Service: "ServiceExample",
 					Method:  "mutationMethod",
 					Params:  p,
 				}
@@ -1614,7 +1612,7 @@ func GetServiceExampleMutationsServiceMethods(c testdata_1.ServiceExampleClient,
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				span := tr.CreateChildSpanFromContext(p.Context, "ServiceExampleMutations.EmptyMsgs Resolver")
+				span := tr.CreateChildSpanFromContext(p.Context, "ServiceExample.EmptyMsgs Resolver")
 				defer span.Finish()
 				p.Context = opentracing_go.ContextWithSpan(ctx, span)
 				defer func() {
@@ -1630,7 +1628,7 @@ func GetServiceExampleMutationsServiceMethods(c testdata_1.ServiceExampleClient,
 					return c.EmptyMsgs(ctx, req)
 				}
 				ictx := &interceptors.Context{
-					Service: "ServiceExampleMutations",
+					Service: "ServiceExample",
 					Method:  "EmptyMsgs",
 					Params:  p,
 				}
@@ -1658,7 +1656,7 @@ func GetServiceExampleMutationsServiceMethods(c testdata_1.ServiceExampleClient,
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				span := tr.CreateChildSpanFromContext(p.Context, "ServiceExampleMutations.MsgsWithEpmty Resolver")
+				span := tr.CreateChildSpanFromContext(p.Context, "ServiceExample.MsgsWithEpmty Resolver")
 				defer span.Finish()
 				p.Context = opentracing_go.ContextWithSpan(ctx, span)
 				defer func() {
@@ -1674,7 +1672,7 @@ func GetServiceExampleMutationsServiceMethods(c testdata_1.ServiceExampleClient,
 					return c.MsgsWithEpmty(ctx, req)
 				}
 				ictx := &interceptors.Context{
-					Service: "ServiceExampleMutations",
+					Service: "ServiceExample",
 					Method:  "MsgsWithEpmty",
 					Params:  p,
 				}

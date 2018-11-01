@@ -10,8 +10,10 @@ func Get{{$.SchemaName}}Schema(cls {{$.SchemaName}}SchemaClients, ih *{{intercep
 		}
 	{{ end -}}
 	{{ range $service := $.Services -}}
-		var {{$service.Name}}Fields = {{serviceConstructor $service $}}(cls.{{$service.Name}}Client, ih{{- if $.TracerEnabled -}}, tr{{- end -}})
-		var _ = {{$service.Name}}Fields
+		var {{$service.Name}}QueryFields = {{serviceConstructor "Query" $service $}}(cls.{{$service.Name}}Client, ih{{- if $.TracerEnabled -}}, tr{{- end -}})
+		var _ = {{$service.Name}}QueryFields
+		var {{$service.Name}}MutationFields = {{serviceConstructor "Mutation" $service $}}(cls.{{$service.Name}}Client, ih{{- if $.TracerEnabled -}}, tr{{- end -}})
+		var _ = {{$service.Name}}MutationFields
 	{{ end -}}
 	{{ range $object := $.Objects -}}
 		var {{$object.Name}} = {{gqlPkg}}.NewObject({{gqlPkg}}.ObjectConfig{
@@ -23,7 +25,7 @@ func Get{{$.SchemaName}}Schema(cls {{$.SchemaName}}SchemaClients, ih *{{intercep
 				{{ if len $object.Fields -}}
 					{{ range $fld := $object.Fields -}}
 						{{ if $fld.Service -}}
-                            "{{$fld.Name}}": {{$fld.Service.Name}}Fields["{{$fld.Name}}"],
+							"{{$fld.Name}}": {{$fld.Service.Name}}{{$object.TypeName}}Fields["{{$fld.Name}}"],
 						{{ else -}}
 							"{{$fld.Name}}": &{{gqlPkg}}.Field{
 								Name: "{{$fld.Name}}",

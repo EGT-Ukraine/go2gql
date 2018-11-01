@@ -195,17 +195,11 @@ func (g Proto2GraphQL) serviceMutationsMethods(cfg ServiceConfig, file *parsedFi
 	}
 	return res, nil
 }
-func (g Proto2GraphQL) serviceQueryName(sc ServiceConfig, service *parser.Service) string {
-	if sc.QueriesServiceName != "" {
-		return sc.QueriesServiceName
+func (g Proto2GraphQL) serviceName(sc ServiceConfig, service *parser.Service) string {
+	if sc.ServiceName != "" {
+		return sc.ServiceName
 	}
 	return service.Name
-}
-func (g Proto2GraphQL) serviceMutationName(sc ServiceConfig, service *parser.Service) string {
-	if sc.MutationsServiceName != "" {
-		return sc.MutationsServiceName
-	}
-	return service.Name + "Mutations"
 }
 func (g Proto2GraphQL) fileServices(file *parsedFile) ([]graphql.Service, error) {
 	var res []graphql.Service
@@ -215,27 +209,20 @@ func (g Proto2GraphQL) fileServices(file *parsedFile) ([]graphql.Service, error)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve service methods")
 		}
-		res = append(res, graphql.Service{
-			Name: g.serviceQueryName(sc, service),
-			CallInterface: graphql.GoType{
-				Kind: reflect.Interface,
-				Pkg:  file.GRPCSourcesPkg,
-				Name: service.Name + "Client",
-			},
-			Methods: queryMethods,
-		})
 		mutationsMethods, err := g.serviceMutationsMethods(sc, file, service)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve service methods")
 		}
+
 		res = append(res, graphql.Service{
-			Name: g.serviceMutationName(sc, service),
+			Name: g.serviceName(sc, service),
 			CallInterface: graphql.GoType{
 				Kind: reflect.Interface,
 				Pkg:  file.GRPCSourcesPkg,
 				Name: service.Name + "Client",
 			},
-			Methods: mutationsMethods,
+			QueryMethods:    queryMethods,
+			MutationMethods: mutationsMethods,
 		})
 	}
 	return res, nil
