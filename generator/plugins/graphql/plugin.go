@@ -202,29 +202,21 @@ func (p *Plugin) SchemasObjects() ([]SchemaObjects, error) {
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve schema %s output go package", schema.Name)
 		}
-		g := schemaGenerator{
-			types:         p.files,
-			tracerEnabled: p.generateCfg.GenerateTraces,
-			schemaCfg:     schema,
-			goPkg:         pkg,
-			imports: &importer.Importer{
-				CurrentPackage: pkg,
-			},
-		}
+		parser := NewSchemaParser(schema, p.files)
 
-		schemaContext, err := g.bodyTemplateContext()
+		schemaContext, err := parser.SchemaObjects()
 
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get schema %s template context", schema.Name)
 		}
 
 		schemaObjects := SchemaObjects{
-			SchemaName:     schemaContext.(SchemaBodyContext).SchemaName,
+			SchemaName:     schema.Name,
 			GoPkg:          pkg,
-			Services:       schemaContext.(SchemaBodyContext).Services,
-			QueryObject:    schemaContext.(SchemaBodyContext).QueryObject,
-			MutationObject: schemaContext.(SchemaBodyContext).MutationObject,
-			Objects:        schemaContext.(SchemaBodyContext).Objects,
+			Services:       schemaContext.Services,
+			QueryObject:    schemaContext.QueryObject,
+			MutationObject: schemaContext.MutationObject,
+			Objects:        schemaContext.Objects,
 		}
 
 		schemasObjects = append(schemasObjects, schemaObjects)
