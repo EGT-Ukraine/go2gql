@@ -23,6 +23,15 @@ type Plugin struct {
 	generateCfg   *generator.GenerateConfig
 }
 
+type SchemaObjects struct {
+	SchemaName     string
+	GoPkg          string
+	Services       []SchemaService
+	QueryObject    string
+	MutationObject string
+	Objects        []*gqlObject
+}
+
 func (p *Plugin) Prepare() error {
 	return nil
 }
@@ -182,6 +191,38 @@ func (p *Plugin) generateTypes() error {
 		}
 	}
 	return nil
+}
+
+// SchemasObjects returns info about schemas objects. Useful in external plugins.
+func (p *Plugin) SchemasObjects() ([]SchemaObjects, error) {
+	var schemasObjects []SchemaObjects
+
+	for _, schema := range p.schemaConfigs {
+		pkg, err := GoPackageByPath(filepath.Dir(schema.OutputPath), p.generateCfg.VendorPath)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to resolve schema %s output go package", schema.Name)
+		}
+		parser := NewSchemaParser(schema, p.files)
+
+		schemaContext, err := parser.SchemaObjects()
+
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get schema %s template context", schema.Name)
+		}
+
+		schemaObjects := SchemaObjects{
+			SchemaName:     schema.Name,
+			GoPkg:          pkg,
+			Services:       schemaContext.Services,
+			QueryObject:    schemaContext.QueryObject,
+			MutationObject: schemaContext.MutationObject,
+			Objects:        schemaContext.Objects,
+		}
+
+		schemasObjects = append(schemasObjects, schemaObjects)
+	}
+
+	return schemasObjects, nil
 }
 
 func (p *Plugin) Generate() error {
