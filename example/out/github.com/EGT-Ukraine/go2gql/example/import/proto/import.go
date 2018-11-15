@@ -77,8 +77,7 @@ func init() {
 // Maps input objects
 // Maps input objects resolvers
 // Maps output objects
-// Services
-func GetServiceImportServiceMethods(c proto.ServiceImportClient, ih *interceptors.InterceptorHandler) graphql.Fields {
+func GetServiceImportServiceQueryMethods(c proto.ServiceImportClient, ih *interceptors.InterceptorHandler) graphql.Fields {
 	return graphql.Fields{
 		"getQueryImportMethod": &graphql.Field{
 			Name: "getQueryImportMethod",
@@ -118,7 +117,7 @@ func GetServiceImportServiceMethods(c proto.ServiceImportClient, ih *interceptor
 		},
 	}
 }
-func GetServiceImportMutationsServiceMethods(c proto.ServiceImportClient, ih *interceptors.InterceptorHandler) graphql.Fields {
+func GetServiceImportServiceMutationMethods(c proto.ServiceImportClient, ih *interceptors.InterceptorHandler) graphql.Fields {
 	return graphql.Fields{
 		"mutationImportMethod": &graphql.Field{
 			Name: "mutationImportMethod",
@@ -137,7 +136,7 @@ func GetServiceImportMutationsServiceMethods(c proto.ServiceImportClient, ih *in
 					return c.MutationImportMethod(ctx, req)
 				}
 				ictx := &interceptors.Context{
-					Service: "ServiceImportMutations",
+					Service: "ServiceImport",
 					Method:  "mutationImportMethod",
 					Params:  p,
 				}

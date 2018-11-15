@@ -3,10 +3,8 @@ package common
 
 import (
 	context "context"
-	debug "runtime/debug"
 
 	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
-	tracer "github.com/EGT-Ukraine/go2gql/api/tracer"
 	common "github.com/EGT-Ukraine/go2gql/testdata/common"
 	errors "github.com/pkg/errors"
 	graphql "github.com/saturn4er/graphql"
@@ -37,17 +35,7 @@ func init() {
 }
 
 // Input objects resolvers
-func ResolveCommonMessageInput(tr tracer.Tracer, ctx context.Context, i interface{}) (_ *common.CommonMessage, rerr error) {
-	span := tr.CreateChildSpanFromContext(ctx, "ResolveCommonMessageInput")
-	defer span.Finish()
-	defer func() {
-		if perr := recover(); perr != nil {
-			span.SetTag("error", "true").SetTag("error_message", perr).SetTag("error_stack", string(debug.Stack()))
-		}
-		if rerr != nil {
-			span.SetTag("error", "true").SetTag("error_message", rerr.Error())
-		}
-	}()
+func ResolveCommonMessageInput(ctx context.Context, i interface{}) (_ *common.CommonMessage, rerr error) {
 	if i == nil {
 		return nil, nil
 	}

@@ -34,19 +34,7 @@
 
 // Input objects resolvers
 {{ range $resolver := .File.InputObjectResolvers -}}
-func {{$resolver.FunctionName}}({{ if $.TracerEnabled }} tr {{tracerPkg}}.Tracer, {{end}}ctx {{ctxPkg}}.Context, i interface{}) (_ {{goType $resolver.OutputGoType}}, rerr error){
-	{{ if $.TracerEnabled -}}
-		span := tr.CreateChildSpanFromContext(ctx, "{{$resolver.FunctionName}}")
-		defer span.Finish()
-		defer func(){
-			if perr := recover(); perr != nil {
-				span.SetTag("error", "true").SetTag("error_message", perr).SetTag("error_stack", string({{debugPkg}}.Stack()))
-			}
-			if rerr != nil {
-				span.SetTag("error", "true").SetTag("error_message", rerr.Error())
-			}
-		}()
-	{{end -}}
+func {{$resolver.FunctionName}}(ctx {{ctxPkg}}.Context, i interface{}) (_ {{goType $resolver.OutputGoType}}, rerr error){
 	if i == nil {
 		return nil, nil
 	}
@@ -62,22 +50,26 @@ func {{$resolver.FunctionName}}({{ if $.TracerEnabled }} tr {{tracerPkg}}.Tracer
 				result.{{$field.OutputFieldName}} = make({{goType $field.GoType}}, len(in))
 				for i, val := range in {
 					{{ if $field.ResolverWithError }}
-						v, err := {{call $field.ValueResolver "val" $}}
-						if err != nil {
-							return nil, {{errorsPkg}}.Wrap(err, "failed to resolve input object field")
+						{
+							v, err := {{call $field.ValueResolver "val" $}}
+							if err != nil {
+								return nil, {{errorsPkg}}.Wrap(err, "failed to resolve `{{$resolver.FunctionName}}` input object field")
+							}
+							result.{{$field.OutputFieldName}}[i] = v
 						}
-						result.{{$field.OutputFieldName}}[i] = v
 					{{ else -}}
 						result.{{$field.OutputFieldName}}[i] = {{call $field.ValueResolver "val" $}}
 					{{ end -}}
 				}
 			{{ else -}}
 				{{ if $field.ResolverWithError -}}
-					v, err := {{call $field.ValueResolver (concat "args[\"" $field.GraphQLInputFieldName "\"]") $}}
-					if err != nil {
-						return nil, {{errorsPkg}}.Wrap(err, "failed to resolve input object field")
+					{
+						v, err := {{call $field.ValueResolver (concat "args[\"" $field.GraphQLInputFieldName "\"]") $}}
+						if err != nil {
+							return nil, {{errorsPkg}}.Wrap(err, "failed to resolve `{{$resolver.FunctionName}}` input object field")
+						}
+						result.{{$field.OutputFieldName}} = v
 					}
-					result.{{$field.OutputFieldName}} = v
 				{{ else -}}
 					result.{{$field.OutputFieldName}} = {{call $field.ValueResolver (concat "args[\"" $field.GraphQLInputFieldName "\"]") $}}
 				{{ end -}}
@@ -208,19 +200,7 @@ func {{$resolver.FunctionName}}({{ if $.TracerEnabled }} tr {{tracerPkg}}.Tracer
 {{ end -}}
 // Maps input objects resolvers
 {{ range $resolver := .File.MapInputObjectResolvers -}}
-	func {{$resolver.FunctionName}}({{ if $.TracerEnabled }} tr {{tracerPkg}}.Tracer, {{end}}ctx {{ctxPkg}}.Context, i interface{}) (_ map[{{goType $resolver.KeyGoType}}]{{goType $resolver.ValueGoType}}, rerr error){
-		{{ if $.TracerEnabled -}}
-			span := tr.CreateChildSpanFromContext(ctx, "{{$resolver.FunctionName}}")
-			defer span.Finish()
-			defer func(){
-				if perr := recover(); perr != nil {
-					span.SetTag("error", "true").SetTag("error_message", perr).SetTag("error_stack", string({{debugPkg}}.Stack()))
-				}
-				if rerr != nil {
-					span.SetTag("error", "true").SetTag("error_message", rerr.Error())
-				}
-			}()
-		{{end -}}
+	func {{$resolver.FunctionName}}(ctx {{ctxPkg}}.Context, i interface{}) (_ map[{{goType $resolver.KeyGoType}}]{{goType $resolver.ValueGoType}}, rerr error){
 		if i == nil {
 			return nil, nil
 		}

@@ -3,7 +3,6 @@ package test_schema
 
 import (
 	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
-	tracer "github.com/EGT-Ukraine/go2gql/api/tracer"
 	testdata "github.com/EGT-Ukraine/go2gql/testdata"
 	test "github.com/EGT-Ukraine/go2gql/testdata/out/test"
 	errors "github.com/pkg/errors"
@@ -14,13 +13,13 @@ type SomeSchemaSchemaClients struct {
 	ServiceExampleClient testdata.ServiceExampleClient
 }
 
-func GetSomeSchemaSchema(cls SomeSchemaSchemaClients, ih *interceptors.InterceptorHandler, tr tracer.Tracer) (graphql.Schema, error) {
+func GetSomeSchemaSchema(cls SomeSchemaSchemaClients, ih *interceptors.InterceptorHandler) (graphql.Schema, error) {
 	if cls.ServiceExampleClient == nil {
 		return graphql.Schema{}, errors.Errorf("Service client ServiceExample can't be nil nil")
 	}
-	var ServiceExampleQueryFields = test.GetServiceExampleServiceQueryMethods(cls.ServiceExampleClient, ih, tr)
+	var ServiceExampleQueryFields = test.GetServiceExampleServiceQueryMethods(cls.ServiceExampleClient, ih)
 	var _ = ServiceExampleQueryFields
-	var ServiceExampleMutationFields = test.GetServiceExampleServiceMutationMethods(cls.ServiceExampleClient, ih, tr)
+	var ServiceExampleMutationFields = test.GetServiceExampleServiceMutationMethods(cls.ServiceExampleClient, ih)
 	var _ = ServiceExampleMutationFields
 	var Query = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",

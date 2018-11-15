@@ -283,3 +283,18 @@ Use `service_name` instead.
  
 `queries_service_name` & `mutations_service_name` config fields is removed.
 Use `service_name` instead.
+
+## UPGRADE FROM 3.x to 4.0
+tracer.Tracer was removed in favour to opentracing.GlobalTracer()
+
+Schema initialization before:
+
+` 
+sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor, s.tracer)
+`
+
+now:
+
+` 
+sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor)
+`

@@ -24,4 +24,4 @@ graphql_schemas:
         - field: "import"
           type: "SERVICE"
           object_name: "ImportMutation"
-          service: "ServiceImportMutations"
+          service: "ServiceImport"

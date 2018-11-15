@@ -12,10 +12,8 @@ import (
 )
 
 type ExampleSchemaSchemaClients struct {
-	ServiceExampleClient          proto.ServiceExampleClient
-	ServiceImportClient           proto_1.ServiceImportClient
-	ServiceExampleMutationsClient proto.ServiceExampleClient
-	ServiceImportMutationsClient  proto_1.ServiceImportClient
+	ServiceExampleClient proto.ServiceExampleClient
+	ServiceImportClient  proto_1.ServiceImportClient
 }
 
 func GetExampleSchemaSchema(cls ExampleSchemaSchemaClients, ih *interceptors.InterceptorHandler) (graphql.Schema, error) {
@@ -25,32 +23,26 @@ func GetExampleSchemaSchema(cls ExampleSchemaSchemaClients, ih *interceptors.Int
 	if cls.ServiceImportClient == nil {
 		return graphql.Schema{}, errors.Errorf("Service client ServiceImport can't be nil nil")
 	}
-	if cls.ServiceExampleMutationsClient == nil {
-		return graphql.Schema{}, errors.Errorf("Service client ServiceExampleMutations can't be nil nil")
-	}
-	if cls.ServiceImportMutationsClient == nil {
-		return graphql.Schema{}, errors.Errorf("Service client ServiceImportMutations can't be nil nil")
-	}
-	var ServiceExampleFields = example.GetServiceExampleServiceMethods(cls.ServiceExampleClient, ih)
-	var _ = ServiceExampleFields
-	var ServiceImportFields = proto_2.GetServiceImportServiceMethods(cls.ServiceImportClient, ih)
-	var _ = ServiceImportFields
-	var ServiceExampleMutationsFields = example.GetServiceExampleMutationsServiceMethods(cls.ServiceExampleMutationsClient, ih)
-	var _ = ServiceExampleMutationsFields
-	var ServiceImportMutationsFields = proto_2.GetServiceImportMutationsServiceMethods(cls.ServiceImportMutationsClient, ih)
-	var _ = ServiceImportMutationsFields
+	var ServiceExampleQueryFields = example.GetServiceExampleServiceQueryMethods(cls.ServiceExampleClient, ih)
+	var _ = ServiceExampleQueryFields
+	var ServiceExampleMutationFields = example.GetServiceExampleServiceMutationMethods(cls.ServiceExampleClient, ih)
+	var _ = ServiceExampleMutationFields
+	var ServiceImportQueryFields = proto_2.GetServiceImportServiceQueryMethods(cls.ServiceImportClient, ih)
+	var _ = ServiceImportQueryFields
+	var ServiceImportMutationFields = proto_2.GetServiceImportServiceMutationMethods(cls.ServiceImportClient, ih)
+	var _ = ServiceImportMutationFields
 	var Example = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Example",
 		Fields: graphql.Fields{
-			"getQueryMethod": ServiceExampleFields["getQueryMethod"],
-			"queryMethod":    ServiceExampleFields["queryMethod"],
-			"getEmptiesMsg":  ServiceExampleFields["getEmptiesMsg"],
+			"getQueryMethod": ServiceExampleQueryFields["getQueryMethod"],
+			"queryMethod":    ServiceExampleQueryFields["queryMethod"],
+			"getEmptiesMsg":  ServiceExampleQueryFields["getEmptiesMsg"],
 		},
 	})
 	var Import = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Import",
 		Fields: graphql.Fields{
-			"getQueryImportMethod": ServiceImportFields["getQueryImportMethod"],
+			"getQueryImportMethod": ServiceImportQueryFields["getQueryImportMethod"],
 		},
 	})
 	var Query = graphql.NewObject(graphql.ObjectConfig{
@@ -75,14 +67,14 @@ func GetExampleSchemaSchema(cls ExampleSchemaSchemaClients, ih *interceptors.Int
 	var ExampleMutation = graphql.NewObject(graphql.ObjectConfig{
 		Name: "ExampleMutation",
 		Fields: graphql.Fields{
-			"mutationMethod":     ServiceExampleMutationsFields["mutationMethod"],
-			"getMutatuionMethod": ServiceExampleMutationsFields["getMutatuionMethod"],
+			"mutationMethod":     ServiceExampleMutationFields["mutationMethod"],
+			"getMutatuionMethod": ServiceExampleMutationFields["getMutatuionMethod"],
 		},
 	})
 	var ImportMutation = graphql.NewObject(graphql.ObjectConfig{
 		Name: "ImportMutation",
 		Fields: graphql.Fields{
-			"mutationImportMethod": ServiceImportMutationsFields["mutationImportMethod"],
+			"mutationImportMethod": ServiceImportMutationFields["mutationImportMethod"],
 		},
 	})
 	var Mutation = graphql.NewObject(graphql.ObjectConfig{

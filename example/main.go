@@ -47,8 +47,7 @@ func (Client) GetEmptiesMsg(ctx context.Context, in *example.Empty, opts ...grpc
 
 func main() {
 	schem, err := schema.GetExampleSchemaSchema(schema.ExampleSchemaSchemaClients{
-		ServiceExampleClient:          Client{},
-		ServiceExampleMutationsClient: Client{},
+		ServiceExampleClient: Client{},
 	}, nil)
 	if err != nil {
 		panic(err)
