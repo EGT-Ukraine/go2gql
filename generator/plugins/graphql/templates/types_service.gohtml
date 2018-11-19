@@ -16,8 +16,11 @@ func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallIn
                         ctx := p.Context
                         _ = ctx
                         {{ if $.TracerEnabled -}}
-                            parentSpan := {{opentracingPkg}}.SpanFromContext(p.Context)
-                            span := tr.StartSpan("{{$.Service.Name}}.{{$method.Name}} Resolver", {{opentracingPkg}}.ChildOf(parentSpan.Context()))
+                            var parentSpanCtx {{opentracingPkg}}.SpanContext
+                            if parent := {{opentracingPkg}}.SpanFromContext(p.Context); parent != nil {
+                               parentSpanCtx = parent.Context()
+                            }
+                            span := tr.StartSpan("{{$.Service.Name}}.{{$method.Name}} Resolver", {{opentracingPkg}}.ChildOf(parentSpanCtx))
                             spanContext := {{opentracingPkg}}.ContextWithSpan(p.Context, span)
                             defer span.Finish()
                             p.Context = spanContext

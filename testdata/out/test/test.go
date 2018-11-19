@@ -1498,8 +1498,11 @@ func GetServiceExampleServiceQueryMethods(c testdata_1.ServiceExampleClient, ih 
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				parentSpan := opentracing_go.SpanFromContext(p.Context)
-				span := tr.StartSpan("ServiceExample.getQueryMethod Resolver", opentracing_go.ChildOf(parentSpan.Context()))
+				var parentSpanCtx opentracing_go.SpanContext
+				if parent := opentracing_go.SpanFromContext(p.Context); parent != nil {
+					parentSpanCtx = parent.Context()
+				}
+				span := tr.StartSpan("ServiceExample.getQueryMethod Resolver", opentracing_go.ChildOf(parentSpanCtx))
 				spanContext := opentracing_go.ContextWithSpan(p.Context, span)
 				defer span.Finish()
 				p.Context = spanContext
@@ -1557,8 +1560,11 @@ func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, 
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				parentSpan := opentracing_go.SpanFromContext(p.Context)
-				span := tr.StartSpan("ServiceExample.mutationMethod Resolver", opentracing_go.ChildOf(parentSpan.Context()))
+				var parentSpanCtx opentracing_go.SpanContext
+				if parent := opentracing_go.SpanFromContext(p.Context); parent != nil {
+					parentSpanCtx = parent.Context()
+				}
+				span := tr.StartSpan("ServiceExample.mutationMethod Resolver", opentracing_go.ChildOf(parentSpanCtx))
 				spanContext := opentracing_go.ContextWithSpan(p.Context, span)
 				defer span.Finish()
 				p.Context = spanContext
@@ -1602,8 +1608,11 @@ func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, 
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				parentSpan := opentracing_go.SpanFromContext(p.Context)
-				span := tr.StartSpan("ServiceExample.EmptyMsgs Resolver", opentracing_go.ChildOf(parentSpan.Context()))
+				var parentSpanCtx opentracing_go.SpanContext
+				if parent := opentracing_go.SpanFromContext(p.Context); parent != nil {
+					parentSpanCtx = parent.Context()
+				}
+				span := tr.StartSpan("ServiceExample.EmptyMsgs Resolver", opentracing_go.ChildOf(parentSpanCtx))
 				spanContext := opentracing_go.ContextWithSpan(p.Context, span)
 				defer span.Finish()
 				p.Context = spanContext
@@ -1650,8 +1659,11 @@ func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, 
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				parentSpan := opentracing_go.SpanFromContext(p.Context)
-				span := tr.StartSpan("ServiceExample.MsgsWithEpmty Resolver", opentracing_go.ChildOf(parentSpan.Context()))
+				var parentSpanCtx opentracing_go.SpanContext
+				if parent := opentracing_go.SpanFromContext(p.Context); parent != nil {
+					parentSpanCtx = parent.Context()
+				}
+				span := tr.StartSpan("ServiceExample.MsgsWithEpmty Resolver", opentracing_go.ChildOf(parentSpanCtx))
 				spanContext := opentracing_go.ContextWithSpan(p.Context, span)
 				defer span.Finish()
 				p.Context = spanContext
