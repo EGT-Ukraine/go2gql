@@ -1472,7 +1472,7 @@ func init() {
 		},
 	})
 }
-func GetServiceExampleServiceQueryMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler) graphql.Fields {
+func GetServiceExampleServiceQueryMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr opentracing_go.Tracer) graphql.Fields {
 	return graphql.Fields{
 		"getQueryMethod": &graphql.Field{
 			Name: "getQueryMethod",
@@ -1498,9 +1498,12 @@ func GetServiceExampleServiceQueryMethods(c testdata_1.ServiceExampleClient, ih 
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				span, spanContext := opentracing_go.StartSpanFromContext(p.Context, "ServiceExample.getQueryMethod Resolver")
+				parentSpan := opentracing_go.SpanFromContext(p.Context)
+				span := tr.StartSpan("ServiceExample.getQueryMethod Resolver", opentracing_go.ChildOf(parentSpan.Context()))
+				spanContext := opentracing_go.ContextWithSpan(p.Context, span)
 				defer span.Finish()
 				p.Context = spanContext
+				ctx = spanContext
 				defer func() {
 					if rerr != nil {
 						span.SetTag("error", true).LogFields(log.Error(rerr))
@@ -1529,6 +1532,7 @@ func GetServiceExampleServiceQueryMethods(c testdata_1.ServiceExampleClient, ih 
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata_1.RootMessage", req))
 					}
+					ctx = ictx.Params.Context
 					res, err := c.GetQueryMethod(ctx, r)
 					if err != nil {
 						return nil, err
@@ -1542,7 +1546,7 @@ func GetServiceExampleServiceQueryMethods(c testdata_1.ServiceExampleClient, ih 
 		},
 	}
 }
-func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler) graphql.Fields {
+func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, ih *interceptors.InterceptorHandler, tr opentracing_go.Tracer) graphql.Fields {
 	return graphql.Fields{
 		"mutationMethod": &graphql.Field{
 			Name: "mutationMethod",
@@ -1553,9 +1557,12 @@ func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, 
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				span, spanContext := opentracing_go.StartSpanFromContext(p.Context, "ServiceExample.mutationMethod Resolver")
+				parentSpan := opentracing_go.SpanFromContext(p.Context)
+				span := tr.StartSpan("ServiceExample.mutationMethod Resolver", opentracing_go.ChildOf(parentSpan.Context()))
+				spanContext := opentracing_go.ContextWithSpan(p.Context, span)
 				defer span.Finish()
 				p.Context = spanContext
+				ctx = spanContext
 				defer func() {
 					if rerr != nil {
 						span.SetTag("error", true).LogFields(log.Error(rerr))
@@ -1584,6 +1591,7 @@ func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, 
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata_1.RootMessage2", req))
 					}
+					ctx = ictx.Params.Context
 					return c.MutationMethod(ctx, r)
 				})
 			},
@@ -1594,9 +1602,12 @@ func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, 
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				span, spanContext := opentracing_go.StartSpanFromContext(p.Context, "ServiceExample.EmptyMsgs Resolver")
+				parentSpan := opentracing_go.SpanFromContext(p.Context)
+				span := tr.StartSpan("ServiceExample.EmptyMsgs Resolver", opentracing_go.ChildOf(parentSpan.Context()))
+				spanContext := opentracing_go.ContextWithSpan(p.Context, span)
 				defer span.Finish()
 				p.Context = spanContext
+				ctx = spanContext
 				defer func() {
 					if rerr != nil {
 						span.SetTag("error", true).LogFields(log.Error(rerr))
@@ -1625,6 +1636,7 @@ func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, 
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata_1.Empty", req))
 					}
+					ctx = ictx.Params.Context
 					return c.EmptyMsgs(ctx, r)
 				})
 			},
@@ -1638,9 +1650,12 @@ func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, 
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
 				_ = ctx
-				span, spanContext := opentracing_go.StartSpanFromContext(p.Context, "ServiceExample.MsgsWithEpmty Resolver")
+				parentSpan := opentracing_go.SpanFromContext(p.Context)
+				span := tr.StartSpan("ServiceExample.MsgsWithEpmty Resolver", opentracing_go.ChildOf(parentSpan.Context()))
+				spanContext := opentracing_go.ContextWithSpan(p.Context, span)
 				defer span.Finish()
 				p.Context = spanContext
+				ctx = spanContext
 				defer func() {
 					if rerr != nil {
 						span.SetTag("error", true).LogFields(log.Error(rerr))
@@ -1669,6 +1684,7 @@ func GetServiceExampleServiceMutationMethods(c testdata_1.ServiceExampleClient, 
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *testdata_1.MessageWithEmpty", req))
 					}
+					ctx = ictx.Params.Context
 					return c.MsgsWithEpmty(ctx, r)
 				})
 			},

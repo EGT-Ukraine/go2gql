@@ -1,4 +1,4 @@
-func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallInterface}}, ih *{{interceptorsPkg}}.InterceptorHandler) {{gqlPkg}}.Fields {
+func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallInterface}}, ih *{{interceptorsPkg}}.InterceptorHandler {{ if $.TracerEnabled }} ,tr {{opentracingPkg}}.Tracer {{end}}) {{gqlPkg}}.Fields {
     {{ if .ServiceMethods -}}
         return {{gqlPkg}}.Fields{
             {{range $method := .ServiceMethods -}}
@@ -16,7 +16,9 @@ func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallIn
                         ctx := p.Context
                         _ = ctx
                         {{ if $.TracerEnabled -}}
-                            span, spanContext := {{opentracingPkg}}.StartSpanFromContext(p.Context, "{{$.Service.Name}}.{{$method.Name}} Resolver")
+                            parentSpan := {{opentracingPkg}}.SpanFromContext(p.Context)
+                            span := tr.StartSpan("{{$.Service.Name}}.{{$method.Name}} Resolver", {{opentracingPkg}}.ChildOf(parentSpan.Context()))
+                            spanContext := {{opentracingPkg}}.ContextWithSpan(p.Context, span)
                             defer span.Finish()
                             p.Context = spanContext
                             ctx = spanContext

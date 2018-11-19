@@ -111,6 +111,7 @@ func GetServiceImportServiceQueryMethods(c proto.ServiceImportClient, ih *interc
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.Name", req))
 					}
+					ctx = ictx.Params.Context
 					return c.GetQueryImportMethod(ctx, r)
 				})
 			},
@@ -151,6 +152,7 @@ func GetServiceImportServiceMutationMethods(c proto.ServiceImportClient, ih *int
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.Name", req))
 					}
+					ctx = ictx.Params.Context
 					return c.MutationImportMethod(ctx, r)
 				})
 			},

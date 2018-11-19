@@ -5,6 +5,7 @@ import (
 	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	testdata "github.com/EGT-Ukraine/go2gql/testdata"
 	test "github.com/EGT-Ukraine/go2gql/testdata/out/test"
+	opentracing_go "github.com/opentracing/opentracing-go"
 	errors "github.com/pkg/errors"
 	graphql "github.com/saturn4er/graphql"
 )
@@ -13,13 +14,13 @@ type SomeSchemaSchemaClients struct {
 	ServiceExampleClient testdata.ServiceExampleClient
 }
 
-func GetSomeSchemaSchema(cls SomeSchemaSchemaClients, ih *interceptors.InterceptorHandler) (graphql.Schema, error) {
+func GetSomeSchemaSchema(cls SomeSchemaSchemaClients, ih *interceptors.InterceptorHandler, tr opentracing_go.Tracer) (graphql.Schema, error) {
 	if cls.ServiceExampleClient == nil {
 		return graphql.Schema{}, errors.Errorf("Service client ServiceExample can't be nil nil")
 	}
-	var ServiceExampleQueryFields = test.GetServiceExampleServiceQueryMethods(cls.ServiceExampleClient, ih)
+	var ServiceExampleQueryFields = test.GetServiceExampleServiceQueryMethods(cls.ServiceExampleClient, ih, tr)
 	var _ = ServiceExampleQueryFields
-	var ServiceExampleMutationFields = test.GetServiceExampleServiceMutationMethods(cls.ServiceExampleClient, ih)
+	var ServiceExampleMutationFields = test.GetServiceExampleServiceMutationMethods(cls.ServiceExampleClient, ih, tr)
 	var _ = ServiceExampleMutationFields
 	var Query = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",

@@ -1445,6 +1445,7 @@ func GetServiceExampleServiceQueryMethods(c proto.ServiceExampleClient, ih *inte
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.AOneOffs", req))
 					}
+					ctx = ictx.Params.Context
 					return c.GetQueryMethod(ctx, r)
 				})
 			},
@@ -1482,6 +1483,7 @@ func GetServiceExampleServiceQueryMethods(c proto.ServiceExampleClient, ih *inte
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *timestamp.Timestamp", req))
 					}
+					ctx = ictx.Params.Context
 					return c.QueryMethod(ctx, r)
 				})
 			},
@@ -1515,6 +1517,7 @@ func GetServiceExampleServiceQueryMethods(c proto.ServiceExampleClient, ih *inte
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.Empty", req))
 					}
+					ctx = ictx.Params.Context
 					return c.GetEmptiesMsg(ctx, r)
 				})
 			},
@@ -1563,6 +1566,7 @@ func GetServiceExampleServiceMutationMethods(c proto.ServiceExampleClient, ih *i
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.B", req))
 					}
+					ctx = ictx.Params.Context
 					return c.MutationMethod(ctx, r)
 				})
 			},
@@ -1599,6 +1603,7 @@ func GetServiceExampleServiceMutationMethods(c proto.ServiceExampleClient, ih *i
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.MsgWithEmpty", req))
 					}
+					ctx = ictx.Params.Context
 					return c.GetMutatuionMethod(ctx, r)
 				})
 			},

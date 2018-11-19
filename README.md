@@ -285,16 +285,24 @@ Use `service_name` instead.
 Use `service_name` instead.
 
 ## UPGRADE FROM 3.x to 4.0
-tracer.Tracer was removed in favour to opentracing.GlobalTracer()
+tracer.Tracer was replaced with opentracing.Tracer
 
 Schema initialization before:
 
-` 
-sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor, s.tracer)
-`
+```
+import "github.com/EGT-Ukraine/go2gql/tracer"
+
+var tracer tracer.Tracer
+
+sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor, tracer)
+```
 
 now:
 
-` 
-sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor)
-`
+```
+import opentracing_go "github.com/opentracing/opentracing-go"
+
+var tracer opentracing_go.Tracer
+
+sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor, tracer)
+```
