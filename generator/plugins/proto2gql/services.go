@@ -11,12 +11,20 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/proto2gql/parser"
 )
 
-func (g Proto2GraphQL) serviceMethodArguments(cfg MethodConfig, method *parser.Method) ([]graphql.MethodArgument, error) {
+func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig, method *parser.Method) ([]graphql.MethodArgument, error) {
 	var args []graphql.MethodArgument
 	for _, field := range method.InputMessage.Fields {
 		typeFile, err := g.parsedFile(field.Type.File())
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve field '%s' file", field.Name)
+		}
+		msgCfg, err := file.Config.MessageConfig(method.InputMessage.Name)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to resolve message %s config", method.InputMessage.Name)
+		}
+		fldCfg := msgCfg.Fields[field.Name]
+		if fldCfg.ContextKey != "" {
+			continue
 		}
 		typResolver, err := g.TypeInputTypeResolver(typeFile, field.Type)
 		if err != nil {
@@ -47,7 +55,7 @@ func (g Proto2GraphQL) serviceMethodArguments(cfg MethodConfig, method *parser.M
 	return args, nil
 }
 func (g Proto2GraphQL) messagePayloadErrorParams(message *parser.Message) (checker graphql.PayloadErrorChecker, accessor graphql.PayloadErrorAccessor, err error) {
-	outMsgCfg, err := g.fileConfig(message.File()).MessageConfig(dotedTypeName(message.TypeName))
+	outMsgCfg, err := g.fileConfig(message.File()).MessageConfig(message.Name)
 	if err != nil {
 		err = errors.Wrap(err, "failed to resolve output message config")
 		return
@@ -125,7 +133,7 @@ func (g Proto2GraphQL) serviceMethod(cfg MethodConfig, file *parsedFile, method 
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get request go type for method: %s", method.Name)
 	}
-	args, err := g.serviceMethodArguments(cfg, method)
+	args, err := g.serviceMethodArguments(file, cfg, method)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare service method arguments")
 	}

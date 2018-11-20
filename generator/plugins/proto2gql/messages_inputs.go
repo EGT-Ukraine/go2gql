@@ -10,6 +10,7 @@ import (
 func (g *Proto2GraphQL) inputMessageGraphQLName(file *parsedFile, message *parser.Message) string {
 	return file.Config.GetGQLMessagePrefix() + camelCaseSlice(message.TypeName) + "Input"
 }
+
 func (g *Proto2GraphQL) inputMessageVariable(msgFile *parsedFile, message *parser.Message) string {
 	return msgFile.Config.GetGQLMessagePrefix() + snakeCamelCaseSlice(message.TypeName) + "Input"
 }
@@ -32,6 +33,7 @@ func (g *Proto2GraphQL) inputMessageFieldTypeResolver(file *parsedFile, field *p
 	if field.Repeated {
 		resolver = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(resolver))
 	}
+
 	return resolver, nil
 }
 
@@ -39,12 +41,15 @@ func (g *Proto2GraphQL) outputObjectMapFieldTypeResolver(mapFile *parsedFile, mp
 	res := func(ctx graphql.BodyContext) string {
 		return ctx.Importer.Prefix(mapFile.OutputPkg) + g.outputMapVariable(mapFile, mp)
 	}
+
 	return graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(res)), nil
 }
+
 func (g *Proto2GraphQL) inputObjectMapFieldTypeResolver(mapFile *parsedFile, mp *parser.Map) (graphql.TypeResolver, error) {
 	res := func(ctx graphql.BodyContext) string {
 		return ctx.Importer.Prefix(mapFile.OutputPkg) + g.inputMapVariable(mapFile, mp)
 	}
+
 	return graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(res)), nil
 }
 
@@ -64,6 +69,16 @@ func (g *Proto2GraphQL) fileInputObjects(file *parsedFile) ([]graphql.InputObjec
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to resolve field type")
 			}
+
+			msgCfg, err := file.Config.MessageConfig(msg.Name)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to resolve message %s config", msg.Name)
+			}
+			fldCfg := msgCfg.Fields[field.Name]
+			if fldCfg.ContextKey != "" {
+				continue
+			}
+
 			fields = append(fields, graphql.ObjectField{
 				Name: field.Name,
 				Type: typ,
@@ -95,6 +110,7 @@ func (g *Proto2GraphQL) fileInputObjects(file *parsedFile) ([]graphql.InputObjec
 				})
 			}
 		}
+
 		// TODO: oneof fields
 		res = append(res, graphql.InputObject{
 			VariableName: g.inputMessageVariable(file, msg),
@@ -102,5 +118,6 @@ func (g *Proto2GraphQL) fileInputObjects(file *parsedFile) ([]graphql.InputObjec
 			Fields:       fields,
 		})
 	}
+
 	return res, nil
 }
