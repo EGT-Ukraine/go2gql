@@ -118,11 +118,13 @@ func ResolveExmplAInput(ctx context.Context, i interface{}) (_ *proto.A, rerr er
 		result.RMsg = make([]*timestamp.Timestamp, len(in))
 		for i, val := range in {
 
-			v, err := well_known.ResolveTimestampInput(ctx, val)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to resolve input object field")
+			{
+				v, err := well_known.ResolveTimestampInput(ctx, val)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to resolve `ResolveExmplAInput` input object field")
+				}
+				result.RMsg[i] = v
 			}
-			result.RMsg[i] = v
 		}
 	}
 	if args["r_scalar"] != nil {
@@ -146,11 +148,13 @@ func ResolveExmplAInput(ctx context.Context, i interface{}) (_ *proto.A, rerr er
 		result.NRScalar = args["n_r_scalar"].(int32)
 	}
 	if args["n_r_msg"] != nil {
-		v, err := well_known.ResolveTimestampInput(ctx, args["n_r_msg"])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+		{
+			v, err := well_known.ResolveTimestampInput(ctx, args["n_r_msg"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplAInput` input object field")
+			}
+			result.NRMsg = v
 		}
-		result.NRMsg = v
 	}
 	if args["scalar_from_context"] != nil {
 		result.ScalarFromContext = args["scalar_from_context"].(int32)
@@ -159,33 +163,63 @@ func ResolveExmplAInput(ctx context.Context, i interface{}) (_ *proto.A, rerr er
 		result.EnumFromContext = proto.SomeEnum(args["enum_from_context"].(int))
 	}
 	if args["message_from_context"] != nil {
-		v, err := well_known.ResolveTimestampInput(ctx, args["message_from_context"])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+		{
+			v, err := well_known.ResolveTimestampInput(ctx, args["message_from_context"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplAInput` input object field")
+			}
+			result.MessageFromContext = v
 		}
-		result.MessageFromContext = v
 	}
-	result.MessageWithOneoffs = ctx.Value("a_msg_with_oneoffs").(*proto.AOneOffs)
-	if args["map_enum"] != nil {
-		v, err := ResolveExmplAInput__MapEnum(ctx, args["map_enum"])
+	{
+		v, err := func() (val *proto.AOneOffs, err error) {
+			contextValue := ctx.Value("a_msg_with_oneoffs")
+
+			if contextValue == nil {
+				err = errors.New("Can't find key 'a_msg_with_oneoffs' in context")
+				return
+			}
+
+			val, ok := contextValue.(*proto.AOneOffs)
+
+			if !ok {
+				err = errors.New("Incompatible 'a_msg_with_oneoffs' key type in context. Expected *proto.AOneOffs")
+				return
+			}
+
+			return
+		}()
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+			return nil, errors.Wrap(err, "failed to resolve `ResolveExmplAInput` input object field")
 		}
-		result.MapEnum = v
+		result.MessageWithOneoffs = v
+	}
+	if args["map_enum"] != nil {
+		{
+			v, err := ResolveExmplAInput__MapEnum(ctx, args["map_enum"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplAInput` input object field")
+			}
+			result.MapEnum = v
+		}
 	}
 	if args["map_scalar"] != nil {
-		v, err := ResolveExmplAInput__MapScalar(ctx, args["map_scalar"])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+		{
+			v, err := ResolveExmplAInput__MapScalar(ctx, args["map_scalar"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplAInput` input object field")
+			}
+			result.MapScalar = v
 		}
-		result.MapScalar = v
 	}
 	if args["map_msg"] != nil {
-		v, err := ResolveExmplAInput__MapMsg(ctx, args["map_msg"])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+		{
+			v, err := ResolveExmplAInput__MapMsg(ctx, args["map_msg"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplAInput` input object field")
+			}
+			result.MapMsg = v
 		}
-		result.MapMsg = v
 	}
 
 	return result, nil
@@ -247,11 +281,13 @@ func ResolveExmplMsgWithEmptyInput(ctx context.Context, i interface{}) (_ *proto
 	_ = args
 	var result = new(proto.MsgWithEmpty)
 	if args["empty_field"] != nil {
-		v, err := ResolveExmplEmptyInput(ctx, args["empty_field"])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+		{
+			v, err := ResolveExmplEmptyInput(ctx, args["empty_field"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplMsgWithEmptyInput` input object field")
+			}
+			result.EmptyField = v
 		}
-		result.EmptyField = v
 	}
 
 	return result, nil
@@ -278,11 +314,13 @@ func ResolveExmplBInput(ctx context.Context, i interface{}) (_ *proto.B, rerr er
 		result.RMsg = make([]*timestamp.Timestamp, len(in))
 		for i, val := range in {
 
-			v, err := well_known.ResolveTimestampInput(ctx, val)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to resolve input object field")
+			{
+				v, err := well_known.ResolveTimestampInput(ctx, val)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to resolve `ResolveExmplBInput` input object field")
+				}
+				result.RMsg[i] = v
 			}
-			result.RMsg[i] = v
 		}
 	}
 	if args["r_scalar"] != nil {
@@ -306,32 +344,40 @@ func ResolveExmplBInput(ctx context.Context, i interface{}) (_ *proto.B, rerr er
 		result.NRScalar = args["n_r_scalar"].(int32)
 	}
 	if args["n_r_msg"] != nil {
-		v, err := well_known.ResolveTimestampInput(ctx, args["n_r_msg"])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+		{
+			v, err := well_known.ResolveTimestampInput(ctx, args["n_r_msg"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplBInput` input object field")
+			}
+			result.NRMsg = v
 		}
-		result.NRMsg = v
 	}
 	if args["map_enum"] != nil {
-		v, err := ResolveExmplBInput__MapEnum(ctx, args["map_enum"])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+		{
+			v, err := ResolveExmplBInput__MapEnum(ctx, args["map_enum"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplBInput` input object field")
+			}
+			result.MapEnum = v
 		}
-		result.MapEnum = v
 	}
 	if args["map_scalar"] != nil {
-		v, err := ResolveExmplBInput__MapScalar(ctx, args["map_scalar"])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+		{
+			v, err := ResolveExmplBInput__MapScalar(ctx, args["map_scalar"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplBInput` input object field")
+			}
+			result.MapScalar = v
 		}
-		result.MapScalar = v
 	}
 	if args["map_msg"] != nil {
-		v, err := ResolveExmplBInput__MapMsg(ctx, args["map_msg"])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve input object field")
+		{
+			v, err := ResolveExmplBInput__MapMsg(ctx, args["map_msg"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplBInput` input object field")
+			}
+			result.MapMsg = v
 		}
-		result.MapMsg = v
 	}
 
 	return result, nil
@@ -1368,9 +1414,7 @@ func init() {
 		},
 	})
 }
-
-// Services
-func GetServiceExampleServiceMethods(c proto.ServiceExampleClient, ih *interceptors.InterceptorHandler) graphql.Fields {
+func GetServiceExampleServiceQueryMethods(c proto.ServiceExampleClient, ih *interceptors.InterceptorHandler) graphql.Fields {
 	return graphql.Fields{
 		"getQueryMethod": &graphql.Field{
 			Name: "getQueryMethod",
@@ -1401,6 +1445,7 @@ func GetServiceExampleServiceMethods(c proto.ServiceExampleClient, ih *intercept
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.AOneOffs", req))
 					}
+					ctx = ictx.Params.Context
 					return c.GetQueryMethod(ctx, r)
 				})
 			},
@@ -1438,6 +1483,7 @@ func GetServiceExampleServiceMethods(c proto.ServiceExampleClient, ih *intercept
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *timestamp.Timestamp", req))
 					}
+					ctx = ictx.Params.Context
 					return c.QueryMethod(ctx, r)
 				})
 			},
@@ -1471,13 +1517,14 @@ func GetServiceExampleServiceMethods(c proto.ServiceExampleClient, ih *intercept
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.Empty", req))
 					}
+					ctx = ictx.Params.Context
 					return c.GetEmptiesMsg(ctx, r)
 				})
 			},
 		},
 	}
 }
-func GetServiceExampleMutationsServiceMethods(c proto.ServiceExampleClient, ih *interceptors.InterceptorHandler) graphql.Fields {
+func GetServiceExampleServiceMutationMethods(c proto.ServiceExampleClient, ih *interceptors.InterceptorHandler) graphql.Fields {
 	return graphql.Fields{
 		"mutationMethod": &graphql.Field{
 			Name: "mutationMethod",
@@ -1504,7 +1551,7 @@ func GetServiceExampleMutationsServiceMethods(c proto.ServiceExampleClient, ih *
 					return c.MutationMethod(ctx, req)
 				}
 				ictx := &interceptors.Context{
-					Service: "ServiceExampleMutations",
+					Service: "ServiceExample",
 					Method:  "mutationMethod",
 					Params:  p,
 				}
@@ -1519,6 +1566,7 @@ func GetServiceExampleMutationsServiceMethods(c proto.ServiceExampleClient, ih *
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.B", req))
 					}
+					ctx = ictx.Params.Context
 					return c.MutationMethod(ctx, r)
 				})
 			},
@@ -1540,7 +1588,7 @@ func GetServiceExampleMutationsServiceMethods(c proto.ServiceExampleClient, ih *
 					return c.GetMutatuionMethod(ctx, req)
 				}
 				ictx := &interceptors.Context{
-					Service: "ServiceExampleMutations",
+					Service: "ServiceExample",
 					Method:  "getMutatuionMethod",
 					Params:  p,
 				}
@@ -1555,6 +1603,7 @@ func GetServiceExampleMutationsServiceMethods(c proto.ServiceExampleClient, ih *
 					if !ok {
 						return nil, errors.New(fmt.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: *proto.MsgWithEmpty", req))
 					}
+					ctx = ictx.Params.Context
 					return c.GetMutatuionMethod(ctx, r)
 				})
 			},

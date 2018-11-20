@@ -30,17 +30,16 @@ func typeIsScalar(p GoType) bool {
 		reflect.String:
 		return true
 	}
+
 	return false
 }
 
 func ResolverCall(resolverPkg, resolverFuncName string) ValueResolver {
 	return func(arg string, ctx BodyContext) string {
-		if ctx.TracerEnabled {
-			return ctx.Importer.Prefix(resolverPkg) + resolverFuncName + "(tr, " + ctx.Importer.New(OpentracingPkgPath) + ".ContextWithSpan(ctx, span), " + arg + ")"
-		}
 		return ctx.Importer.Prefix(resolverPkg) + resolverFuncName + "(ctx, " + arg + ")"
 	}
 }
+
 func GoPackageByPath(path, vendorPath string) (string, error) {
 	path, err := filepath.Abs(path)
 	if err != nil {
@@ -65,6 +64,7 @@ func GoPackageByPath(path, vendorPath string) (string, error) {
 			return strings.TrimLeft(strings.TrimPrefix(path, prefix), " "+string(filepath.Separator)), nil
 		}
 	}
+
 	return "", errors.Errorf("path '%s' is outside GOPATH or Vendor folder", path)
 }
 

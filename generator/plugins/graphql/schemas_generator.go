@@ -72,7 +72,6 @@ func (g schemaGenerator) bodyTemplateFuncs() map[string]interface{} {
 		"scalarsPkg":      g.importFunc(ScalarsPkgPath),
 		"interceptorsPkg": g.importFunc(InterceptorsPkgPath),
 		"opentracingPkg":  g.importFunc(OpentracingPkgPath),
-		"tracerPkg":       g.importFunc(TracerPkgPath),
 		"concat": func(st ...string) string {
 			return strings.Join(st, "")
 		},

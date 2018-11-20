@@ -84,16 +84,44 @@ func (p *Plugin) TypeValueResolver(file *parsedFile, typ parser.Type, required b
 			return nil, false, false, errors.Wrap(err, "failed to resolve go type")
 		}
 		return func(arg string, ctx graphql.BodyContext) string {
+			valueType := goType.String(ctx.Importer)
+
 			if !required {
-				return `ctx.Value("` + ctxKey + `").(` + goType.String(ctx.Importer) + `)`
+				return `func() (val ` + valueType + `, err error) {
+							contextValue := ctx.Value("` + ctxKey + `")
+
+							if contextValue == nil {
+								err = errors.New("Can't find key '` + ctxKey + `' in context")
+								return
+							}
+
+							val, ok := contextValue.(` + valueType + `)
+
+							if !ok {
+								err = errors.New("Incompatible '` + ctxKey + `' key type in context. Expected ` + valueType + `")
+								return
+							}
+
+							return
+						}()`
 			}
 
-			return "func(arg interface{}) *" + goType.String(ctx.Importer) + "{\n" +
-				"val := arg.(" + goType.String(ctx.Importer) + ")\n" +
-				"return &val\n" +
-				"}(ctx.Value(\"" + ctxKey + "\"))"
+			return `func() (*` + valueType + `, error) {
+							contextValue := ctx.Value("` + ctxKey + `")
 
-		}, false, false, nil
+							if contextValue == nil {
+								return nil, errors.New("Can't find key '` + ctxKey + `' in context")
+							}
+
+							val, ok := contextValue.(` + valueType + `)
+
+							if !ok {
+								return nil, errors.New("Incompatible '` + ctxKey + `' key type in context. Expected ` + valueType + `")
+							}
+
+							return &val, nil
+						}()`
+		}, true, false, nil
 	}
 	switch t := typ.(type) {
 	case *parser.Scalar:

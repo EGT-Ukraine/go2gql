@@ -283,3 +283,26 @@ Use `service_name` instead.
  
 `queries_service_name` & `mutations_service_name` config fields is removed.
 Use `service_name` instead.
+
+## UPGRADE FROM 3.x to 4.0
+tracer.Tracer was replaced with opentracing.Tracer
+
+Schema initialization before:
+
+```
+import "github.com/EGT-Ukraine/go2gql/tracer"
+
+var tracer tracer.Tracer
+
+sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor, tracer)
+```
+
+now:
+
+```
+import opentracing_go "github.com/opentracing/opentracing-go"
+
+var tracer opentracing_go.Tracer
+
+sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor, tracer)
+```

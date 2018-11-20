@@ -76,8 +76,26 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 			return nil, false, false, errors.Wrap(err, "failed to resolve go type")
 		}
 		return func(arg string, ctx graphql.BodyContext) string {
-			return `ctx.Value("` + ctxKey + `").(` + goType.String(ctx.Importer) + `)`
-		}, false, false, nil
+			valueType := goType.String(ctx.Importer)
+
+			return `func() (val ` + valueType + `, err error) {
+							contextValue := ctx.Value("` + ctxKey + `")
+
+							if contextValue == nil {
+								err = errors.New("Can't find key '` + ctxKey + `' in context")
+								return
+							}
+
+							val, ok := contextValue.(` + valueType + `)
+
+							if !ok {
+								err = errors.New("Incompatible '` + ctxKey + `' key type in context. Expected ` + valueType + `")
+								return
+							}
+
+							return
+						}()`
+		}, true, false, nil
 	}
 	switch pType := typ.(type) {
 	case *parser.Scalar:
@@ -94,21 +112,12 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 		}, false, true, nil
 	case *parser.Message:
 		return func(arg string, ctx graphql.BodyContext) string {
-
-			if ctx.TracerEnabled {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType) + "(tr, " + ctx.Importer.New(graphql.OpentracingPkgPath) + ".ContextWithSpan(ctx,span), " + arg + ")"
-			} else {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType) + "(ctx, " + arg + ")"
-			}
+			return ctx.Importer.Prefix(typeFile.OutputPkg) + g.inputMessageResolverName(typeFile, pType) + "(ctx, " + arg + ")"
 		}, true, true, nil
 
 	case *parser.Map:
 		return func(arg string, ctx graphql.BodyContext) string {
-			if ctx.TracerEnabled {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType) + "(tr, " + ctx.Importer.New(graphql.OpentracingPkgPath) + ".ContextWithSpan(ctx,span), " + arg + ")"
-			} else {
-				return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType) + "(ctx, " + arg + ")"
-			}
+			return ctx.Importer.Prefix(typeFile.OutputPkg) + g.mapResolverFunctionName(typeFile, pType) + "(ctx, " + arg + ")"
 		}, true, true, nil
 	}
 

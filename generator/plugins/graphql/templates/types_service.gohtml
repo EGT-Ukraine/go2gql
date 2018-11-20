@@ -1,4 +1,4 @@
-func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallInterface}}, ih *{{interceptorsPkg}}.InterceptorHandler {{ if $.TracerEnabled }} ,tr {{tracerPkg}}.Tracer {{end}}) {{gqlPkg}}.Fields {
+func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallInterface}}, ih *{{interceptorsPkg}}.InterceptorHandler {{ if $.TracerEnabled }} ,tr {{opentracingPkg}}.Tracer {{end}}) {{gqlPkg}}.Fields {
     {{ if .ServiceMethods -}}
         return {{gqlPkg}}.Fields{
             {{range $method := .ServiceMethods -}}
@@ -16,9 +16,15 @@ func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallIn
                         ctx := p.Context
                         _ = ctx
                         {{ if $.TracerEnabled -}}
-                            span := tr.CreateChildSpanFromContext(p.Context, "{{$.Service.Name}}.{{$method.Name}} Resolver")
+                            var parentSpanCtx {{opentracingPkg}}.SpanContext
+                            if parent := {{opentracingPkg}}.SpanFromContext(p.Context); parent != nil {
+                               parentSpanCtx = parent.Context()
+                            }
+                            span := tr.StartSpan("{{$.Service.Name}}.{{$method.Name}} Resolver", {{opentracingPkg}}.ChildOf(parentSpanCtx))
+                            spanContext := {{opentracingPkg}}.ContextWithSpan(p.Context, span)
                             defer span.Finish()
-                            p.Context = {{opentracingPkg}}.ContextWithSpan(ctx, span)
+                            p.Context = spanContext
+                            ctx = spanContext
                             defer func(){
                                 if rerr != nil {
                                     span.SetTag("error", true).LogFields({{logPkg}}.Error(rerr))
@@ -57,6 +63,7 @@ func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallIn
                             if !ok {
                                 return nil, {{errorsPkg}}.New({{fmtPkg}}.Sprintf("Resolve args interceptor returns bad request type(%T). Should be: {{goType $method.RequestType}}", req))
                             }
+                            ctx = ictx.Params.Context
                             {{if $method.PayloadErrorChecker -}}
                                 res, err := {{call $method.ClientMethodCaller "c" "r" $.BodyContext}}
                                 if err != nil {

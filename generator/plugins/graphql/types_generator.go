@@ -21,7 +21,6 @@ const (
 	InterceptorsPkgPath  = "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	GraphqlPkgPath       = "github.com/saturn4er/graphql"
 	OpentracingPkgPath   = "github.com/opentracing/opentracing-go"
-	TracerPkgPath        = "github.com/EGT-Ukraine/go2gql/api/tracer"
 	ErrorsPkgPath        = "github.com/pkg/errors"
 	LogPkg               = "github.com/opentracing/opentracing-go/log"
 )
@@ -72,7 +71,6 @@ func (g typesGenerator) bodyTemplateFuncs() map[string]interface{} {
 		"scalarsPkg":      g.importFunc(ScalarsPkgPath),
 		"interceptorsPkg": g.importFunc(InterceptorsPkgPath),
 		"opentracingPkg":  g.importFunc(OpentracingPkgPath),
-		"tracerPkg":       g.importFunc(TracerPkgPath),
 		"concat": func(st ...string) string {
 			return strings.Join(st, "")
 		},

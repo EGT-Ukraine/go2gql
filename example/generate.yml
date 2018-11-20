@@ -49,4 +49,4 @@ graphql_schemas:
         - field: "example"
           type: "SERVICE"
           object_name: "ExampleMutation"
-          service: "ServiceExampleMutations"
+          service: "ServiceExample"
