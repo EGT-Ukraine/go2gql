@@ -70,9 +70,9 @@ func (g *Proto2GraphQL) fileInputObjects(file *parsedFile) ([]graphql.InputObjec
 				return nil, errors.Wrap(err, "failed to resolve field type")
 			}
 
-			msgCfg, err := file.Config.MessageConfig(dotedTypeName(msg.TypeName))
+			msgCfg, err := file.Config.MessageConfig(msg.Name)
 			if err != nil {
-				return nil, errors.Wrapf(err, "failed to resolve message %s config", msg.TypeName)
+				return nil, errors.Wrapf(err, "failed to resolve message %s config", msg.Name)
 			}
 			fldCfg := msgCfg.Fields[field.Name]
 			if fldCfg.ContextKey != "" {

@@ -22,9 +22,9 @@ func (g *Proto2GraphQL) oneOfValueAssigningWrapper(file *parsedFile, msg *parser
 func (g *Proto2GraphQL) fileInputMessagesResolvers(file *parsedFile) ([]graphql.InputObjectResolver, error) {
 	var res []graphql.InputObjectResolver
 	for _, msg := range file.File.Messages {
-		msgCfg, err := file.Config.MessageConfig(dotedTypeName(msg.TypeName))
+		msgCfg, err := file.Config.MessageConfig(msg.Name)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to resolve message '%s' config", dotedTypeName(msg.TypeName))
+			return nil, errors.Wrapf(err, "failed to resolve message '%s' config", dotedTypeName(msg.Name))
 		}
 		var oneOffs []graphql.InputObjectResolverOneOf
 		for _, oneOf := range msg.OneOffs {
@@ -111,5 +111,6 @@ func (g *Proto2GraphQL) fileInputMessagesResolvers(file *parsedFile) ([]graphql.
 		})
 
 	}
+
 	return res, nil
 }

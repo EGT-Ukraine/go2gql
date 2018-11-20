@@ -18,9 +18,9 @@ func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve field '%s' file", field.Name)
 		}
-		msgCfg, err := file.Config.MessageConfig(dotedTypeName(method.InputMessage.TypeName))
+		msgCfg, err := file.Config.MessageConfig(method.InputMessage.Name)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to resolve message %s config", method.InputMessage.TypeName)
+			return nil, errors.Wrapf(err, "failed to resolve message %s config", method.InputMessage.Name)
 		}
 		fldCfg := msgCfg.Fields[field.Name]
 		if fldCfg.ContextKey != "" {
@@ -55,7 +55,7 @@ func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig
 	return args, nil
 }
 func (g Proto2GraphQL) messagePayloadErrorParams(message *parser.Message) (checker graphql.PayloadErrorChecker, accessor graphql.PayloadErrorAccessor, err error) {
-	outMsgCfg, err := g.fileConfig(message.File()).MessageConfig(dotedTypeName(message.TypeName))
+	outMsgCfg, err := g.fileConfig(message.File()).MessageConfig(message.Name)
 	if err != nil {
 		err = errors.Wrap(err, "failed to resolve output message config")
 		return
