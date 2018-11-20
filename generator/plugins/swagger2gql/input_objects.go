@@ -50,6 +50,16 @@ func (p *Plugin) fileInputObjects(file *parsedFile) ([]graphql.InputObject, erro
 				if err := handleType(property.Type); err != nil {
 					return err
 				}
+
+				paramCfg, err := file.Config.FieldConfig(t.Name, property.Name)
+				if err != nil {
+					return errors.Wrap(err, "failed to resolve property config")
+				}
+
+				if paramCfg.ContextKey != "" {
+					continue
+				}
+
 				typeResolver, err := p.TypeInputTypeResolver(file, property.Type)
 				if err != nil {
 					return errors.Wrap(err, "failed to get input type resolver")
