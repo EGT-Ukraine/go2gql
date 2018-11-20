@@ -24,7 +24,7 @@ func (g *Proto2GraphQL) fileInputMessagesResolvers(file *parsedFile) ([]graphql.
 	for _, msg := range file.File.Messages {
 		msgCfg, err := file.Config.MessageConfig(msg.Name)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to resolve message '%s' config", dotedTypeName(msg.Name))
+			return nil, errors.Wrapf(err, "failed to resolve message '%s' config", msg.Name)
 		}
 		var oneOffs []graphql.InputObjectResolverOneOf
 		for _, oneOf := range msg.OneOffs {
