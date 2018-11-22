@@ -1,5 +1,5 @@
 func(req {{$.reqType}}) (_ {{$.respType}}, rerr error) {
-    res, err := {{$.clientVar}}.{{$.methodName}}(req)
+    res, err := {{$.clientVar}}.{{$.methodName}}(req.WithContext(ctx))
     if err != nil {
         rerr = err
         return

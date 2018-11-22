@@ -87,7 +87,7 @@ func templatesSchemas_bodyGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schemas_body.gohtml", size: 2059, mode: os.FileMode(420), modTime: time.Unix(1542636462, 0)}
+	info := bindataFileInfo{name: "templates/schemas_body.gohtml", size: 2059, mode: os.FileMode(420), modTime: time.Unix(1542731638, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -127,7 +127,7 @@ func templatesTypes_bodyGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/types_body.gohtml", size: 9562, mode: os.FileMode(420), modTime: time.Unix(1542636825, 0)}
+	info := bindataFileInfo{name: "templates/types_body.gohtml", size: 9562, mode: os.FileMode(420), modTime: time.Unix(1542731638, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -167,7 +167,7 @@ func templatesTypes_serviceGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/types_service.gohtml", size: 5524, mode: os.FileMode(420), modTime: time.Unix(1542641639, 0)}
+	info := bindataFileInfo{name: "templates/types_service.gohtml", size: 5524, mode: os.FileMode(420), modTime: time.Unix(1542731638, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
