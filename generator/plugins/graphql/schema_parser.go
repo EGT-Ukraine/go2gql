@@ -172,10 +172,28 @@ func (g schemaParser) SchemaObjects() (*SchemaParserObjects, error) {
 		return nil, errors.Wrap(err, "failed to resolve objects to generate")
 	}
 
+	if err := validateObjects(objects); err != nil {
+		return nil, errors.Wrap(err, "failed to validate objects")
+	}
+
 	return &SchemaParserObjects{
 		QueryObject:    queryObj,
 		MutationObject: mutationsObj,
 		Objects:        objects,
 		Services:       services,
 	}, nil
+}
+
+func validateObjects(objects []*gqlObject) error {
+	objectNames := map[string]bool{}
+
+	for _, object := range objects {
+		if _, ok := objectNames[object.Name]; ok {
+			return errors.Errorf("duplicated graphql object name: `%s`", object.Name)
+		}
+
+		objectNames[object.Name] = true
+	}
+
+	return nil
 }
