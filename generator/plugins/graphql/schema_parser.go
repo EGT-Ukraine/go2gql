@@ -36,6 +36,11 @@ func (g *schemaParser) resolveObjectFields(nodeCfg SchemaNodeConfig, object *gql
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "can't resolve field %s object fields", fld.Field)
 			}
+
+			if fld.Field == "" {
+				return nil, nil, errors.New("field name must not be empty")
+			}
+
 			if len(fldObj.Fields) > 0 {
 				object.Fields = append(object.Fields, fieldConfig{
 					Name:   fld.Field,
