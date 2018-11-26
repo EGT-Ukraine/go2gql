@@ -1,3 +1,4 @@
+{{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/graphql.ServiceContext*/ -}}
 func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallInterface}}, ih *{{interceptorsPkg}}.InterceptorHandler {{ if $.TracerEnabled }} ,tr {{opentracingPkg}}.Tracer {{end}}) {{gqlPkg}}.Fields {
     {{ if .ServiceMethods -}}
         return {{gqlPkg}}.Fields{

@@ -1,3 +1,4 @@
+{{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/graphql.BodyContext*/ -}}
 // Enums
 {{range $enum := .File.Enums -}}
 	var {{$enum.VariableName}} = {{gqlPkg}}.NewEnum({{gqlPkg}}.EnumConfig{
