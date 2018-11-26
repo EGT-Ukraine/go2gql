@@ -1,3 +1,4 @@
+{{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/graphql.SchemaBodyContext*/ -}}
 type {{$.SchemaName}}SchemaClients struct {
 	{{ range $service := $.Services -}}
 		{{$service.Name}}Client {{goType $service.ClientGoType}}
