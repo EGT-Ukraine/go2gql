@@ -1,6 +1,7 @@
 package scalars
 
 import (
+	"encoding/base64"
 	"strconv"
 
 	"github.com/saturn4er/graphql"
@@ -38,6 +39,7 @@ var GraphQLInt64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			}
 			return int64(*val)
 		}
+
 		return nil
 	},
 	ParseValue: func(value interface{}) interface{} {
@@ -57,6 +59,7 @@ var GraphQLInt64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 		case float64:
 			return int64(val)
 		}
+
 		return nil
 	},
 	ParseLiteral: func(valueAST ast.Value) interface{} {
@@ -68,6 +71,7 @@ var GraphQLInt64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			}
 			return val
 		}
+
 		return nil
 	},
 })
@@ -93,6 +97,7 @@ var GraphQLInt32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			}
 			return int32(*val)
 		}
+
 		return nil
 	},
 	ParseValue: func(value interface{}) interface{} {
@@ -122,6 +127,7 @@ var GraphQLInt32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 		case float64:
 			return int32(val)
 		}
+
 		return nil
 	},
 	ParseLiteral: func(valueAST ast.Value) interface{} {
@@ -133,6 +139,7 @@ var GraphQLInt32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			}
 			return int32(val)
 		}
+
 		return nil
 	},
 })
@@ -165,6 +172,7 @@ var GraphQLUInt64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			}
 			return uint64(*val)
 		}
+
 		return nil
 	},
 	ParseValue: func(value interface{}) interface{} {
@@ -184,6 +192,7 @@ var GraphQLUInt64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 		case float64:
 			return uint64(val)
 		}
+
 		return nil
 	},
 	ParseLiteral: func(valueAST ast.Value) interface{} {
@@ -195,6 +204,7 @@ var GraphQLUInt64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			}
 			return val
 		}
+
 		return nil
 	},
 })
@@ -220,6 +230,7 @@ var GraphQLUInt32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			}
 			return uint(*val)
 		}
+
 		return nil
 	},
 	ParseValue: func(value interface{}) interface{} {
@@ -237,6 +248,7 @@ var GraphQLUInt32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 		case float64:
 			return uint32(val)
 		}
+
 		return nil
 	},
 	ParseLiteral: func(valueAST ast.Value) interface{} {
@@ -248,6 +260,7 @@ var GraphQLUInt32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			}
 			return uint32(val)
 		}
+
 		return nil
 	},
 })
@@ -281,6 +294,7 @@ var GraphQLFloat32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 		case float32:
 			return val
 		}
+
 		return nil
 	},
 	ParseLiteral: func(valueAST ast.Value) interface{} {
@@ -292,6 +306,7 @@ var GraphQLFloat32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			}
 			return float32(val)
 		}
+
 		return nil
 	},
 })
@@ -305,6 +320,7 @@ var GraphQLFloat64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 		case float64:
 			return val
 		}
+
 		return nil
 	},
 	ParseValue: func(value interface{}) interface{} {
@@ -340,6 +356,7 @@ var GraphQLFloat64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			return *val
 
 		}
+
 		return nil
 	},
 	ParseLiteral: func(valueAST ast.Value) interface{} {
@@ -350,6 +367,41 @@ var GraphQLFloat64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 				return nil
 			}
 			return float64(val)
+		}
+
+		return nil
+	},
+})
+var GraphQLBytesScalar = graphql.NewScalar(graphql.ScalarConfig{
+	Name: "Bytes",
+	Serialize: func(value interface{}) interface{} {
+		switch value.(type) {
+		case string:
+			return base64.StdEncoding.EncodeToString(value.([]byte))
+		}
+
+		return nil
+	},
+	ParseValue: func(value interface{}) interface{} {
+		switch value.(type) {
+		case string:
+			data, err := base64.StdEncoding.DecodeString(value.(string))
+			if err != nil {
+				return nil
+			}
+			return data
+		}
+
+		return nil
+	},
+	ParseLiteral: func(valueAST ast.Value) interface{} {
+		switch valueAST.GetKind() {
+		case kinds.StringValue:
+			data, err := base64.StdEncoding.DecodeString(valueAST.GetValue().(string))
+			if err != nil {
+				return nil
+			}
+			return data
 		}
 
 		return nil
@@ -379,6 +431,7 @@ var MultipartFile = graphql.NewScalar(graphql.ScalarConfig{
 		case *multipart_file.MultipartFile:
 			return t.Header.Filename
 		}
+
 		return nil
 	},
 	ParseValue: func(value interface{}) interface{} {
@@ -388,6 +441,7 @@ var MultipartFile = graphql.NewScalar(graphql.ScalarConfig{
 		case *multipart_file.MultipartFile:
 			return t
 		}
+
 		return nil
 	},
 	ParseLiteral: func(valueAST ast.Value) interface{} {

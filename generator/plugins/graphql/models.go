@@ -18,6 +18,8 @@ type PayloadErrorChecker func(arg string) string
 type PayloadErrorAccessor func(arg string) string
 type ClientMethodCaller func(client string, req string, ctx BodyContext) string
 
+const KindBytes = reflect.Kind(255)
+
 type GoType struct {
 	Scalar    bool
 	Kind      reflect.Kind
@@ -40,6 +42,8 @@ func (g GoType) String(i *importer.Importer) string {
 		return i.Prefix(g.Pkg) + g.Name
 	case reflect.Map:
 		return "map[" + g.ElemType.String(i) + "]" + g.Elem2Type.String(i)
+	case KindBytes:
+		return "[]byte"
 	}
 	if g.Name != "" {
 		return i.Prefix(g.Pkg) + g.Name

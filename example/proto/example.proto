@@ -37,6 +37,7 @@ message A {
     //    repeated bytes r_bytes = 13; // TODO
     //    bytes n_r_bytes = 14; // TODO
     AOneOffs message_with_oneoffs = 13;
+    bytes test = 14;
 }
 message AOneOffs {
     oneof firstEnum {

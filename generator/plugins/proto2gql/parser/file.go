@@ -1,9 +1,10 @@
 package parser
 
 import (
+	"strings"
+
 	"github.com/emicklei/proto"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 type File struct {
@@ -35,6 +36,7 @@ func (f *File) findTypeInMessage(msg *Message, typ string) (Type, bool) {
 	if typeIsScalar(typ) {
 		return &Scalar{ScalarName: typ, file: f}, true
 	}
+
 	return f.findType(typ, msg.GetFullName())
 }
 
@@ -132,6 +134,7 @@ func (f *File) parseServices() error {
 		}
 		f.Services = append(f.Services, srv)
 	}
+
 	return nil
 }
 
@@ -200,6 +203,7 @@ func (f *File) parseMessagesFields() error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -207,6 +211,10 @@ func (f *File) parseMessages() {
 	for _, el := range f.protoFile.Elements {
 		msg, ok := el.(*proto.Message)
 		if !ok {
+			continue
+		}
+		// TODO: implement.
+		if msg.IsExtend {
 			continue
 		}
 		m := message(f, msg, TypeName{msg.Name}, nil)
