@@ -67,7 +67,7 @@ func (g *Proto2GraphQL) fileInputObjects(file *parsedFile) ([]graphql.InputObjec
 			}
 			typ, err := g.inputMessageFieldTypeResolver(fieldTypeFile, field)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to resolve field type")
+				return nil, errors.Wrapf(err, "failed to resolve `%s.%s` field type", msg.Name, field.Name)
 			}
 
 			msgCfg, err := file.Config.MessageConfig(msg.Name)

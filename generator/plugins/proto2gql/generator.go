@@ -29,6 +29,8 @@ var scalarsResolvers = map[string]graphql.TypeResolver{
 
 	"uint64":  graphql.GqlUInt64TypeResolver,
 	"fixed64": graphql.GqlUInt64TypeResolver,
+
+	"bytes": graphql.GqlBytesTypeResolver,
 }
 
 type parsedFile struct {
@@ -50,6 +52,7 @@ type Proto2GraphQL struct {
 func (g *Proto2GraphQL) parsedFile(file *parser.File) (*parsedFile, error) {
 	for _, f := range g.ParsedFiles {
 		if f.File == file {
+
 			return f, nil
 		}
 	}
@@ -192,6 +195,7 @@ func (g *Proto2GraphQL) fileOutputPackage(cfg *ProtoFileConfig, file *parser.Fil
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to resolve file go package")
 	}
+
 	return strings.Replace(filepath.Base(pkg), "-", "_", -1), pkg, nil
 }
 

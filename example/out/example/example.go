@@ -56,7 +56,7 @@ func init() {
 	ExmplAInput.Fields()["scalar_from_context"] = &graphql.InputObjectField{PrivateName: "scalar_from_context", Type: scalars.GraphQLInt32Scalar}
 	ExmplAInput.Fields()["enum_from_context"] = &graphql.InputObjectField{PrivateName: "enum_from_context", Type: ExmplSomeEnum}
 	ExmplAInput.Fields()["message_from_context"] = &graphql.InputObjectField{PrivateName: "message_from_context", Type: well_known.TimestampInput}
-	ExmplAInput.Fields()["message_with_oneoffs"] = &graphql.InputObjectField{PrivateName: "message_with_oneoffs", Type: ExmplAOneOffsInput}
+	ExmplAInput.Fields()["test"] = &graphql.InputObjectField{PrivateName: "test", Type: scalars.GraphQLBytesScalar}
 	ExmplAInput.Fields()["map_enum"] = &graphql.InputObjectField{PrivateName: "map_enum", Type: graphql.NewList(graphql.NewNonNull(ExmplAInput__MapEnum))}
 	ExmplAInput.Fields()["map_scalar"] = &graphql.InputObjectField{PrivateName: "map_scalar", Type: graphql.NewList(graphql.NewNonNull(ExmplAInput__MapScalar))}
 	ExmplAInput.Fields()["map_msg"] = &graphql.InputObjectField{PrivateName: "map_msg", Type: graphql.NewList(graphql.NewNonNull(ExmplAInput__MapMsg))}
@@ -193,6 +193,9 @@ func ResolveExmplAInput(ctx context.Context, i interface{}) (_ *proto.A, rerr er
 			return nil, errors.Wrap(err, "failed to resolve `ResolveExmplAInput` input object field")
 		}
 		result.MessageWithOneoffs = v
+	}
+	if args["test"] != nil {
+		result.Test = args["test"].([]byte)
 	}
 	if args["map_enum"] != nil {
 		{
@@ -568,6 +571,23 @@ func init() {
 				return s.MessageWithOneoffs, nil
 			case proto.A:
 				return src.MessageWithOneoffs, nil
+			}
+			return nil, errors.New("source of unknown type")
+		},
+	})
+	ExmplA.AddFieldConfig("test", &graphql.Field{
+		Name: "test",
+		Type: scalars.GraphQLBytesScalar,
+		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			switch src := p.Source.(type) {
+			case *proto.A:
+				if src == nil {
+					return nil, nil
+				}
+				s := *src
+				return s.Test, nil
+			case proto.A:
+				return src.Test, nil
 			}
 			return nil, errors.New("source of unknown type")
 		},

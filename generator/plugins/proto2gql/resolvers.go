@@ -104,7 +104,7 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 			panic("unknown scalar: " + pType.ScalarName)
 		}
 		return func(arg string, ctx graphql.BodyContext) string {
-			return arg + ".(" + gt.Kind.String() + ")"
+			return arg + ".(" + gt.String(ctx.Importer) + ")"
 		}, false, true, nil
 	case *parser.Enum:
 		return func(arg string, ctx graphql.BodyContext) string {
