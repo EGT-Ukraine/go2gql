@@ -69,7 +69,7 @@ func (g *Proto2GraphQL) TypeInputTypeResolver(typeFile *parsedFile, typ parser.T
 	}
 	return nil, errors.New("not implemented " + typ.String())
 }
-func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type, ctxKey string, optional bool) (_ graphql.ValueResolver, withErr, fromArgs bool, err error) {
+func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type, ctxKey string, ptr bool) (_ graphql.ValueResolver, withErr, fromArgs bool, err error) {
 	if ctxKey != "" {
 		goType, err := g.goTypeByParserType(typ)
 		if err != nil {
@@ -104,19 +104,21 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 			panic("unknown scalar: " + pType.ScalarName)
 		}
 		return func(arg string, ctx graphql.BodyContext) string {
-			if optional {
-				goTyp := gt.String(ctx.Importer)
-
-				return "func(arg interface{}) *" + goTyp + "{\n" +
-					"val := arg.(" + goTyp + ")\n" +
-					"return &val\n" +
-					"}(" + arg + ")"
+			goTyp := gt.String(ctx.Importer)
+			resolver := arg + ".(" + gt.String(ctx.Importer) + ")"
+			if ptr && gt.Kind != graphql.KindBytes {
+				resolver = optionalValueResolver(goTyp, resolver, arg)
 			}
-			return arg + ".(" + gt.String(ctx.Importer) + ")"
+			return resolver
 		}, false, true, nil
 	case *parser.Enum:
 		return func(arg string, ctx graphql.BodyContext) string {
-			return ctx.Importer.Prefix(typeFile.GRPCSourcesPkg) + snakeCamelCaseSlice(pType.TypeName) + "(" + arg + ".(int))"
+			goTyp := ctx.Importer.Prefix(typeFile.GRPCSourcesPkg) + snakeCamelCaseSlice(pType.TypeName)
+			resolver := goTyp + "(" + arg + ".(int))"
+			if ptr {
+				resolver = optionalValueResolver(goTyp, resolver, arg)
+			}
+			return resolver
 		}, false, true, nil
 	case *parser.Message:
 		return func(arg string, ctx graphql.BodyContext) string {
@@ -184,4 +186,11 @@ func (g *Proto2GraphQL) FieldOutputValueResolver(fieldFile *parsedFile, fieldNam
 	return func(arg string, ctx graphql.BodyContext) string {
 		return arg + "// not implemented"
 	}, nil
+}
+
+func optionalValueResolver(goTyp, valueResolver, arg string) string {
+	return "func(arg interface{}) *" + goTyp + "{\n" +
+		"val := " + valueResolver + "\n" +
+		"return &val\n" +
+		"}(" + arg + ")"
 }

@@ -57,7 +57,7 @@ func (g *Proto2GraphQL) fileInputMessagesResolvers(file *parsedFile) ([]graphql.
 				return nil, errors.Wrapf(err, "failed to resolve message '%s' field '%s' type parsed file", dotedTypeName(msg.TypeName), fld.Name)
 			}
 			fldCfg := msgCfg.Fields[fld.Name]
-			resolver, withErr, fromArgs, err := g.TypeValueResolver(fldTypeFile, fld.Type, fldCfg.ContextKey, fld.Optional)
+			resolver, withErr, fromArgs, err := g.TypeValueResolver(fldTypeFile, fld.Type, fldCfg.ContextKey, fld.Optional || fld.Required)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to get type value resolver")
 			}
