@@ -52,6 +52,22 @@ func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig
 			Type: typResolver,
 		})
 	}
+	for _, oneOff := range method.InputMessage.OneOffs {
+		for _, field := range oneOff.Fields {
+			typeFile, err := g.parsedFile(field.Type.File())
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to resolve field '%s' file", field.Name)
+			}
+			typResolver, err := g.TypeInputTypeResolver(typeFile, field.Type)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to prepare input type resolver")
+			}
+			args = append(args, graphql.MethodArgument{
+				Name: field.Name,
+				Type: typResolver,
+			})
+		}
+	}
 	return args, nil
 }
 func (g Proto2GraphQL) messagePayloadErrorParams(message *parser.Message) (checker graphql.PayloadErrorChecker, accessor graphql.PayloadErrorAccessor, err error) {
