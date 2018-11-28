@@ -10,6 +10,7 @@ import (
 func (g *Proto2GraphQL) mapResolverFunctionName(mapFile *parsedFile, mp *parser.Map) string {
 	return "Resolve" + g.inputMapVariable(mapFile, mp)
 }
+
 func (g *Proto2GraphQL) fileInputMapResolvers(file *parsedFile) ([]graphql.MapInputObjectResolver, error) {
 	var res []graphql.MapInputObjectResolver
 	for _, msg := range file.File.Messages {
@@ -22,7 +23,7 @@ func (g *Proto2GraphQL) fileInputMapResolvers(file *parsedFile) ([]graphql.MapIn
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to resolve value go type")
 			}
-			keyTypeResolver, keyResolveWithErr, _, err := g.TypeValueResolver(file, mapFld.Map.KeyType, "")
+			keyTypeResolver, keyResolveWithErr, _, err := g.TypeValueResolver(file, mapFld.Map.KeyType, "", false)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to get key type value resolver")
 			}
@@ -30,7 +31,7 @@ func (g *Proto2GraphQL) fileInputMapResolvers(file *parsedFile) ([]graphql.MapIn
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to resolve message '%s' parsed file", dotedTypeName(msg.TypeName))
 			}
-			valueTypeResolver, valueResolveWithErr, _, err := g.TypeValueResolver(valueParsedFile, mapFld.Map.ValueType, "")
+			valueTypeResolver, valueResolveWithErr, _, err := g.TypeValueResolver(valueParsedFile, mapFld.Map.ValueType, "", false)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to get value type value resolver")
 			}
@@ -47,5 +48,6 @@ func (g *Proto2GraphQL) fileInputMapResolvers(file *parsedFile) ([]graphql.MapIn
 		}
 
 	}
+
 	return res, nil
 }

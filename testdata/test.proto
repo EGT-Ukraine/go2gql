@@ -2,6 +2,7 @@ syntax = "proto3";
 package example.package;
 
 import "common/common.proto";
+import "common/proto2.proto";
 import "test_scope.proto";
 option go_package = "github.com/EGT-Ukraine/go2gql/testdata";
 
@@ -95,6 +96,8 @@ message RootMessage {
     .common.CommonMessage leading_dot = 29;
     // parent scope
     test_scope.ParentScopeEnum parent_scope = 32;
+
+    common.Proto2Message proto2message = 33;
 }
 message Empty {
 

@@ -151,6 +151,7 @@ func (f *File) parseMessagesFields() error {
 					Name:          fld.Name,
 					QuotedComment: quoteComment(fld.Comment),
 					Repeated:      fld.Repeated,
+					Optional:      fld.Optional,
 					descriptor:    fld.Field,
 					Type:          typ,
 				}

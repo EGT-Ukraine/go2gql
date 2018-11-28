@@ -79,10 +79,10 @@ func init() {
 	ExmplRootMessageInput.Fields()["n_r_enum"] = &graphql.InputObjectField{PrivateName: "n_r_enum", Type: common.CommonEnum}
 	ExmplRootMessageInput.Fields()["n_r_scalar"] = &graphql.InputObjectField{PrivateName: "n_r_scalar", Type: scalars.GraphQLInt32Scalar}
 	ExmplRootMessageInput.Fields()["n_r_msg"] = &graphql.InputObjectField{PrivateName: "n_r_msg", Type: common.CommonMessageInput}
-	ExmplRootMessageInput.Fields()["scalar_from_context"] = &graphql.InputObjectField{PrivateName: "scalar_from_context", Type: scalars.GraphQLInt32Scalar}
 	ExmplRootMessageInput.Fields()["n_r_empty_msg"] = &graphql.InputObjectField{PrivateName: "n_r_empty_msg", Type: scalars.NoDataScalar}
 	ExmplRootMessageInput.Fields()["leading_dot"] = &graphql.InputObjectField{PrivateName: "leading_dot", Type: common.CommonMessageInput}
 	ExmplRootMessageInput.Fields()["parent_scope"] = &graphql.InputObjectField{PrivateName: "parent_scope", Type: testdata.ParentScopeEnum}
+	ExmplRootMessageInput.Fields()["proto2message"] = &graphql.InputObjectField{PrivateName: "proto2message", Type: common.Proto2MessageInput}
 	ExmplRootMessageInput.Fields()["map_enum"] = &graphql.InputObjectField{PrivateName: "map_enum", Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapEnum))}
 	ExmplRootMessageInput.Fields()["map_scalar"] = &graphql.InputObjectField{PrivateName: "map_scalar", Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapScalar))}
 	ExmplRootMessageInput.Fields()["map_msg"] = &graphql.InputObjectField{PrivateName: "map_msg", Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapMsg))}
@@ -242,6 +242,15 @@ func ResolveExmplRootMessageInput(ctx context.Context, i interface{}) (_ *testda
 	}
 	if args["parent_scope"] != nil {
 		result.ParentScope = testdata_1.ParentScopeEnum(args["parent_scope"].(int))
+	}
+	if args["proto2message"] != nil {
+		{
+			v, err := common.ResolveProto2MessageInput(ctx, args["proto2message"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplRootMessageInput` input object field")
+			}
+			result.Proto2Message = v
+		}
 	}
 	if args["map_enum"] != nil {
 		{
@@ -664,6 +673,23 @@ func init() {
 				return int(s.GetParentScope()), nil
 			case testdata_1.RootMessage:
 				return int(src.GetParentScope()), nil
+			}
+			return nil, errors.New("source of unknown type")
+		},
+	})
+	ExmplRootMessage.AddFieldConfig("proto2message", &graphql.Field{
+		Name: "proto2message",
+		Type: common.Proto2Message,
+		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			switch src := p.Source.(type) {
+			case *testdata_1.RootMessage:
+				if src == nil {
+					return nil, nil
+				}
+				s := *src
+				return s.Proto2Message, nil
+			case testdata_1.RootMessage:
+				return src.Proto2Message, nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -1478,22 +1504,38 @@ func GetServiceExampleServiceQueryMethods(c testdata_1.ServiceExampleClient, ih 
 			Name: "getQueryMethod",
 			Type: ExmplRootMessage,
 			Args: graphql.FieldConfigArgument{
-				"r_msg":               &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessage_NestedMessageInput))},
-				"r_scalar":            &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(scalars.GraphQLInt32Scalar))},
-				"r_enum":              &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootEnum))},
-				"r_empty_msg":         &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(scalars.NoDataScalar))},
-				"n_r_enum":            &graphql.ArgumentConfig{Type: common.CommonEnum},
-				"n_r_scalar":          &graphql.ArgumentConfig{Type: scalars.GraphQLInt32Scalar},
-				"n_r_msg":             &graphql.ArgumentConfig{Type: common.CommonMessageInput},
-				"scalar_from_context": &graphql.ArgumentConfig{Type: scalars.GraphQLInt32Scalar},
-				"n_r_empty_msg":       &graphql.ArgumentConfig{Type: scalars.NoDataScalar},
-				"leading_dot":         &graphql.ArgumentConfig{Type: common.CommonMessageInput},
-				"parent_scope":        &graphql.ArgumentConfig{Type: testdata.ParentScopeEnum},
-				"map_enum":            &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapEnum))},
-				"map_scalar":          &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapScalar))},
-				"map_msg":             &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapMsg))},
-				"ctx_map":             &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__CtxMap))},
-				"ctx_map_enum":        &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__CtxMapEnum))},
+				"r_msg":         &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessage_NestedMessageInput))},
+				"r_scalar":      &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(scalars.GraphQLInt32Scalar))},
+				"r_enum":        &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootEnum))},
+				"r_empty_msg":   &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(scalars.NoDataScalar))},
+				"n_r_enum":      &graphql.ArgumentConfig{Type: common.CommonEnum},
+				"n_r_scalar":    &graphql.ArgumentConfig{Type: scalars.GraphQLInt32Scalar},
+				"n_r_msg":       &graphql.ArgumentConfig{Type: common.CommonMessageInput},
+				"n_r_empty_msg": &graphql.ArgumentConfig{Type: scalars.NoDataScalar},
+				"leading_dot":   &graphql.ArgumentConfig{Type: common.CommonMessageInput},
+				"parent_scope":  &graphql.ArgumentConfig{Type: testdata.ParentScopeEnum},
+				"proto2message": &graphql.ArgumentConfig{Type: common.Proto2MessageInput},
+				"map_enum":      &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapEnum))},
+				"map_scalar":    &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapScalar))},
+				"map_msg":       &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__MapMsg))},
+				"ctx_map":       &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__CtxMap))},
+				"ctx_map_enum":  &graphql.ArgumentConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplRootMessageInput__CtxMapEnum))},
+				"e_f_o_e":       &graphql.ArgumentConfig{Type: common.CommonEnum},
+				"e_f_o_s":       &graphql.ArgumentConfig{Type: scalars.GraphQLInt32Scalar},
+				"e_f_o_m":       &graphql.ArgumentConfig{Type: common.CommonMessageInput},
+				"e_f_o_em":      &graphql.ArgumentConfig{Type: scalars.NoDataScalar},
+				"s_f_o_s":       &graphql.ArgumentConfig{Type: scalars.GraphQLInt32Scalar},
+				"s_f_o_e":       &graphql.ArgumentConfig{Type: ExmplRootEnum},
+				"s_f_o_mes":     &graphql.ArgumentConfig{Type: ExmplRootMessage2Input},
+				"s_f_o_m":       &graphql.ArgumentConfig{Type: scalars.NoDataScalar},
+				"m_f_o_m":       &graphql.ArgumentConfig{Type: ExmplRootMessage2Input},
+				"m_f_o_s":       &graphql.ArgumentConfig{Type: scalars.GraphQLInt32Scalar},
+				"m_f_o_e":       &graphql.ArgumentConfig{Type: ExmplRootEnum},
+				"m_f_o_em":      &graphql.ArgumentConfig{Type: scalars.NoDataScalar},
+				"em_f_o_em":     &graphql.ArgumentConfig{Type: scalars.NoDataScalar},
+				"em_f_o_s":      &graphql.ArgumentConfig{Type: scalars.GraphQLInt32Scalar},
+				"em_f_o_en":     &graphql.ArgumentConfig{Type: ExmplRootEnum},
+				"em_f_o_m":      &graphql.ArgumentConfig{Type: ExmplRootMessage2Input},
 			},
 			Resolve: func(p graphql.ResolveParams) (_ interface{}, rerr error) {
 				ctx := p.Context
