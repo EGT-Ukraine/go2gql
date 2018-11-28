@@ -87,7 +87,7 @@ func templatesMethod_callerGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/method_caller.gohtml", size: 231, mode: os.FileMode(420), modTime: time.Unix(1542968209, 0)}
+	info := bindataFileInfo{name: "templates/method_caller.gohtml", size: 231, mode: os.FileMode(420), modTime: time.Unix(1543324769, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -107,7 +107,7 @@ func templatesMethod_caller_nullGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/method_caller_null.gohtml", size: 128, mode: os.FileMode(436), modTime: time.Unix(1543226829, 0)}
+	info := bindataFileInfo{name: "templates/method_caller_null.gohtml", size: 128, mode: os.FileMode(420), modTime: time.Unix(1543324769, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -127,7 +127,7 @@ func templatesValue_resolver_arrayGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/value_resolver_array.gohtml", size: 595, mode: os.FileMode(436), modTime: time.Unix(1539090323, 0)}
+	info := bindataFileInfo{name: "templates/value_resolver_array.gohtml", size: 595, mode: os.FileMode(420), modTime: time.Unix(1534843023, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -147,7 +147,7 @@ func templatesValue_resolver_datetimeGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/value_resolver_datetime.gohtml", size: 412, mode: os.FileMode(436), modTime: time.Unix(1539090323, 0)}
+	info := bindataFileInfo{name: "templates/value_resolver_datetime.gohtml", size: 412, mode: os.FileMode(420), modTime: time.Unix(1532704779, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -167,7 +167,7 @@ func templatesValue_resolver_ptr_datetimeGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/value_resolver_ptr_datetime.gohtml", size: 414, mode: os.FileMode(436), modTime: time.Unix(1539090323, 0)}
+	info := bindataFileInfo{name: "templates/value_resolver_ptr_datetime.gohtml", size: 414, mode: os.FileMode(420), modTime: time.Unix(1532705209, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -224,10 +224,10 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"templates/method_caller.gohtml":               templatesMethod_callerGohtml,
-	"templates/method_caller_null.gohtml":          templatesMethod_caller_nullGohtml,
-	"templates/value_resolver_array.gohtml":        templatesValue_resolver_arrayGohtml,
-	"templates/value_resolver_datetime.gohtml":     templatesValue_resolver_datetimeGohtml,
+	"templates/method_caller.gohtml": templatesMethod_callerGohtml,
+	"templates/method_caller_null.gohtml": templatesMethod_caller_nullGohtml,
+	"templates/value_resolver_array.gohtml": templatesValue_resolver_arrayGohtml,
+	"templates/value_resolver_datetime.gohtml": templatesValue_resolver_datetimeGohtml,
 	"templates/value_resolver_ptr_datetime.gohtml": templatesValue_resolver_ptr_datetimeGohtml,
 }
 
@@ -270,13 +270,12 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
-
 var _bintree = &bintree{nil, map[string]*bintree{
 	"templates": &bintree{nil, map[string]*bintree{
-		"method_caller.gohtml":               &bintree{templatesMethod_callerGohtml, map[string]*bintree{}},
-		"method_caller_null.gohtml":          &bintree{templatesMethod_caller_nullGohtml, map[string]*bintree{}},
-		"value_resolver_array.gohtml":        &bintree{templatesValue_resolver_arrayGohtml, map[string]*bintree{}},
-		"value_resolver_datetime.gohtml":     &bintree{templatesValue_resolver_datetimeGohtml, map[string]*bintree{}},
+		"method_caller.gohtml": &bintree{templatesMethod_callerGohtml, map[string]*bintree{}},
+		"method_caller_null.gohtml": &bintree{templatesMethod_caller_nullGohtml, map[string]*bintree{}},
+		"value_resolver_array.gohtml": &bintree{templatesValue_resolver_arrayGohtml, map[string]*bintree{}},
+		"value_resolver_datetime.gohtml": &bintree{templatesValue_resolver_datetimeGohtml, map[string]*bintree{}},
 		"value_resolver_ptr_datetime.gohtml": &bintree{templatesValue_resolver_ptr_datetimeGohtml, map[string]*bintree{}},
 	}},
 }}
@@ -327,3 +326,4 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
+
