@@ -1,0 +1,9 @@
+syntax = "proto2";
+package common;
+
+option go_package = "github.com/EGT-Ukraine/go2gql/testdata/common";
+
+// Service, which do smth
+message Proto2Message {
+    optional int32 scalar = 1;
+}

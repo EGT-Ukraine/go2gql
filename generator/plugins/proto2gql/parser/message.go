@@ -7,14 +7,17 @@ type Messages []*Message
 func (m Messages) Copy() Messages {
 	result := make(Messages, len(m))
 	copy(result, m)
+
 	return result
 }
+
 func (m Messages) Contains(msg *Message) bool {
 	for _, value := range m {
 		if value == msg {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -39,8 +42,10 @@ func (m Message) HaveFields() bool {
 			return true
 		}
 	}
+
 	return false
 }
+
 func (m Message) HaveFieldsExcept(field string) bool {
 	for _, f := range m.Fields {
 		if f.Name != field {
@@ -59,6 +64,7 @@ func (m Message) HaveFieldsExcept(field string) bool {
 			}
 		}
 	}
+
 	return false
 }
 
@@ -96,6 +102,7 @@ type Field struct {
 	Repeated      bool
 	descriptor    *proto.Field
 	Type          Type
+	Optional      bool
 }
 
 type MapField struct {

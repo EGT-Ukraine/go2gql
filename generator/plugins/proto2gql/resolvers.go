@@ -69,7 +69,7 @@ func (g *Proto2GraphQL) TypeInputTypeResolver(typeFile *parsedFile, typ parser.T
 	}
 	return nil, errors.New("not implemented " + typ.String())
 }
-func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type, ctxKey string) (_ graphql.ValueResolver, withErr, fromArgs bool, err error) {
+func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type, ctxKey string, optional bool) (_ graphql.ValueResolver, withErr, fromArgs bool, err error) {
 	if ctxKey != "" {
 		goType, err := g.goTypeByParserType(typ)
 		if err != nil {
@@ -104,6 +104,14 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 			panic("unknown scalar: " + pType.ScalarName)
 		}
 		return func(arg string, ctx graphql.BodyContext) string {
+			if optional {
+				goTyp := gt.String(ctx.Importer)
+
+				return "func(arg interface{}) *" + goTyp + "{\n" +
+					"val := arg.(" + goTyp + ")\n" +
+					"return &val\n" +
+					"}(" + arg + ")"
+			}
 			return arg + ".(" + gt.String(ctx.Importer) + ")"
 		}, false, true, nil
 	case *parser.Enum:
