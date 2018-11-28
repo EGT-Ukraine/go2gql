@@ -103,6 +103,7 @@ type Field struct {
 	descriptor    *proto.Field
 	Type          Type
 	Optional      bool
+	Required      bool
 }
 
 type MapField struct {
