@@ -82,11 +82,12 @@ type InputObject struct {
 	Fields       []ObjectField
 }
 type ObjectField struct {
-	Name     string
-	Type     TypeResolver
-	Value    ValueResolver
-	NeedCast bool
-	CastTo   GoType
+	Name          string
+	Type          TypeResolver
+	QuotedComment string
+	Value         ValueResolver
+	NeedCast      bool
+	CastTo        GoType
 }
 type OutputObject struct {
 	VariableName string
@@ -135,6 +136,7 @@ type Service struct {
 }
 type Method struct {
 	Name                   string
+	QuotedComment          string
 	GraphQLOutputType      TypeResolver
 	Arguments              []MethodArgument
 	RequestResolver        ValueResolver
@@ -145,8 +147,9 @@ type Method struct {
 	PayloadErrorAccessor   PayloadErrorAccessor
 }
 type MethodArgument struct {
-	Name string
-	Type TypeResolver
+	Name          string
+	Type          TypeResolver
+	QuotedComment string
 }
 type TypesFile struct {
 	PackageName             string

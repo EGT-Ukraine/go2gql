@@ -108,7 +108,7 @@ func (f *File) parseServices() error {
 		}
 		srv := &Service{
 			Name:          service.Name,
-			QuotedComment: quoteComment(service.Comment),
+			QuotedComment: quoteComment(service.Comment, nil),
 		}
 		for _, el := range service.Elements {
 			method, ok := el.(*proto.RPC)
@@ -125,7 +125,7 @@ func (f *File) parseServices() error {
 			}
 			mtd := &Method{
 				Name:          method.Name,
-				QuotedComment: quoteComment(method.Comment),
+				QuotedComment: quoteComment(method.Comment, method.InlineComment),
 				InputMessage:  reqTyp.(*Message),
 				OutputMessage: retTyp.(*Message),
 				Service:       srv,
@@ -149,7 +149,7 @@ func (f *File) parseMessagesFields() error {
 				}
 				fl := &Field{
 					Name:          fld.Name,
-					QuotedComment: quoteComment(fld.Comment),
+					QuotedComment: quoteComment(fld.Comment, fld.InlineComment),
 					Repeated:      fld.Repeated,
 					Optional:      fld.Optional,
 					Required:      fld.Required,
@@ -175,7 +175,7 @@ func (f *File) parseMessagesFields() error {
 				}
 				mf := &MapField{
 					Name:          fld.Name,
-					QuotedComment: quoteComment(fld.Comment),
+					QuotedComment: quoteComment(fld.Comment, fld.InlineComment),
 					descriptor:    fld,
 					Map:           mp,
 				}
@@ -195,7 +195,7 @@ func (f *File) parseMessagesFields() error {
 					}
 					of.Fields = append(of.Fields, &Field{
 						Name:          fld.Name,
-						QuotedComment: quoteComment(fld.Comment),
+						QuotedComment: quoteComment(fld.Comment, fld.InlineComment),
 						Repeated:      false,
 						descriptor:    fld.Field,
 						Type:          typ,

@@ -28,7 +28,7 @@
     })
 	func init(){
 		{{range $field := $object.Fields -}}
-			{{$object.VariableName}}.Fields()["{{$field.Name}}"] = &{{gqlPkg}}.InputObjectField{PrivateName: "{{$field.Name}}", Type: {{call $field.Type $}}}
+			{{$object.VariableName}}.Fields()["{{$field.Name}}"] = &{{gqlPkg}}.InputObjectField{PrivateName: "{{$field.Name}}", Type: {{call $field.Type $}}, PrivateDescription: {{$field.QuotedComment}}}
 		{{end -}}
 	}
 {{ end -}}
@@ -128,6 +128,7 @@ func {{$resolver.FunctionName}}(ctx {{ctxPkg}}.Context, i interface{}) (_ {{goTy
 		{{ range $field := $object.Fields -}}
 			{{$object.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
 				Name: "{{$field.Name}}",
+				Description: {{$field.QuotedComment}},
 				Type: {{call $field.Type $}},
 				Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
         	    	switch src := p.Source.(type){

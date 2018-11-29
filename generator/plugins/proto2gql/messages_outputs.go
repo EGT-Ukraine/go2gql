@@ -12,6 +12,7 @@ import (
 func (g *Proto2GraphQL) outputMessageGraphQLName(messageFile *parsedFile, message *parser.Message) string {
 	return messageFile.Config.GetGQLMessagePrefix() + camelCaseSlice(message.TypeName)
 }
+
 func (g *Proto2GraphQL) outputMessageVariable(messageFile *parsedFile, message *parser.Message) string {
 	return messageFile.Config.GetGQLMessagePrefix() + snakeCamelCaseSlice(message.TypeName)
 }
@@ -20,6 +21,7 @@ func (g *Proto2GraphQL) outputMessageTypeResolver(messageFile *parsedFile, messa
 	if !message.HaveFields() {
 		return graphql.GqlNoDataTypeResolver, nil
 	}
+
 	return func(ctx graphql.BodyContext) string {
 		return ctx.Importer.Prefix(messageFile.OutputPkg) + g.outputMessageVariable(messageFile, message)
 	}, nil
@@ -48,9 +50,10 @@ func (g *Proto2GraphQL) outputMessageFields(msgCfg MessageConfig, file *parsedFi
 			return nil, errors.Wrapf(err, "failed to prepare message %s field %s output value resolver", msg.Name, field.Name)
 		}
 		res = append(res, graphql.ObjectField{
-			Name:  field.Name,
-			Type:  typeResolver,
-			Value: valueResolver,
+			Name:          field.Name,
+			QuotedComment: field.QuotedComment,
+			Type:          typeResolver,
+			Value:         valueResolver,
 		})
 	}
 	for _, of := range msg.OneOffs {
@@ -67,12 +70,14 @@ func (g *Proto2GraphQL) outputMessageFields(msgCfg MessageConfig, file *parsedFi
 				return nil, errors.Wrapf(err, "failed to prepare message %s field %s output type resolver", msg.Name, field.Name)
 			}
 			res = append(res, graphql.ObjectField{
-				Name:  field.Name,
-				Type:  typeResolver,
-				Value: graphql.IdentAccessValueResolver("Get" + camelCase(field.Name) + "()"),
+				Name:          field.Name,
+				QuotedComment: field.QuotedComment,
+				Type:          typeResolver,
+				Value:         graphql.IdentAccessValueResolver("Get" + camelCase(field.Name) + "()"),
 			})
 		}
 	}
+
 	return res, nil
 }
 
@@ -92,6 +97,7 @@ func (g *Proto2GraphQL) outputMessageMapFields(msgCfg MessageConfig, file *parse
 			Value: graphql.IdentAccessValueResolver(camelCase(field.Name)),
 		})
 	}
+
 	return res, nil
 }
 
@@ -126,5 +132,6 @@ func (g *Proto2GraphQL) fileOutputMessages(file *parsedFile) ([]graphql.OutputOb
 			},
 		})
 	}
+
 	return res, nil
 }

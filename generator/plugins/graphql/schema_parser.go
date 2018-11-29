@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -43,8 +44,9 @@ func (g *schemaParser) resolveObjectFields(nodeCfg SchemaNodeConfig, object *gql
 
 			if len(fldObj.Fields) > 0 {
 				object.Fields = append(object.Fields, fieldConfig{
-					Name:   fld.Field,
-					Object: fldObj,
+					Name:          fld.Field,
+					QuotedComment: strconv.Quote("Services aggregate object"),
+					Object:        fldObj,
 				})
 				newServices = append(newServices, services...)
 				newObjs = append(newObjs, subObjs...)
@@ -81,8 +83,9 @@ func (g *schemaParser) resolveObjectFields(nodeCfg SchemaNodeConfig, object *gql
 				newServices = append(newServices, srv)
 				for _, fld := range fields {
 					object.Fields = append(object.Fields, fieldConfig{
-						Name:    fld,
-						Service: &srv,
+						Name:          fld,
+						QuotedComment: strconv.Quote("Service methods aggregate object"),
+						Service:       &srv,
 					})
 
 				}
