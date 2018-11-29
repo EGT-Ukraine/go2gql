@@ -45,7 +45,7 @@ func (g *schemaParser) resolveObjectFields(nodeCfg SchemaNodeConfig, object *gql
 			if len(fldObj.Fields) > 0 {
 				object.Fields = append(object.Fields, fieldConfig{
 					Name:          fld.Field,
-					QuotedComment: strconv.Quote("Services aggregate object"),
+					QuotedComment: strconv.Quote("Aggregate object"),
 					Object:        fldObj,
 				})
 				newServices = append(newServices, services...)
