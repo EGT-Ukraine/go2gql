@@ -178,6 +178,7 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 		}
 		res = append(res, graphql.Service{
 			Name:            name,
+			QuotedComment:   strconv.Quote(tag.Description),
 			QueryMethods:    queriesMethods,
 			MutationMethods: mutationsMethods,
 			CallInterface: graphql.GoType{

@@ -243,7 +243,8 @@ func (g Proto2GraphQL) fileServices(file *parsedFile) ([]graphql.Service, error)
 		}
 
 		res = append(res, graphql.Service{
-			Name: g.serviceName(sc, service),
+			Name:          g.serviceName(sc, service),
+			QuotedComment: service.QuotedComment,
 			CallInterface: graphql.GoType{
 				Kind: reflect.Interface,
 				Pkg:  file.GRPCSourcesPkg,

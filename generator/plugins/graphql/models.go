@@ -130,6 +130,7 @@ type MapOutputObject struct {
 }
 type Service struct {
 	Name            string
+	QuotedComment   string
 	CallInterface   GoType
 	QueryMethods    []Method
 	MutationMethods []Method
