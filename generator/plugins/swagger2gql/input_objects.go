@@ -2,6 +2,7 @@ package swagger2gql
 
 import (
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -68,9 +69,10 @@ func (p *Plugin) fileInputObjects(file *parsedFile) ([]graphql.InputObject, erro
 					typeResolver = graphql.GqlNonNullTypeResolver(typeResolver)
 				}
 				fields = append(fields, graphql.ObjectField{
-					Name:     names.FilterNotSupportedFieldNameCharacters(property.Name),
-					Type:     typeResolver,
-					NeedCast: false,
+					Name:          names.FilterNotSupportedFieldNameCharacters(property.Name),
+					Type:          typeResolver,
+					QuotedComment: strconv.Quote(property.Description),
+					NeedCast:      false,
 				})
 			}
 			sort.Slice(fields, func(i, j int) bool {

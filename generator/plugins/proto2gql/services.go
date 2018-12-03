@@ -34,8 +34,9 @@ func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig
 			typResolver = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(typResolver))
 		}
 		args = append(args, graphql.MethodArgument{
-			Name: field.Name,
-			Type: typResolver,
+			Name:          field.Name,
+			Type:          typResolver,
+			QuotedComment: field.QuotedComment,
 		})
 	}
 	for _, field := range method.InputMessage.MapFields {
@@ -48,8 +49,9 @@ func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig
 			return nil, errors.Wrap(err, "failed to prepare input type resolver")
 		}
 		args = append(args, graphql.MethodArgument{
-			Name: field.Name,
-			Type: typResolver,
+			Name:          field.Name,
+			Type:          typResolver,
+			QuotedComment: field.QuotedComment,
 		})
 	}
 	for _, oneOff := range method.InputMessage.OneOffs {
@@ -63,8 +65,9 @@ func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig
 				return nil, errors.Wrap(err, "failed to prepare input type resolver")
 			}
 			args = append(args, graphql.MethodArgument{
-				Name: field.Name,
-				Type: typResolver,
+				Name:          field.Name,
+				Type:          typResolver,
+				QuotedComment: field.QuotedComment,
 			})
 		}
 	}
@@ -167,6 +170,7 @@ func (g Proto2GraphQL) serviceMethod(cfg MethodConfig, file *parsedFile, method 
 	}
 	return &graphql.Method{
 		Name:              g.methodName(cfg, method),
+		QuotedComment:     method.QuotedComment,
 		GraphQLOutputType: outType,
 		RequestType:       requestType,
 		ClientMethodCaller: func(client, arg string, ctx graphql.BodyContext) string {
@@ -239,7 +243,8 @@ func (g Proto2GraphQL) fileServices(file *parsedFile) ([]graphql.Service, error)
 		}
 
 		res = append(res, graphql.Service{
-			Name: g.serviceName(sc, service),
+			Name:          g.serviceName(sc, service),
+			QuotedComment: service.QuotedComment,
 			CallInterface: graphql.GoType{
 				Kind: reflect.Interface,
 				Pkg:  file.GRPCSourcesPkg,

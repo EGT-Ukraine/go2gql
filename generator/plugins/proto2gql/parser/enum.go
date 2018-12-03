@@ -24,7 +24,7 @@ type EnumValue struct {
 func newEnum(file *File, enum *proto.Enum, typeName []string) *Enum {
 	m := &Enum{
 		Name:          enum.Name,
-		QuotedComment: quoteComment(enum.Comment),
+		QuotedComment: quoteComment(enum.Comment, nil),
 		Descriptor:    enum,
 		TypeName:      typeName,
 		file:          file,
@@ -37,9 +37,10 @@ func newEnum(file *File, enum *proto.Enum, typeName []string) *Enum {
 		m.Values = append(m.Values, &EnumValue{
 			Name:          value.Name,
 			Value:         value.Integer,
-			QuotedComment: quoteComment(value.Comment),
+			QuotedComment: quoteComment(value.Comment, value.InlineComment),
 		})
 	}
+
 	return m
 }
 

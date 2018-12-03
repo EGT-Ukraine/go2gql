@@ -2,6 +2,7 @@ package swagger2gql
 
 import (
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -69,10 +70,11 @@ func (p *Plugin) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, e
 
 				}
 				propObj := graphql.ObjectField{
-					Name:     names.FilterNotSupportedFieldNameCharacters(prop.Name),
-					Type:     tr,
-					Value:    valueResolver,
-					NeedCast: false,
+					Name:          names.FilterNotSupportedFieldNameCharacters(prop.Name),
+					QuotedComment: strconv.Quote(prop.Description),
+					Type:          tr,
+					Value:         valueResolver,
+					NeedCast:      false,
 				}
 				if prop.Type.Kind() == parser.KindMap {
 					mapFields = append(mapFields, propObj)

@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -29,8 +30,9 @@ func (g *schemaParser) resolveObjectFields(nodeCfg SchemaNodeConfig, object *gql
 	case SchemaNodeTypeObject:
 		for _, fld := range nodeCfg.Fields {
 			fldObj := &gqlObject{
-				QueryObject: object.QueryObject,
-				Name:        strings.Replace(fld.ObjectName, " ", "_", -1),
+				QueryObject:   object.QueryObject,
+				QuotedComment: strconv.Quote(fld.Field + " result type"),
+				Name:          strings.Replace(fld.ObjectName, " ", "_", -1),
 			}
 			services, subObjs, err := g.resolveObjectFields(fld, fldObj)
 			if err != nil {
@@ -42,9 +44,16 @@ func (g *schemaParser) resolveObjectFields(nodeCfg SchemaNodeConfig, object *gql
 			}
 
 			if len(fldObj.Fields) > 0 {
+				comment, err := g.objectComment(fld)
+
+				if err != nil {
+					return nil, nil, errors.Wrapf(err, "can't resolve field %s comment", fld.Field)
+				}
+
 				object.Fields = append(object.Fields, fieldConfig{
-					Name:   fld.Field,
-					Object: fldObj,
+					Name:          fld.Field,
+					QuotedComment: comment,
+					Object:        fldObj,
 				})
 				newServices = append(newServices, services...)
 				newObjs = append(newObjs, subObjs...)
@@ -53,48 +62,74 @@ func (g *schemaParser) resolveObjectFields(nodeCfg SchemaNodeConfig, object *gql
 		}
 		return newServices, newObjs, nil
 	case SchemaNodeTypeService:
-		for _, typesFile := range g.types {
-			for _, service := range typesFile.Services {
-				if service.Name != nodeCfg.Service {
-					continue
-				}
+		service, pkgName := g.findServiceByName(nodeCfg.Service)
 
-				var serviceMethods []Method
-
-				if object.QueryObject == true {
-					serviceMethods = service.QueryMethods
-				} else {
-					serviceMethods = service.MutationMethods
-				}
-
-				meths := make([]string, len(serviceMethods))
-
-				for i, meth := range serviceMethods {
-					meths[i] = meth.Name
-				}
-				fields := g.filterMethods(meths, nodeCfg.FilterMethods, nodeCfg.ExcludeMethods)
-				srv := SchemaService{
-					Name:         service.Name,
-					ClientGoType: service.CallInterface,
-					Pkg:          typesFile.Package,
-				}
-				newServices = append(newServices, srv)
-				for _, fld := range fields {
-					object.Fields = append(object.Fields, fieldConfig{
-						Name:    fld,
-						Service: &srv,
-					})
-
-				}
-
-				return newServices, nil, nil
-			}
+		if service == nil {
+			return nil, nil, errors.Errorf("service '%s' not found", nodeCfg.Service)
 		}
-		return nil, nil, errors.Errorf("service '%s' not found", nodeCfg.Service)
+
+		var serviceMethods []Method
+
+		if object.QueryObject == true {
+			serviceMethods = service.QueryMethods
+		} else {
+			serviceMethods = service.MutationMethods
+		}
+
+		meths := make([]string, len(serviceMethods))
+
+		for i, meth := range serviceMethods {
+			meths[i] = meth.Name
+		}
+		fields := g.filterMethods(meths, nodeCfg.FilterMethods, nodeCfg.ExcludeMethods)
+		srv := SchemaService{
+			Name:         service.Name,
+			ClientGoType: service.CallInterface,
+			Pkg:          pkgName,
+		}
+		newServices = append(newServices, srv)
+		for _, fld := range fields {
+			object.Fields = append(object.Fields, fieldConfig{
+				Name:    fld,
+				Service: &srv,
+			})
+		}
+
+		return newServices, nil, nil
 
 	default:
 		return nil, nil, errors.Errorf("unknown type %s", nodeCfg.Type)
 	}
+}
+
+func (g *schemaParser) objectComment(fld SchemaNodeConfig) (string, error) {
+	var comment string
+
+	if fld.Type == SchemaNodeTypeObject {
+		comment = strconv.Quote("Aggregate object")
+	} else {
+		service, _ := g.findServiceByName(fld.Service)
+
+		if service == nil {
+			return "", errors.Errorf("service '%s' not found", fld.Service)
+		}
+
+		comment = service.QuotedComment
+	}
+
+	return comment, nil
+}
+
+func (g *schemaParser) findServiceByName(serviceName string) (*Service, string) {
+	for _, typesFile := range g.types {
+		for _, service := range typesFile.Services {
+			if service.Name == serviceName {
+				return &service, typesFile.Package
+			}
+		}
+	}
+
+	return nil, ""
 }
 
 func (g *schemaParser) filterMethods(methods []string, filter, exclude []string) []string {

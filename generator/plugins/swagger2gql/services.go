@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -54,8 +55,9 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 			return nil, errors.Wrapf(err, "failed to resolve parameter '%s' type resolver", param.Name)
 		}
 		args = append(args, graphql.MethodArgument{
-			Name: gqlName,
-			Type: paramType,
+			Name:          gqlName,
+			Type:          paramType,
+			QuotedComment: strconv.Quote(param.Description),
 		})
 	}
 	reqType := graphql.GoType{
@@ -69,6 +71,7 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 
 	return &graphql.Method{
 		Name:                   name,
+		QuotedComment:          strconv.Quote(method.Description),
 		GraphQLOutputType:      responseType,
 		Arguments:              args,
 		RequestResolver:        graphql.ResolverCall(file.OutputPkg, "Resolve"+pascalize(method.OperationID)+"Params"),
@@ -175,6 +178,7 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 		}
 		res = append(res, graphql.Service{
 			Name:            name,
+			QuotedComment:   strconv.Quote(tag.Description),
 			QueryMethods:    queriesMethods,
 			MutationMethods: mutationsMethods,
 			CallInterface: graphql.GoType{

@@ -80,8 +80,9 @@ func (g *Proto2GraphQL) fileInputObjects(file *parsedFile) ([]graphql.InputObjec
 			}
 
 			fields = append(fields, graphql.ObjectField{
-				Name: field.Name,
-				Type: typ,
+				Name:          field.Name,
+				Type:          typ,
+				QuotedComment: field.QuotedComment,
 			})
 		}
 		for _, field := range msg.MapFields {
@@ -90,8 +91,9 @@ func (g *Proto2GraphQL) fileInputObjects(file *parsedFile) ([]graphql.InputObjec
 				return nil, errors.Wrap(err, "failed to resolve field type")
 			}
 			fields = append(fields, graphql.ObjectField{
-				Name: field.Name,
-				Type: typ,
+				Name:          field.Name,
+				Type:          typ,
+				QuotedComment: field.QuotedComment,
 			})
 		}
 		for _, oneOf := range msg.OneOffs {
@@ -105,8 +107,9 @@ func (g *Proto2GraphQL) fileInputObjects(file *parsedFile) ([]graphql.InputObjec
 					return nil, errors.Wrap(err, "failed to resolve field type")
 				}
 				fields = append(fields, graphql.ObjectField{
-					Name: fld.Name,
-					Type: typ,
+					Name:          fld.Name,
+					Type:          typ,
+					QuotedComment: fld.QuotedComment,
 				})
 			}
 		}

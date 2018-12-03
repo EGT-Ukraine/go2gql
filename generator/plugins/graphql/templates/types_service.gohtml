@@ -5,11 +5,12 @@ func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallIn
             {{range $method := .ServiceMethods -}}
                 "{{$method.Name}}": &{{gqlPkg}}.Field{
                     Name: "{{$method.Name}}",
+                    Description: {{$method.QuotedComment}},
                     Type: {{call $method.GraphQLOutputType $.BodyContext}},
                     {{ if $method.Arguments -}}
                         Args: {{gqlPkg}}.FieldConfigArgument{
                             {{ range $arg := $method.Arguments -}}
-                                "{{$arg.Name}}": &{{gqlPkg}}.ArgumentConfig{Type: {{call $arg.Type $.BodyContext}}},
+                                "{{$arg.Name}}": &{{gqlPkg}}.ArgumentConfig{Type: {{call $arg.Type $.BodyContext}}, Description: {{$arg.QuotedComment}}},
                             {{ end -}}
                         },
                     {{ end -}}

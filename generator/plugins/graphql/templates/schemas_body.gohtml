@@ -20,7 +20,7 @@ func Get{{$.SchemaName}}Schema(cls {{$.SchemaName}}SchemaClients, ih *{{intercep
 		var {{$object.Name}} = {{gqlPkg}}.NewObject({{gqlPkg}}.ObjectConfig{
 			Name: "{{$object.Name}}",
 			{{ if ne $object.QuotedComment "" -}}
-				Comment: {{$object.QuotedComment}},
+				Description: {{$object.QuotedComment}},
 			{{ end -}}
 			Fields: {{gqlPkg}}.Fields{
 				{{ if len $object.Fields -}}
@@ -31,6 +31,7 @@ func Get{{$.SchemaName}}Schema(cls {{$.SchemaName}}SchemaClients, ih *{{intercep
 							"{{$fld.Name}}": &{{gqlPkg}}.Field{
 								Name: "{{$fld.Name}}",
 								Type: {{$fld.Object.Name}},
+								Description: {{$fld.QuotedComment}},
 								Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
 									return struct{}{}, nil
 								},
