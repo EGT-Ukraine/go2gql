@@ -101,13 +101,18 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 func (p *Plugin) tagQueriesMethods(tagCfg TagConfig, file *parsedFile, tag parser.Tag) ([]graphql.Method, error) {
 	var res []graphql.Method
 	for _, method := range tag.Methods {
-		if method.HTTPMethod != "GET" {
-			continue
-		}
 		var methodCfg MethodConfig
 		if tagCfg.Methods[method.Path] != nil {
 			methodCfg = tagCfg.Methods[method.Path][strings.ToLower(method.HTTPMethod)]
 		}
+		if methodCfg.RequestType == "" {
+			if method.HTTPMethod != "GET" {
+				continue
+			}
+		} else if methodCfg.RequestType != "QUERY" {
+			continue
+		}
+
 		meth, err := p.graphqlMethod(methodCfg, file, tag, method)
 		if err != nil {
 			if err == ErrMultipleSuccessResponses {
@@ -126,12 +131,16 @@ func (p *Plugin) tagQueriesMethods(tagCfg TagConfig, file *parsedFile, tag parse
 func (p *Plugin) tagMutationsMethods(tagCfg TagConfig, file *parsedFile, tag parser.Tag) ([]graphql.Method, error) {
 	var res []graphql.Method
 	for _, method := range tag.Methods {
-		if method.HTTPMethod == "GET" {
-			continue
-		}
 		var methodCfg MethodConfig
 		if tagCfg.Methods[method.Path] != nil {
 			methodCfg = tagCfg.Methods[method.Path][strings.ToLower(method.HTTPMethod)]
+		}
+		if methodCfg.RequestType == "" {
+			if method.HTTPMethod == "GET" {
+				continue
+			}
+		} else if methodCfg.RequestType != "MUTATION" {
+			continue
 		}
 		meth, err := p.graphqlMethod(methodCfg, file, tag, method)
 		if err != nil {
