@@ -306,3 +306,7 @@ var tracer opentracing_go.Tracer
 
 sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor, tracer)
 ```
+
+## UPGRADE FROM 4.x to 5.0
+
+`github.com/saturn4er/graphql` dependency was replaced with original `github.com/graphql-go/graphql` package.
