@@ -1,7 +1,7 @@
 go2gql
 ==============
 
-Tool, which generates GraphQL Schema for [graphql-go](https://github.com/saturn4er/graphql) package based on external data sources
+Tool, which generates GraphQL Schema for [graphql-go](https://github.com/graphql-go/graphql) package based on external data sources
 
 ## Installation
 ```bash

@@ -2,13 +2,14 @@
 package schema
 
 import (
+	graphql "github.com/graphql-go/graphql"
+	errors "github.com/pkg/errors"
+
 	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	proto_1 "github.com/EGT-Ukraine/go2gql/example/import/proto"
 	example "github.com/EGT-Ukraine/go2gql/example/out/example"
 	proto_2 "github.com/EGT-Ukraine/go2gql/example/out/github.com/EGT-Ukraine/go2gql/example/import/proto"
 	proto "github.com/EGT-Ukraine/go2gql/example/proto"
-	errors "github.com/pkg/errors"
-	graphql "github.com/saturn4er/graphql"
 )
 
 type ExampleSchemaSchemaClients struct {
@@ -96,6 +97,7 @@ func GetExampleSchemaSchema(cls ExampleSchemaSchemaClients, ih *interceptors.Int
 			},
 		},
 	})
+
 	return graphql.NewSchema(graphql.SchemaConfig{
 		Query:    Query,
 		Mutation: Mutation,

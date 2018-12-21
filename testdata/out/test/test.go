@@ -11,10 +11,10 @@ import (
 	common_1 "github.com/EGT-Ukraine/go2gql/testdata/common"
 	testdata "github.com/EGT-Ukraine/go2gql/testdata/out/test/github.com/EGT-Ukraine/go2gql/testdata"
 	common "github.com/EGT-Ukraine/go2gql/testdata/out/test/github.com/EGT-Ukraine/go2gql/testdata/common"
+	graphql "github.com/graphql-go/graphql"
 	opentracing_go "github.com/opentracing/opentracing-go"
 	log "github.com/opentracing/opentracing-go/log"
 	errors "github.com/pkg/errors"
-	graphql "github.com/saturn4er/graphql"
 )
 
 // Enums

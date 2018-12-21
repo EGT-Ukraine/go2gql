@@ -4,10 +4,11 @@ package common
 import (
 	context "context"
 
+	graphql "github.com/graphql-go/graphql"
+	errors "github.com/pkg/errors"
+
 	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 	common "github.com/EGT-Ukraine/go2gql/testdata/common"
-	errors "github.com/pkg/errors"
-	graphql "github.com/saturn4er/graphql"
 )
 
 // Enums
@@ -32,6 +33,7 @@ func ResolveProto2MessageInput(ctx context.Context, i interface{}) (_ *common.Pr
 	if args["scalar"] != nil {
 		result.Scalar = func(arg interface{}) *int32 {
 			val := arg.(int32)
+
 			return &val
 		}(args["scalar"])
 	}
@@ -60,6 +62,7 @@ func init() {
 			case common.Proto2Message:
 				return src.Scalar, nil
 			}
+
 			return nil, errors.New("source of unknown type")
 		},
 	})

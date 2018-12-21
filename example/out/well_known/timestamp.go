@@ -4,10 +4,11 @@ package well_known
 import (
 	context "context"
 
-	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	graphql "github.com/graphql-go/graphql"
 	errors "github.com/pkg/errors"
-	graphql "github.com/saturn4er/graphql"
+
+	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 )
 
 // Enums
@@ -61,6 +62,7 @@ func init() {
 			case timestamp.Timestamp:
 				return src.Seconds, nil
 			}
+
 			return nil, errors.New("source of unknown type")
 		},
 	})
@@ -78,6 +80,7 @@ func init() {
 			case timestamp.Timestamp:
 				return src.Nanos, nil
 			}
+
 			return nil, errors.New("source of unknown type")
 		},
 	})

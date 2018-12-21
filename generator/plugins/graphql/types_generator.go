@@ -19,7 +19,7 @@ const (
 	ScalarsPkgPath       = "github.com/EGT-Ukraine/go2gql/api/scalars"
 	MultipartFilePkgPath = "github.com/EGT-Ukraine/go2gql/api/multipart_file"
 	InterceptorsPkgPath  = "github.com/EGT-Ukraine/go2gql/api/interceptors"
-	GraphqlPkgPath       = "github.com/saturn4er/graphql"
+	GraphqlPkgPath       = "github.com/graphql-go/graphql"
 	OpentracingPkgPath   = "github.com/opentracing/opentracing-go"
 	ErrorsPkgPath        = "github.com/pkg/errors"
 	LogPkg               = "github.com/opentracing/opentracing-go/log"
