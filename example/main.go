@@ -5,7 +5,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/saturn4er/graphql"
+	"github.com/graphql-go/graphql"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 

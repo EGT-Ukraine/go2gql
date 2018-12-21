@@ -2,7 +2,7 @@
 package testdata
 
 import (
-	graphql "github.com/saturn4er/graphql"
+	graphql "github.com/graphql-go/graphql"
 )
 
 // Enums

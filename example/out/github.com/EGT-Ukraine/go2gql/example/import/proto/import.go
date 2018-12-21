@@ -8,8 +8,8 @@ import (
 	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 	proto "github.com/EGT-Ukraine/go2gql/example/import/proto"
+	graphql "github.com/graphql-go/graphql"
 	errors "github.com/pkg/errors"
-	graphql "github.com/saturn4er/graphql"
 )
 
 // Enums

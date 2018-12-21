@@ -28,7 +28,7 @@
     })
 	func init(){
 		{{range $field := $object.Fields -}}
-			{{$object.VariableName}}.Fields()["{{$field.Name}}"] = &{{gqlPkg}}.InputObjectField{PrivateName: "{{$field.Name}}", Type: {{call $field.Type $}}, PrivateDescription: {{$field.QuotedComment}}}
+			{{$object.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.InputObjectFieldConfig{Type: {{call $field.Type $}}, Description: {{$field.QuotedComment}}})
 		{{end -}}
 	}
 {{ end -}}

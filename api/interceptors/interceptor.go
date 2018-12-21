@@ -1,7 +1,7 @@
 package interceptors
 
 import (
-	"github.com/saturn4er/graphql"
+	"github.com/graphql-go/graphql"
 )
 
 type Context struct {

@@ -10,8 +10,8 @@ import (
 	well_known "github.com/EGT-Ukraine/go2gql/example/out/well_known"
 	proto "github.com/EGT-Ukraine/go2gql/example/proto"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	graphql "github.com/graphql-go/graphql"
 	errors "github.com/pkg/errors"
-	graphql "github.com/saturn4er/graphql"
 )
 
 // Enums

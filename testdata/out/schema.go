@@ -2,12 +2,13 @@
 package test_schema
 
 import (
+	graphql "github.com/graphql-go/graphql"
+	opentracing_go "github.com/opentracing/opentracing-go"
+	errors "github.com/pkg/errors"
+
 	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	testdata "github.com/EGT-Ukraine/go2gql/testdata"
 	test "github.com/EGT-Ukraine/go2gql/testdata/out/test"
-	opentracing_go "github.com/opentracing/opentracing-go"
-	errors "github.com/pkg/errors"
-	graphql "github.com/saturn4er/graphql"
 )
 
 type SomeSchemaSchemaClients struct {
@@ -60,6 +61,7 @@ func GetSomeSchemaSchema(cls SomeSchemaSchemaClients, ih *interceptors.Intercept
 			},
 		},
 	})
+
 	return graphql.NewSchema(graphql.SchemaConfig{
 		Query:    Query,
 		Mutation: Mutation,
