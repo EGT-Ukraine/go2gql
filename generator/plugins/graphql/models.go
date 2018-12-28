@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 )
@@ -84,18 +85,41 @@ type InputObject struct {
 type ObjectField struct {
 	Name          string
 	Type          TypeResolver
+	GoType        GoType
 	QuotedComment string
 	Value         ValueResolver
 	NeedCast      bool
 	CastTo        GoType
 }
-type OutputObject struct {
-	VariableName string
-	GraphQLName  string
-	GoType       GoType
-	Fields       []ObjectField
-	MapFields    []ObjectField
+type DataLoaderField struct {
+	Name                         string
+	Type                         string
+	ParentKeyFieldName           string
+	NormalizedParentKeyFieldName string
+	DataLoaderName               string
 }
+
+type OutputObject struct {
+	VariableName     string
+	GraphQLName      string
+	GoType           GoType
+	Fields           []ObjectField
+	DataLoaderFields []*DataLoaderField
+	MapFields        []ObjectField
+}
+
+func (s *OutputObject) FindFieldByName(name string) *ObjectField {
+	searchName := strings.ToLower(name)
+
+	for _, field := range s.Fields {
+		if strings.ToLower(field.Name) == searchName {
+			return &field
+		}
+	}
+
+	return nil
+}
+
 type Enum struct {
 	VariableName string
 	GraphQLName  string
@@ -135,21 +159,40 @@ type Service struct {
 	QueryMethods    []Method
 	MutationMethods []Method
 }
+
+func (s *Service) FindMethodByName(name string) *Method {
+	searchName := strings.ToLower(name)
+
+	for _, method := range append(s.QueryMethods, s.MutationMethods...) {
+		if strings.ToLower(method.Name) == searchName {
+			return &method
+		}
+	}
+
+	return nil
+}
+
+type DataLoaderTypeResolver func() (GoType, error)
+
 type Method struct {
-	Name                   string
-	QuotedComment          string
-	GraphQLOutputType      TypeResolver
-	Arguments              []MethodArgument
-	RequestResolver        ValueResolver
-	RequestResolverWithErr bool
-	ClientMethodCaller     ClientMethodCaller
-	RequestType            GoType
-	PayloadErrorChecker    PayloadErrorChecker
-	PayloadErrorAccessor   PayloadErrorAccessor
+	Name                        string
+	QuotedComment               string
+	GraphQLOutputType           TypeResolver
+	GraphQLOutputDataLoaderType TypeResolver
+	Arguments                   []MethodArgument
+	RequestResolver             ValueResolver
+	RequestResolverWithErr      bool
+	ClientMethodCaller          ClientMethodCaller
+	RequestType                 GoType
+	DataLoaderResponseType      DataLoaderTypeResolver
+	DataLoaderFetch             func(importer *importer.Importer) string
+	PayloadErrorChecker         PayloadErrorChecker
+	PayloadErrorAccessor        PayloadErrorAccessor
 }
 type MethodArgument struct {
 	Name          string
 	Type          TypeResolver
+	GoType        GoType
 	QuotedComment string
 }
 type TypesFile struct {

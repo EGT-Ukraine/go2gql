@@ -29,6 +29,7 @@ type typesGenerator struct {
 	File          *TypesFile
 	tracerEnabled bool
 	imports       *importer.Importer
+	dataLoader    *DataLoader
 }
 
 func (g typesGenerator) importFunc(importPath string) func() string {
@@ -65,6 +66,7 @@ func (g typesGenerator) bodyTemplateFuncs() map[string]interface{} {
 		"ctxPkg":          g.importFunc("context"),
 		"debugPkg":        g.importFunc("runtime/debug"),
 		"fmtPkg":          g.importFunc("fmt"),
+		"loadersPkg":      g.importFunc(g.dataLoader.Pkg),
 		"logPkg":          g.importFunc(LogPkg),
 		"errorsPkg":       g.importFunc(ErrorsPkgPath),
 		"gqlPkg":          g.importFunc(GraphqlPkgPath),
@@ -79,6 +81,11 @@ func (g typesGenerator) bodyTemplateFuncs() map[string]interface{} {
 		},
 		"goType":       g.goTypeStr,
 		"goTypeForNew": g.goTypeForNew,
+		"graphqlOutputLoaderTypeName": func(ctx BodyContext, dataLoaderName string) string {
+			dataLoaderConfig := g.dataLoader.Loaders[dataLoaderName]
+
+			return dataLoaderConfig.OutputGraphqlType(ctx)
+		},
 	}
 }
 

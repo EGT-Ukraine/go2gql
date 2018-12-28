@@ -11,9 +11,7 @@ build_templates:
 	go-bindata -prefix ./generator/plugins/swagger2gql -o ./generator/plugins/swagger2gql/templates.go -pkg swagger2gql ./generator/plugins/swagger2gql/templates
 
 test:
+	$(MAKE) -C tests
 	go test ./...
 
-
 .PHONY: install
-
-

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package config;
+
+option go_package = "github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/config;config";
+
+import "google/protobuf/empty.proto";
+
+service ItemsReviewService {
+    rpc List (ListRequest) returns (ListResponse) {}
+}
+
+message ListRequest {
+    repeated int64 item_id  = 1;
+}
+
+message ListResponse {
+    repeated ItemReviews item_reviews = 1;
+}
+
+message ItemReviews {
+    repeated Review item_review = 1;
+}
+
+message Review {
+    int64 id           = 1;
+    string text        = 2;
+}

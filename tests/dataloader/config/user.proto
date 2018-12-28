@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package config;
+
+option go_package = "github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/config;config";
+
+service UserService {
+    rpc List (UserListRequest) returns (UserListResponse) {}
+}
+
+message UserListRequest {
+    repeated int64 id   = 1;
+}
+
+message UserListResponse {
+    repeated User users = 1;
+}
+
+message User {
+    int64 id            = 1;
+    string name         = 2;
+}

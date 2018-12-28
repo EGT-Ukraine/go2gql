@@ -6,10 +6,12 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/pkg/errors"
 
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/names"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/swagger2gql/parser"
 )
@@ -54,9 +56,17 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve parameter '%s' type resolver", param.Name)
 		}
+
+		goType, err := p.goTypeByParserType(file, param.Type, true)
+
+		if err != nil {
+			return nil, err
+		}
+
 		args = append(args, graphql.MethodArgument{
 			Name:          gqlName,
 			Type:          paramType,
+			GoType:        goType,
 			QuotedComment: strconv.Quote(param.Description),
 		})
 	}
@@ -96,8 +106,75 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 		RequestType:          reqType,
 		PayloadErrorChecker:  nil,
 		PayloadErrorAccessor: nil,
+		GraphQLOutputDataLoaderType: func(ctx graphql.BodyContext) string {
+			resType, ok := successResponse.ResultType.(*parser.Array)
+
+			if !ok {
+				panic("Response type must be array")
+			}
+
+			subResType, ok := successResponse.ResultType.(*parser.Array)
+
+			var outType parser.Type
+
+			outType = resType
+
+			if ok {
+				outType = subResType.ElemType
+			}
+
+			dataLoaderOutType, err := p.TypeOutputTypeResolver(file, outType, false)
+
+			if err != nil {
+				panic(err)
+			}
+
+			return dataLoaderOutType(ctx)
+		},
+		DataLoaderResponseType: func() (graphql.GoType, error) {
+			resType, ok := successResponse.ResultType.(*parser.Array)
+
+			if !ok {
+				return graphql.GoType{}, errors.New("Response type must be array")
+			}
+
+			goType, err := p.goTypeByParserType(file, resType.ElemType, true)
+
+			if err != nil {
+				return graphql.GoType{}, err
+			}
+
+			return goType, nil
+		},
+		DataLoaderFetch: func(importer *importer.Importer) string {
+			paramsType := reqType.ElemType.String(importer)
+			argName := ucFirst(method.Parameters[0].Name)
+			methodName := ucFirst(method.OperationID)
+
+			return `
+			params := &` + paramsType + `{
+				` + argName + `: keys,
+				Context: ctx,
+			}
+
+			response, err := client.` + methodName + `(params)
+
+			if err != nil {
+				return nil, []error{err}
+			}
+
+			return response.Payload, nil
+			`
+		},
 	}, nil
 }
+
+func ucFirst(s string) string {
+	r := []rune(s)
+	r[0] = unicode.ToUpper(r[0])
+	return string(r)
+}
+
 func (p *Plugin) tagQueriesMethods(tagCfg TagConfig, file *parsedFile, tag parser.Tag) ([]graphql.Method, error) {
 	var res []graphql.Method
 	for _, method := range tag.Methods {
@@ -191,12 +268,9 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 			QueryMethods:    queriesMethods,
 			MutationMethods: mutationsMethods,
 			CallInterface: graphql.GoType{
-				Kind: reflect.Ptr,
-				ElemType: &graphql.GoType{
-					Kind: reflect.Interface,
-					Pkg:  tagCfg.ClientGoPackage,
-					Name: "Client",
-				},
+				Kind: reflect.Interface,
+				Pkg:  tagCfg.ClientGoPackage,
+				Name: "IClient",
 			},
 		})
 	}

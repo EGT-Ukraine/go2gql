@@ -11,8 +11,14 @@ import (
 type FieldConfig struct {
 	ContextKey string `mapstructure:"context_key"`
 }
+type DataLoaderFieldConfig struct {
+	FieldName    string `mapstructure:"field_name"`
+	KeyFieldName string `mapstructure:"key_field_name"`
+	DataLoader   string `mapstructure:"dataloader"`
+}
 type ObjectConfig struct {
-	Fields map[string]FieldConfig `mapstructure:"fields"`
+	Fields      map[string]FieldConfig  `mapstructure:"fields"`
+	DataLoaders []DataLoaderFieldConfig `mapstructure:"dataloaders"`
 }
 
 type MethodConfig struct {
@@ -60,7 +66,7 @@ type SwaggerFileConfig struct {
 	ParamsConfig []ParamConfig             `mapstructure:"params_config"`
 }
 
-func (pc *SwaggerFileConfig) objectConfig(objName string) (ObjectConfig, error) {
+func (pc *SwaggerFileConfig) ObjectConfig(objName string) (ObjectConfig, error) {
 	if pc == nil {
 		return ObjectConfig{}, nil
 	}
@@ -80,7 +86,7 @@ func (pc *SwaggerFileConfig) objectConfig(objName string) (ObjectConfig, error) 
 }
 
 func (pc *SwaggerFileConfig) FieldConfig(objName string, fieldName string) (FieldConfig, error) {
-	cfg, err := pc.objectConfig(objName)
+	cfg, err := pc.ObjectConfig(objName)
 
 	if err != nil {
 		return FieldConfig{}, errors.Wrap(err, "failed to resolve property config")

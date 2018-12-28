@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/proto2gql/parser"
 )
 
@@ -30,12 +31,28 @@ func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to prepare input type resolver")
 		}
+
+		goType, err := g.goTypeByParserType(field.Type)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to resolve go type for field "+field.Name)
+		}
+
 		if field.Repeated {
 			typResolver = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(typResolver))
+
+			elementType := goType
+
+			goType = graphql.GoType{
+				Kind:     reflect.Slice,
+				ElemType: &elementType,
+			}
 		}
+
 		args = append(args, graphql.MethodArgument{
 			Name:          field.Name,
 			Type:          typResolver,
+			GoType:        goType,
 			QuotedComment: field.QuotedComment,
 		})
 	}
@@ -173,6 +190,43 @@ func (g Proto2GraphQL) serviceMethod(cfg MethodConfig, file *parsedFile, method 
 		QuotedComment:     method.QuotedComment,
 		GraphQLOutputType: outType,
 		RequestType:       requestType,
+		GraphQLOutputDataLoaderType: func(ctx graphql.BodyContext) string {
+			dataLoaderOutType, err := g.TypeOutputTypeResolver(outputMsgTypeFile, method.OutputMessage.Fields[0].Type)
+
+			if err != nil {
+				panic(err)
+			}
+
+			return dataLoaderOutType(ctx)
+		},
+		DataLoaderResponseType: func() (graphql.GoType, error) {
+			if len(method.OutputMessage.Fields) != 1 {
+				return graphql.GoType{}, errors.New("Method " + method.Name + " must have 1 response argument")
+			}
+
+			goType, err := g.goTypeByParserType(method.OutputMessage.Fields[0].Type)
+
+			if err != nil {
+				return graphql.GoType{}, err
+			}
+
+			return goType, nil
+		},
+		DataLoaderFetch: func(importer *importer.Importer) string {
+			requestTypeName := method.InputMessage.Name
+			requestFieldName := camelCase(method.InputMessage.Fields[0].Name)
+			responseFieldName := camelCase(method.OutputMessage.Fields[0].Name)
+
+			return `
+			request := &` + importer.Prefix(file.GRPCSourcesPkg) + requestTypeName + `{
+				` + requestFieldName + `: keys,
+			}
+
+			response, err := client.` + method.Name + `(ctx, request)
+
+			return response.` + responseFieldName + `, []error{err}
+			`
+		},
 		ClientMethodCaller: func(client, arg string, ctx graphql.BodyContext) string {
 			return client + "." + camelCase(method.Name) + "(ctx," + arg + ")"
 		},

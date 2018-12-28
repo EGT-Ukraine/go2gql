@@ -49,10 +49,18 @@ func (g *Proto2GraphQL) outputMessageFields(msgCfg MessageConfig, file *parsedFi
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare message %s field %s output value resolver", msg.Name, field.Name)
 		}
+
+		fieldGoType, err := g.goTypeByParserType(field.Type)
+
+		if err != nil {
+			return nil, errors.New("failed to resolve property go type")
+		}
+
 		res = append(res, graphql.ObjectField{
 			Name:          field.Name,
 			QuotedComment: field.QuotedComment,
 			Type:          typeResolver,
+			GoType:        fieldGoType,
 			Value:         valueResolver,
 		})
 	}
@@ -101,6 +109,23 @@ func (g *Proto2GraphQL) outputMessageMapFields(msgCfg MessageConfig, file *parse
 	return res, nil
 }
 
+func (g *Proto2GraphQL) dataLoaderFields(configs []DataLoaderFieldConfig) ([]*graphql.DataLoaderField, error) {
+	var fields []*graphql.DataLoaderField
+
+	for _, cfg := range configs {
+		field := &graphql.DataLoaderField{
+			Name: cfg.FieldName,
+			NormalizedParentKeyFieldName: camelCase(cfg.KeyFieldName),
+			ParentKeyFieldName:           cfg.KeyFieldName,
+			DataLoaderName:               cfg.DataLoader,
+		}
+
+		fields = append(fields, field)
+	}
+
+	return fields, nil
+}
+
 func (g *Proto2GraphQL) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, error) {
 	var res []graphql.OutputObject
 	for _, msg := range file.File.Messages {
@@ -116,10 +141,17 @@ func (g *Proto2GraphQL) fileOutputMessages(file *parsedFile) ([]graphql.OutputOb
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve message %s map fields", msg.Name)
 		}
-		if len(fields)+len(mapFields) == 0 {
+
+		dataLoaderFields, err := g.dataLoaderFields(cfg.DataLoaders)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to resolve message %s data loaders", msg.Name)
+		}
+
+		if len(fields)+len(mapFields)+len(dataLoaderFields) == 0 {
 			// It's a NoData scalar
 			continue
 		}
+
 		res = append(res, graphql.OutputObject{
 			VariableName: g.outputMessageVariable(file, msg),
 			GraphQLName:  g.outputMessageGraphQLName(file, msg),
@@ -130,6 +162,7 @@ func (g *Proto2GraphQL) fileOutputMessages(file *parsedFile) ([]graphql.OutputOb
 				Name: snakeCamelCaseSlice(msg.TypeName),
 				Pkg:  file.GRPCSourcesPkg,
 			},
+			DataLoaderFields: dataLoaderFields,
 		})
 	}
 

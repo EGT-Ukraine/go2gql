@@ -4,6 +4,13 @@ type {{$.SchemaName}}SchemaClients struct {
 		{{$service.Name}}Client {{goType $service.ClientGoType}}
 	{{ end -}}
 }
+
+{{ range $service := $.Services -}}
+func (c {{$.SchemaName}}SchemaClients) Get{{$service.Name}}Client() {{goType $service.ClientGoType}} {
+	return c.{{$service.Name}}Client
+}
+{{ end -}}
+
 func Get{{$.SchemaName}}Schema(cls {{$.SchemaName}}SchemaClients, ih *{{interceptorsPkg}}.InterceptorHandler{{- if $.TracerEnabled -}}, tr {{opentracingPkg}}.Tracer{{- end -}}) ({{gqlPkg}}.Schema, error) {
 	{{ range $service := $.Services -}}
 		if cls.{{$service.Name}}Client == nil {

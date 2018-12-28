@@ -34,6 +34,7 @@ var scalarsGoTypes = map[parser.Kind]graphql.GoType{
 	parser.KindInt64:   {Scalar: true, Kind: reflect.Int64},
 	parser.KindInt32:   {Scalar: true, Kind: reflect.Int32},
 	parser.KindString:  {Scalar: true, Kind: reflect.String},
+	parser.KindFile:    {Scalar: true, Kind: reflect.String},
 }
 
 func GoPackageByPath(path, vendorPath string) (string, error) {
