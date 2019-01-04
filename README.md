@@ -1,6 +1,8 @@
 go2gql
 ==============
 
+[![Build Status](https://travis-ci.org/EGT-Ukraine/go2gql.svg?branch=master)](https://travis-ci.org/EGT-Ukraine/go2gql.svg)
+
 Tool, which generates GraphQL Schema for [graphql-go](https://github.com/graphql-go/graphql) package based on external data sources
 
 ## Installation
