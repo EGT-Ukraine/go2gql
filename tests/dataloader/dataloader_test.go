@@ -4,39 +4,56 @@ import (
 	"context"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 
 	"github.com/EGT-Ukraine/go2gql/api/interceptors"
 	"github.com/EGT-Ukraine/go2gql/tests"
-	"github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/config"
+	"github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/apis"
+	"github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/client/comments_controller"
 	"github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/models"
 	"github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/schema"
 	"github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/schema/loaders"
 	"github.com/EGT-Ukraine/go2gql/tests/dataloader/mock"
 )
 
+//go:generate mockgen -destination=mock/category.go -package=mock github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/apis CategoryServiceClient
+//go:generate mockgen -destination=mock/item.go -package=mock github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/apis ItemsServiceClient
+//go:generate mockgen -destination=mock/comments.go -package=mock github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/client/comments_controller IClient
+//go:generate mockgen -destination=mock/reviews.go -package=mock github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/apis ItemsReviewServiceClient
+//go:generate mockgen -destination=mock/user.go -package=mock github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/apis UserServiceClient
+
 func TestDataLoader(t *testing.T) {
-	itemsListResponse := &config.ItemListResponse{
-		Items: []*config.Item{
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.ItemListResponse{
+		Items: []*apis.Item{
 			{
 				Name:       "item 1",
 				CategoryId: 12,
 			},
-		},
-	}
-
-	itemsClient := &mock.ItemsServiceClient{ListResponse: itemsListResponse}
-
-	categoryListResponse := &config.CategoryListResponse{
-		Categories: []*config.Category{
 			{
-				Name: "category 1",
+				Name:       "item 2",
+				CategoryId: 11,
 			},
 		},
-	}
+	}, nil).AnyTimes()
 
-	categoryClient := &mock.CategoryServiceClient{ListResponse: categoryListResponse}
+	categoryClient := mock.NewMockCategoryServiceClient(mockCtrl)
+
+	categoryClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.CategoryListResponse{
+		Categories: []*apis.Category{
+			{
+				Name: "category 12",
+			},
+			{
+				Name: "category 11",
+			},
+		},
+	}, nil).AnyTimes()
 
 	clients := &mock.Clients{
 		ItemsClient:    itemsClient,
@@ -48,6 +65,7 @@ func TestDataLoader(t *testing.T) {
 			items {
 				list {
 					items {
+						name
 						category {
 							name
 						}
@@ -63,8 +81,15 @@ func TestDataLoader(t *testing.T) {
 				"list": {
 					"items": [
 						{
+							"name": "item 1",
 							"category": {
-								"name": "category 1"
+								"name": "category 12"
+							}
+						},
+						{
+							"name": "item 2",
+							"category": {
+								"name": "category 11"
 							}
 						}
 					]
@@ -74,23 +99,77 @@ func TestDataLoader(t *testing.T) {
 	}`, response)
 }
 
-func TestDataLoaderGetOne(t *testing.T) {
-	itemsClient := &mock.ItemsServiceClient{
-		GetOneResponse: &config.Item{
-			Name:       "item 1",
-			CategoryId: 12,
+func TestDataLoaderServiceMakeOnlyOneRequest(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.ItemListResponse{
+		Items: []*apis.Item{
+			{
+				Name:       "item 1",
+				CategoryId: 12,
+			},
+			{
+				Name:       "item 2",
+				CategoryId: 11,
+			},
 		},
+	}, nil).AnyTimes()
+
+	categoryClient := mock.NewMockCategoryServiceClient(mockCtrl)
+
+	categoryClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.CategoryListResponse{
+		Categories: []*apis.Category{
+			{
+				Name: "category 12",
+			},
+			{
+				Name: "category 11",
+			},
+		},
+	}, nil).Times(1)
+
+	clients := &mock.Clients{
+		ItemsClient:    itemsClient,
+		CategoryClient: categoryClient,
 	}
 
-	categoryListResponse := &config.CategoryListResponse{
-		Categories: []*config.Category{
+	makeRequest(t, clients, &handler.RequestOptions{
+		Query: `{
+			items {
+				list {
+					items {
+						name
+						category {
+							name
+						}
+					}
+				}
+			}
+		}`,
+	})
+}
+
+func TestDataLoaderGetOne(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().GetOne(gomock.Any(), gomock.Any()).Return(&apis.Item{
+		Name:       "item 1",
+		CategoryId: 12,
+	}, nil).AnyTimes()
+
+	categoryClient := mock.NewMockCategoryServiceClient(mockCtrl)
+
+	categoryClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.CategoryListResponse{
+		Categories: []*apis.Category{
 			{
 				Name: "category 1",
 			},
 		},
-	}
-
-	categoryClient := &mock.CategoryServiceClient{ListResponse: categoryListResponse}
+	}, nil).AnyTimes()
 
 	clients := &mock.Clients{
 		ItemsClient:    itemsClient,
@@ -123,40 +202,43 @@ func TestDataLoaderGetOne(t *testing.T) {
 }
 
 func TestDataLoaderWithSwagger(t *testing.T) {
-	itemsListResponse := &config.ItemListResponse{
-		Items: []*config.Item{
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.ItemListResponse{
+		Items: []*apis.Item{
 			{
 				Id:         44,
 				Name:       "item 1",
 				CategoryId: 12,
 			},
 		},
-	}
+	}, nil).AnyTimes()
 
-	itemsClient := &mock.ItemsServiceClient{ListResponse: itemsListResponse}
-
-	comments := [][]*models.ItemComment{
-		{
+	commentsClient := mock.NewMockIClient(mockCtrl)
+	commentsClient.EXPECT().ItemsComments(gomock.Any()).Return(&comments_controller.ItemsCommentsOK{
+		Payload: [][]*models.ItemComment{
 			{
-				ID:     111,
-				UserID: 54,
-				Text:   "test comment",
+				{
+					ID:     111,
+					UserID: 54,
+					Text:   "test comment",
+				},
 			},
 		},
-	}
+	}, nil).AnyTimes()
 
-	commentsClient := &mock.CommentsClient{Comments: comments}
-
-	userListResponse := &config.UserListResponse{
-		Users: []*config.User{
+	userClient := mock.NewMockUserServiceClient(mockCtrl)
+	userClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.UserListResponse{
+		Users: []*apis.User{
 			{
 				Id:   54,
 				Name: "Test User",
 			},
 		},
-	}
+	}, nil).AnyTimes()
 
-	userClient := &mock.UserClient{ListResponse: userListResponse}
 	clients := &mock.Clients{
 		ItemsClient:    itemsClient,
 		CommentsClient: commentsClient,
@@ -205,17 +287,20 @@ func TestDataLoaderWithSwagger(t *testing.T) {
 }
 
 func TestDataLoaderGetOneWithGRPCArrayLoader(t *testing.T) {
-	itemsClient := &mock.ItemsServiceClient{
-		GetOneResponse: &config.Item{
-			Name:       "item 1",
-			CategoryId: 12,
-		},
-	}
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
 
-	listResponse := &config.ListResponse{
-		ItemReviews: []*config.ItemReviews{
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().GetOne(gomock.Any(), gomock.Any()).Return(&apis.Item{
+		Name:       "item 1",
+		CategoryId: 12,
+	}, nil).AnyTimes()
+
+	reviewsClient := mock.NewMockItemsReviewServiceClient(mockCtrl)
+	reviewsClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.ListResponse{
+		ItemReviews: []*apis.ItemReviews{
 			{
-				ItemReview: []*config.Review{
+				ItemReview: []*apis.Review{
 					{
 						Id:   456,
 						Text: "excellent item",
@@ -223,9 +308,7 @@ func TestDataLoaderGetOneWithGRPCArrayLoader(t *testing.T) {
 				},
 			},
 		},
-	}
-
-	reviewsClient := &mock.ReviewsClient{ListResponse: listResponse}
+	}, nil).AnyTimes()
 
 	clients := &mock.Clients{
 		ItemsClient:   itemsClient,

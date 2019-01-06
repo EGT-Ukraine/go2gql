@@ -26,10 +26,10 @@ proto2gql:
   imports_aliases:
     - google/protobuf/empty.proto:      "github.com/golang/protobuf/ptypes/empty/empty.proto"
   files:
-    - proto_path: "./config/reviews.proto"
-    - proto_path: "./config/category.proto"
-    - proto_path: "./config/user.proto"
-    - proto_path: "./config/items.proto"
+    - proto_path: "./apis/reviews.proto"
+    - proto_path: "./apis/category.proto"
+    - proto_path: "./apis/user.proto"
+    - proto_path: "./apis/items.proto"
       services:
         ItemsService:
           methods:
@@ -53,7 +53,7 @@ swagger2gql:
   output_path: "./generated/schema"
   files:
     - name: "Comments"
-      path: "config/swagger.json"
+      path: "apis/swagger.json"
       models_go_path: "github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/models"
       tags:
         "comments-controller":

@@ -153,6 +153,14 @@
   version = "v0.18.0"
 
 [[projects]]
+  digest = "1:530233672f656641b365f8efb38ed9fba80e420baff2ce87633813ab3755ed6d"
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  pruneopts = ""
+  revision = "51421b967af1f557f93a59e0057aaf15ca02e29c"
+  version = "v1.2.0"
+
+[[projects]]
   digest = "1:3dd078fda7500c341bc26cfbc6c6a34614f295a2457149fc1045cab767cbcf18"
   name = "github.com/golang/protobuf"
   packages = [
@@ -232,12 +240,12 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
+  digest = "1:1d7e1867c49a6dd9856598ef7c3123604ea3daabf5b83f303ff457bcbc410b1d"
   name = "github.com/pkg/errors"
   packages = ["."]
   pruneopts = ""
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
 
 [[projects]]
   digest = "1:256484dbbcd271f9ecebc6795b2df8cad4c458dd0f5fd82a8c2fa0c29f233411"
@@ -272,12 +280,12 @@
   version = "1.6.3"
 
 [[projects]]
-  digest = "1:c587772fb8ad29ad4db67575dad25ba17a51f072ff18a22b4f0257a4d9c24f75"
+  digest = "1:381bcbeb112a51493d9d998bbba207a529c73dbb49b3fd789e48c63fac1f192c"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
   pruneopts = ""
-  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
-  version = "v1.2.2"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
 
 [[projects]]
   digest = "1:e85837cb04b78f61688c6eba93ea9d14f60d611e2aaf8319999b1a60d2dafbfa"
@@ -305,11 +313,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:528fd80cf9b601eec370e035bfa4b32dc98bb4dbf64de45686387249dd82a7cd"
+  digest = "1:1790bdba70a251611d2c92eea82b02b66a37d76a153d705a1ecb19c93588dc6a"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "82a175fd1598e8a172e58ebdf5ed262bb29129e5"
+  revision = "badf5585203e739f88c2c6cd34188a6f54b5d619"
 
 [[projects]]
   digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
@@ -337,7 +345,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:366bdca854e91ce6f39698e70a02d31f38b6404ade8b9f9c79381a2dff188e62"
+  digest = "1:4c5e914d5d7704ae6591bb9f57374d15f1790a8c52486f50c2b2a443bf2adf4b"
   name = "golang.org/x/tools"
   packages = [
     "go/ast/astutil",
@@ -353,7 +361,7 @@
     "internal/semver",
   ]
   pruneopts = ""
-  revision = "8a6051197512ff9cbf65108d80613b631fe0b4f3"
+  revision = "498d95493402f719ce3de5c8cb60d1b50d0a1239"
 
 [[projects]]
   branch = "master"
@@ -424,6 +432,7 @@
     "github.com/go-openapi/spec",
     "github.com/go-openapi/strfmt",
     "github.com/go-openapi/swag",
+    "github.com/golang/mock/gomock",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes/empty",
     "github.com/golang/protobuf/ptypes/timestamp",
