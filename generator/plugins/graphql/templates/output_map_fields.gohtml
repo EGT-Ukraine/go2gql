@@ -1,0 +1,33 @@
+{{ range $field := $.MapFields -}}
+    {{$.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
+        Name: "{{$field.Name}}",
+        Type: {{call $field.Type $}},
+        Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
+            switch src := p.Source.(type){
+                case *{{goType $.GoType}}:
+                    if src == nil {
+                        return nil, nil
+                    }
+                    s := *src
+                    var res []map[string]interface{}
+                    for key, value := range {{call $field.Value "s" $}} {
+                        res = append(res, map[string]interface{}{
+                            "key":   key,
+                            "value": value,
+                        })
+                    }
+                    return res, nil
+                case {{goType $.GoType}}:
+                    var res []map[string]interface{}
+                    for key, value := range {{call $field.Value "src" $}} {
+                        res = append(res, map[string]interface{}{
+                            "key":   key,
+                            "value": value,
+                        })
+                    }
+                    return res, nil
+            }
+            return nil, {{errorsPkg}}.New("source of unknown type")
+        },
+    })
+{{ end -}}

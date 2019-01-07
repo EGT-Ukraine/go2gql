@@ -26,10 +26,10 @@ const (
 )
 
 type typesGenerator struct {
-	File          *TypesFile
-	tracerEnabled bool
-	imports       *importer.Importer
-	dataLoader    *DataLoader
+	File                       *TypesFile
+	tracerEnabled              bool
+	imports                    *importer.Importer
+	outputObjectFieldRenderers []OutputObjectFieldRender
 }
 
 func (g typesGenerator) importFunc(importPath string) func() string {
@@ -40,9 +40,10 @@ func (g typesGenerator) importFunc(importPath string) func() string {
 
 func (g typesGenerator) bodyTemplateContext() interface{} {
 	return BodyContext{
-		File:          g.File,
-		Importer:      g.imports,
-		TracerEnabled: g.tracerEnabled,
+		File:                 g.File,
+		Importer:             g.imports,
+		TracerEnabled:        g.tracerEnabled,
+		OutputFieldRenderers: g.outputObjectFieldRenderers,
 	}
 
 }
@@ -63,10 +64,10 @@ func (g typesGenerator) goTypeForNew(typ GoType) string {
 
 func (g typesGenerator) bodyTemplateFuncs() map[string]interface{} {
 	return map[string]interface{}{
-		"ctxPkg":          g.importFunc("context"),
-		"debugPkg":        g.importFunc("runtime/debug"),
-		"fmtPkg":          g.importFunc("fmt"),
-		"loadersPkg":      g.importFunc(g.dataLoader.Pkg),
+		"ctxPkg":   g.importFunc("context"),
+		"debugPkg": g.importFunc("runtime/debug"),
+		"fmtPkg":   g.importFunc("fmt"),
+		//"loadersPkg":      g.importFunc(g.dataLoader.Pkg),
 		"logPkg":          g.importFunc(LogPkg),
 		"errorsPkg":       g.importFunc(ErrorsPkgPath),
 		"gqlPkg":          g.importFunc(GraphqlPkgPath),
@@ -81,11 +82,11 @@ func (g typesGenerator) bodyTemplateFuncs() map[string]interface{} {
 		},
 		"goType":       g.goTypeStr,
 		"goTypeForNew": g.goTypeForNew,
-		"graphqlOutputLoaderTypeName": func(ctx BodyContext, dataLoaderName string) string {
-			dataLoaderConfig := g.dataLoader.Loaders[dataLoaderName]
-
-			return dataLoaderConfig.OutputGraphqlType(ctx)
-		},
+		//"graphqlOutputLoaderTypeName": func(ctx BodyContext, dataLoaderName string) string {
+		//	dataLoaderConfig := g.dataLoader.Loaders[dataLoaderName]
+		//
+		//	return dataLoaderConfig.OutputGraphqlType(ctx)
+		//},
 	}
 }
 
@@ -102,6 +103,12 @@ func (g typesGenerator) headTemplateFuncs() map[string]interface{} {
 }
 
 func (g typesGenerator) generateBody() ([]byte, error) {
+	fieldsRenderer := &fieldsRenderer{
+		templateFuncs: g.bodyTemplateFuncs(),
+	}
+
+	g.outputObjectFieldRenderers = append(g.outputObjectFieldRenderers, fieldsRenderer)
+
 	buf := new(bytes.Buffer)
 	tmpl, err := templatesTypes_bodyGohtmlBytes()
 	if err != nil {
@@ -177,6 +184,28 @@ func (g typesGenerator) generateHead() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+type fieldsRenderer struct {
+	templateFuncs map[string]interface{}
+}
+
+func (r *fieldsRenderer) RenderFields(o OutputObject) (string, error) {
+	buf := new(bytes.Buffer)
+	tmpl, err := templatesOutput_fieldsGohtmlBytes()
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get output fields template")
+	}
+	bodyTpl, err := template.New("head").Funcs(r.templateFuncs).Parse(string(tmpl))
+	if err != nil {
+		return "", errors.Wrap(err, "failed to parse template")
+	}
+	err = bodyTpl.Execute(buf, o)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to execute template")
+	}
+
+	return buf.String(), nil
 }
 
 func (g typesGenerator) generate(out io.Writer) error {

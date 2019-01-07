@@ -1,4 +1,4 @@
-package graphql
+package dataloader
 
 import (
 	"os"
@@ -8,6 +8,7 @@ import (
 	"github.com/EGT-Ukraine/dataloaden/pkg/generator"
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 )
 
@@ -20,10 +21,10 @@ type LoadersContext struct {
 
 type Loader struct {
 	LoaderTypeName string
-	Service        Service
+	Service        graphql.Service
 	FetchCode      string
-	RequestGoType  GoType
-	ResponseGoType GoType
+	RequestGoType  graphql.GoType
+	ResponseGoType graphql.GoType
 	Config         DataLoaderConfig
 }
 
@@ -53,7 +54,7 @@ func (p *LoaderGenerator) GenerateDataLoaders() error {
 	return nil
 }
 
-func (p *LoaderGenerator) generateLoaders(requestGoType GoType, responseGoType GoType) error {
+func (p *LoaderGenerator) generateLoaders(requestGoType graphql.GoType, responseGoType graphql.GoType) error {
 	keyType := requestGoType.ElemType.Kind.String()
 
 	var typeName string
@@ -108,7 +109,7 @@ func (p *LoaderGenerator) renderLoaders(out *os.File) error {
 	fileImporter := &importer.Importer{}
 
 	templateFuncs := map[string]interface{}{
-		"goType": func(typ GoType) string {
+		"goType": func(typ graphql.GoType) string {
 			return typ.String(fileImporter)
 		},
 		"duration": func(duration int) int {

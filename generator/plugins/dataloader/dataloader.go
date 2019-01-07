@@ -1,7 +1,9 @@
-package graphql
+package dataloader
 
 import (
 	"reflect"
+
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 
 	"github.com/pkg/errors"
 )
@@ -13,15 +15,15 @@ type DataLoader struct {
 }
 
 type LoaderModel struct {
-	Service           *Service
-	Method            *Method
-	InputGoType       GoType
-	OutputGoType      GoType
-	OutputGraphqlType TypeResolver
+	Service           *graphql.Service
+	Method            *graphql.Method
+	InputGoType       graphql.GoType
+	OutputGoType      graphql.GoType
+	OutputGraphqlType graphql.TypeResolver
 	Config            DataLoaderConfig
 }
 
-func getServiceByName(files map[string]*TypesFile, name string) *Service {
+func getServiceByName(files map[string]*graphql.TypesFile, name string) *graphql.Service {
 	for _, file := range files {
 		for _, svc := range file.Services {
 			if svc.Name == name {
@@ -33,7 +35,7 @@ func getServiceByName(files map[string]*TypesFile, name string) *Service {
 	return nil
 }
 
-func createLoaders(config *DataLoadersConfig, files map[string]*TypesFile) (map[string]LoaderModel, error) {
+func createLoaders(config *DataLoadersConfig, files map[string]*graphql.TypesFile) (map[string]LoaderModel, error) {
 	loaders := make(map[string]LoaderModel)
 
 	for _, dataLoaderConfig := range config.Loaders {
@@ -104,7 +106,7 @@ func createLoaders(config *DataLoadersConfig, files map[string]*TypesFile) (map[
 	return loaders, nil
 }
 
-func CreateDataLoader(config *DataLoadersConfig, vendorPath string, files map[string]*TypesFile) (*DataLoader, error) {
+func CreateDataLoader(config *DataLoadersConfig, vendorPath string, files map[string]*graphql.TypesFile) (*DataLoader, error) {
 	if config == nil {
 		return nil, nil
 	}
@@ -115,7 +117,7 @@ func CreateDataLoader(config *DataLoadersConfig, vendorPath string, files map[st
 		return nil, errors.Wrap(err, "failed to create loaders")
 	}
 
-	goPkg, err := GoPackageByPath(config.OutputPath, vendorPath)
+	goPkg, err := graphql.GoPackageByPath(config.OutputPath, vendorPath)
 
 	if err != nil {
 		return nil, errors.New("failed to get go package by path " + goPkg)

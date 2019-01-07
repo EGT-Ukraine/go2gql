@@ -1,0 +1,22 @@
+{{ range $field := $object.DataLoaderFields -}}
+    {{$object.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
+        Name:        "{{$field.Name}}",
+        Description: "",
+        Type:        {{graphqlOutputLoaderTypeName $ $field.DataLoaderName}},
+        Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+            parent := p.Source.(*{{goType $object.GoType}})
+
+            loaders := {{loadersPkg}}.GetDataLoadersFromContext(p.Context)
+
+            if loaders == nil {
+                return nil, errors.New("Data loaders not found in context. Call loaders.GetContextWithLoaders")
+            }
+
+            thunk := loaders.{{$field.DataLoaderName}}Loader.LoadThunk(parent.{{$field.NormalizedParentKeyFieldName}})
+
+            return func() (interface{}, error) {
+                return thunk()
+            }, nil
+        },
+    })
+{{ end -}}

@@ -209,9 +209,10 @@ type TypesFile struct {
 }
 
 type BodyContext struct {
-	File          *TypesFile
-	Importer      *importer.Importer
-	TracerEnabled bool
+	File                 *TypesFile
+	Importer             *importer.Importer
+	TracerEnabled        bool
+	OutputFieldRenderers []OutputObjectFieldRender
 }
 
 type ServiceContext struct {

@@ -1,0 +1,28 @@
+{{ range $field := $.Fields -}}
+    {{$.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
+        Name: "{{$field.Name}}",
+        Description: {{$field.QuotedComment}},
+        Type: {{call $field.Type $}},
+        Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
+            switch src := p.Source.(type){
+                case *{{goType $.GoType}}:
+                    if src == nil {
+                        return nil, nil
+                    }
+                    s := *src
+                    {{if $field.NeedCast -}}
+                        return {{$field.CastTo}}({{call $field.Value "s" $}}), nil
+                    {{else -}}
+                        return {{call $field.Value "s" $}}, nil
+                    {{ end -}}
+                case {{goType $.GoType}}:
+                    {{if $field.NeedCast -}}
+                        return {{$field.CastTo}}({{call $field.Value "src" $}}), nil
+                    {{else -}}
+                        return {{call $field.Value "src" $}}, nil
+                    {{end -}}
+            }
+            return nil, {{errorsPkg}}.New("source of unknown type")
+        },
+    })
+{{ end -}}
