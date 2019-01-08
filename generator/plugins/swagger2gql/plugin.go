@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/EGT-Ukraine/go2gql/generator"
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/swagger2gql/parser"
 )
@@ -20,9 +21,10 @@ const (
 )
 
 type Plugin struct {
-	graphql        *graphql.Plugin
-	config         *Config
-	generateConfig *generator.GenerateConfig
+	graphql          *graphql.Plugin
+	dataLoaderPlugin *dataloader.Plugin
+	config           *Config
+	generateConfig   *generator.GenerateConfig
 
 	parsedFiles []*parsedFile
 }
@@ -32,10 +34,15 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 		switch plugin.Name() {
 		case graphql.PluginName:
 			p.graphql = plugin.(*graphql.Plugin)
+		case dataloader.PluginName:
+			p.dataLoaderPlugin = plugin.(*dataloader.Plugin)
 		}
 	}
 	if p.graphql == nil {
 		return errors.New("'graphql' plugin is not installed.")
+	}
+	if p.dataLoaderPlugin == nil {
+		return errors.New("'dataloader' plugin is not installed.")
 	}
 	cfg := new(Config)
 	err := mapstructure.Decode(config.PluginsConfigs[PluginConfigKey], cfg)

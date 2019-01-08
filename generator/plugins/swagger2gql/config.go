@@ -5,25 +5,22 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/names"
 )
 
 type FieldConfig struct {
 	ContextKey string `mapstructure:"context_key"`
 }
-type DataLoaderFieldConfig struct {
-	FieldName    string `mapstructure:"field_name"`
-	KeyFieldName string `mapstructure:"key_field_name"`
-	DataLoader   string `mapstructure:"dataloader"`
-}
 type ObjectConfig struct {
-	Fields      map[string]FieldConfig  `mapstructure:"fields"`
-	DataLoaders []DataLoaderFieldConfig `mapstructure:"dataloaders"`
+	Fields      map[string]FieldConfig             `mapstructure:"fields"`
+	DataLoaders []dataloader.DataLoaderFieldConfig `mapstructure:"data_loaders"`
 }
 
 type MethodConfig struct {
-	Alias       string `mapstructure:"alias"`
-	RequestType string `mapstructure:"request_type"` // QUERY | MUTATION
+	Alias              string                              `mapstructure:"alias"`
+	RequestType        string                              `mapstructure:"request_type"` // QUERY | MUTATION
+	DataLoaderProvider dataloader.DataLoaderProviderConfig `mapstructure:"data_loader_provider"`
 }
 type TagConfig struct {
 	ClientGoPackage string                             `mapstructure:"client_go_package"`

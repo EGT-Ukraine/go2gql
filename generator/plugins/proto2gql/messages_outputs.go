@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/proto2gql/parser"
 )
@@ -109,7 +110,7 @@ func (g *Proto2GraphQL) outputMessageMapFields(msgCfg MessageConfig, file *parse
 	return res, nil
 }
 
-func (g *Proto2GraphQL) dataLoaderFields(configs []DataLoaderFieldConfig) ([]*graphql.DataLoaderField, error) {
+func (g *Proto2GraphQL) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig) ([]*graphql.DataLoaderField, error) {
 	var fields []*graphql.DataLoaderField
 
 	for _, cfg := range configs {

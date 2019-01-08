@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/names"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/swagger2gql/parser"
@@ -135,7 +136,7 @@ func (p *Plugin) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, e
 	return res, nil
 }
 
-func (p *Plugin) dataLoaderFields(configs []DataLoaderFieldConfig) ([]*graphql.DataLoaderField, error) {
+func (p *Plugin) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig) ([]*graphql.DataLoaderField, error) {
 	var fields []*graphql.DataLoaderField
 
 	for _, cfg := range configs {

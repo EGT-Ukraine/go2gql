@@ -4,6 +4,8 @@ import (
 	"regexp"
 
 	"github.com/pkg/errors"
+
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 )
 
 const (
@@ -14,19 +16,15 @@ const (
 type FieldsConfig struct {
 	ContextKey string `mapstructure:"context_key"`
 }
-type DataLoaderFieldConfig struct {
-	FieldName    string `mapstructure:"field_name"`
-	KeyFieldName string `mapstructure:"key_field_name"`
-	DataLoader   string `mapstructure:"dataloader"`
-}
 type MessageConfig struct {
-	ErrorField  string                  `mapstructure:"error_field"`
-	Fields      map[string]FieldsConfig `mapstructure:"fields"`
-	DataLoaders []DataLoaderFieldConfig `mapstructure:"dataloaders"`
+	ErrorField  string                             `mapstructure:"error_field"`
+	Fields      map[string]FieldsConfig            `mapstructure:"fields"`
+	DataLoaders []dataloader.DataLoaderFieldConfig `mapstructure:"data_loaders"`
 }
 type MethodConfig struct {
-	Alias       string `mapstructure:"alias"`
-	RequestType string `mapstructure:"request_type"` // QUERY | MUTATION
+	Alias              string                              `mapstructure:"alias"`
+	RequestType        string                              `mapstructure:"request_type"` // QUERY | MUTATION
+	DataLoaderProvider dataloader.DataLoaderProviderConfig `mapstructure:"data_loader_provider"`
 }
 type ServiceConfig struct {
 	ServiceName string                  `mapstructure:"service_name"`

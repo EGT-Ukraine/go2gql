@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/proto2gql/parser"
@@ -32,27 +33,13 @@ func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig
 			return nil, errors.Wrap(err, "failed to prepare input type resolver")
 		}
 
-		goType, err := g.goTypeByParserType(field.Type)
-
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to resolve go type for field "+field.Name)
-		}
-
 		if field.Repeated {
 			typResolver = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(typResolver))
-
-			elementType := goType
-
-			goType = graphql.GoType{
-				Kind:     reflect.Slice,
-				ElemType: &elementType,
-			}
 		}
 
 		args = append(args, graphql.MethodArgument{
 			Name:          field.Name,
 			Type:          typResolver,
-			GoType:        goType,
 			QuotedComment: field.QuotedComment,
 		})
 	}
@@ -156,7 +143,7 @@ func (g Proto2GraphQL) methodName(cfg MethodConfig, method *parser.Method) strin
 	}
 	return method.Name
 }
-func (g Proto2GraphQL) serviceMethod(cfg MethodConfig, file *parsedFile, method *parser.Method) (*graphql.Method, error) {
+func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *parsedFile, method *parser.Method) (*graphql.Method, error) {
 	outputMsgTypeFile, err := g.parsedFile(method.OutputMessage.File())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to resolve file type file")
@@ -185,34 +172,79 @@ func (g Proto2GraphQL) serviceMethod(cfg MethodConfig, file *parsedFile, method 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to resolve message value resolver")
 	}
+
+	if err := g.addDataLoaderProvider(sc, cfg, file, method); err != nil {
+		return nil, errors.Wrap(err, "failed add data loader provider")
+	}
+
 	return &graphql.Method{
 		Name:              g.methodName(cfg, method),
 		QuotedComment:     method.QuotedComment,
 		GraphQLOutputType: outType,
 		RequestType:       requestType,
-		GraphQLOutputDataLoaderType: func(ctx graphql.BodyContext) string {
-			dataLoaderOutType, err := g.TypeOutputTypeResolver(outputMsgTypeFile, method.OutputMessage.Fields[0].Type)
-
-			if err != nil {
-				panic(err)
-			}
-
-			return dataLoaderOutType(ctx)
+		ClientMethodCaller: func(client, arg string, ctx graphql.BodyContext) string {
+			return client + "." + camelCase(method.Name) + "(ctx," + arg + ")"
 		},
-		DataLoaderResponseType: func() (graphql.GoType, error) {
-			if len(method.OutputMessage.Fields) != 1 {
-				return graphql.GoType{}, errors.New("Method " + method.Name + " must have 1 response argument")
-			}
+		RequestResolver:        valueResolver,
+		RequestResolverWithErr: valueResolverWithErr,
+		Arguments:              args,
+		PayloadErrorChecker:    payloadErrChecker,
+		PayloadErrorAccessor:   payloadErrAccessor,
+	}, nil
+}
 
-			goType, err := g.goTypeByParserType(method.OutputMessage.Fields[0].Type)
+func (g Proto2GraphQL) addDataLoaderProvider(sc ServiceConfig, cfg MethodConfig, file *parsedFile, method *parser.Method) error {
+	dataLoaderProviderConfig := cfg.DataLoaderProvider
 
-			if err != nil {
-				return graphql.GoType{}, err
-			}
+	if dataLoaderProviderConfig.Name == "" {
+		return nil
+	}
 
-			return goType, nil
+	if len(method.OutputMessage.Fields) != 1 {
+		return errors.New("Method " + method.Name + " must have 1 response argument")
+	}
+
+	responseGoType, err := g.goTypeByParserType(method.OutputMessage.Fields[0].Type)
+
+	if err != nil {
+		return err
+	}
+
+	svc := method.Service
+
+	if len(method.InputMessage.Fields) != 1 {
+		return errors.Errorf("Service %s input message %s must have 1 input parameter", svc.Name, method.Name)
+	}
+
+	inputArgumentGoType, err := g.goTypeByParserType(method.InputMessage.Fields[0].Type)
+	if err != nil {
+		return errors.Wrap(err, "failed to prepare service method arguments")
+	}
+
+	if method.InputMessage.Fields[0].Repeated != true {
+		return errors.Errorf("Service %s input message %s parameter must be repeated", svc.Name, method.Name)
+	}
+
+	if !inputArgumentGoType.Scalar {
+		return errors.Errorf("Service %s input message %s parameter must be scalar", svc.Name, method.Name)
+	}
+
+	outputMsgTypeFile, err := g.parsedFile(method.OutputMessage.File())
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve file type file")
+	}
+
+	dataLoaderOutType, err := g.TypeOutputTypeResolver(outputMsgTypeFile, method.OutputMessage.Fields[0].Type)
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve output type")
+	}
+
+	dataLoaderProvider := dataloader.LoaderModel{
+		Service: &dataloader.Service{
+			Name:          g.serviceName(sc, svc),
+			CallInterface: g.serviceCallInterface(file, svc.Name),
 		},
-		DataLoaderFetch: func(importer *importer.Importer) string {
+		FetchCode: func(importer *importer.Importer) string {
 			requestTypeName := method.InputMessage.Name
 			requestFieldName := camelCase(method.InputMessage.Fields[0].Name)
 			responseFieldName := camelCase(method.OutputMessage.Fields[0].Name)
@@ -227,16 +259,20 @@ func (g Proto2GraphQL) serviceMethod(cfg MethodConfig, file *parsedFile, method 
 			return response.` + responseFieldName + `, []error{err}
 			`
 		},
-		ClientMethodCaller: func(client, arg string, ctx graphql.BodyContext) string {
-			return client + "." + camelCase(method.Name) + "(ctx," + arg + ")"
+		InputGoType: graphql.GoType{
+			Kind:     reflect.Slice,
+			ElemType: &inputArgumentGoType,
 		},
-		RequestResolver:        valueResolver,
-		RequestResolverWithErr: valueResolverWithErr,
-		Arguments:              args,
-		PayloadErrorChecker:    payloadErrChecker,
-		PayloadErrorAccessor:   payloadErrAccessor,
-	}, nil
+		OutputGoType:      responseGoType,
+		OutputGraphqlType: dataLoaderOutType,
+		Config:            dataLoaderProviderConfig,
+	}
+
+	g.DataLoaderPlugin.AddLoader(dataLoaderProvider)
+
+	return nil
 }
+
 func (g Proto2GraphQL) serviceQueryMethods(sc ServiceConfig, file *parsedFile, service *parser.Service) ([]graphql.Method, error) {
 	var res []graphql.Method
 	for _, method := range service.Methods {
@@ -244,7 +280,7 @@ func (g Proto2GraphQL) serviceQueryMethods(sc ServiceConfig, file *parsedFile, s
 		if !g.methodIsQuery(mc, method) {
 			continue
 		}
-		met, err := g.serviceMethod(mc, file, method)
+		met, err := g.serviceMethod(sc, mc, file, method)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare service method %s", method.Name)
 		}
@@ -268,7 +304,7 @@ func (g Proto2GraphQL) serviceMutationsMethods(cfg ServiceConfig, file *parsedFi
 		if g.methodIsQuery(mc, method) {
 			continue
 		}
-		met, err := g.serviceMethod(mc, file, method)
+		met, err := g.serviceMethod(cfg, mc, file, method)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare service method %s", method.Name)
 		}
@@ -297,16 +333,20 @@ func (g Proto2GraphQL) fileServices(file *parsedFile) ([]graphql.Service, error)
 		}
 
 		res = append(res, graphql.Service{
-			Name:          g.serviceName(sc, service),
-			QuotedComment: service.QuotedComment,
-			CallInterface: graphql.GoType{
-				Kind: reflect.Interface,
-				Pkg:  file.GRPCSourcesPkg,
-				Name: service.Name + "Client",
-			},
+			Name:            g.serviceName(sc, service),
+			QuotedComment:   service.QuotedComment,
+			CallInterface:   g.serviceCallInterface(file, service.Name),
 			QueryMethods:    queryMethods,
 			MutationMethods: mutationsMethods,
 		})
 	}
 	return res, nil
+}
+
+func (g Proto2GraphQL) serviceCallInterface(file *parsedFile, serviceName string) graphql.GoType {
+	return graphql.GoType{
+		Kind: reflect.Interface,
+		Pkg:  file.GRPCSourcesPkg,
+		Name: serviceName + "Client",
+	}
 }

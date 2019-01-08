@@ -104,7 +104,7 @@ type OutputObject struct {
 	GraphQLName      string
 	GoType           GoType
 	Fields           []ObjectField
-	DataLoaderFields []*DataLoaderField
+	DataLoaderFields []*DataLoaderField // TODO: move to dataloader plugin
 	MapFields        []ObjectField
 }
 
@@ -159,40 +159,21 @@ type Service struct {
 	QueryMethods    []Method
 	MutationMethods []Method
 }
-
-func (s *Service) FindMethodByName(name string) *Method {
-	searchName := strings.ToLower(name)
-
-	for _, method := range append(s.QueryMethods, s.MutationMethods...) {
-		if strings.ToLower(method.Name) == searchName {
-			return &method
-		}
-	}
-
-	return nil
-}
-
-type DataLoaderTypeResolver func() (GoType, error)
-
 type Method struct {
-	Name                        string
-	QuotedComment               string
-	GraphQLOutputType           TypeResolver
-	GraphQLOutputDataLoaderType TypeResolver
-	Arguments                   []MethodArgument
-	RequestResolver             ValueResolver
-	RequestResolverWithErr      bool
-	ClientMethodCaller          ClientMethodCaller
-	RequestType                 GoType
-	DataLoaderResponseType      DataLoaderTypeResolver
-	DataLoaderFetch             func(importer *importer.Importer) string
-	PayloadErrorChecker         PayloadErrorChecker
-	PayloadErrorAccessor        PayloadErrorAccessor
+	Name                   string
+	QuotedComment          string
+	GraphQLOutputType      TypeResolver
+	Arguments              []MethodArgument
+	RequestResolver        ValueResolver
+	RequestResolverWithErr bool
+	ClientMethodCaller     ClientMethodCaller
+	RequestType            GoType
+	PayloadErrorChecker    PayloadErrorChecker
+	PayloadErrorAccessor   PayloadErrorAccessor
 }
 type MethodArgument struct {
 	Name          string
 	Type          TypeResolver
-	GoType        GoType
 	QuotedComment string
 }
 type TypesFile struct {
@@ -209,9 +190,10 @@ type TypesFile struct {
 }
 
 type BodyContext struct {
-	File          *TypesFile
-	Importer      *importer.Importer
-	TracerEnabled bool
+	File                 *TypesFile
+	Importer             *importer.Importer
+	TracerEnabled        bool
+	OutputFieldRenderers []OutputObjectFieldRender
 }
 
 type ServiceContext struct {

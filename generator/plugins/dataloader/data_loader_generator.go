@@ -1,4 +1,4 @@
-package graphql
+package dataloader
 
 import (
 	"os"
@@ -8,6 +8,7 @@ import (
 	"github.com/EGT-Ukraine/dataloaden/pkg/generator"
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 )
 
@@ -19,12 +20,13 @@ type LoadersContext struct {
 }
 
 type Loader struct {
-	LoaderTypeName string
-	Service        Service
-	FetchCode      string
-	RequestGoType  GoType
-	ResponseGoType GoType
-	Config         DataLoaderConfig
+	LoaderTypeName    string
+	Service           Service
+	FetchCode         string
+	RequestGoType     graphql.GoType
+	ResponseGoType    graphql.GoType
+	OutputGraphqlType graphql.TypeResolver
+	Config            DataLoaderProviderConfig
 }
 
 type LoaderGenerator struct {
@@ -36,6 +38,10 @@ func NewLoaderGenerator(dataLoader *DataLoader) *LoaderGenerator {
 }
 
 func (p *LoaderGenerator) GenerateDataLoaders() error {
+	if len(p.dataLoader.Loaders) == 0 {
+		return nil
+	}
+
 	if err := os.MkdirAll(p.dataLoader.OutputPath, os.ModePerm); err != nil {
 		return errors.Wrap(err, "failed to create output path dir "+p.dataLoader.OutputPath)
 	}
@@ -53,7 +59,7 @@ func (p *LoaderGenerator) GenerateDataLoaders() error {
 	return nil
 }
 
-func (p *LoaderGenerator) generateLoaders(requestGoType GoType, responseGoType GoType) error {
+func (p *LoaderGenerator) generateLoaders(requestGoType graphql.GoType, responseGoType graphql.GoType) error {
 	keyType := requestGoType.ElemType.Kind.String()
 
 	var typeName string
@@ -108,7 +114,7 @@ func (p *LoaderGenerator) renderLoaders(out *os.File) error {
 	fileImporter := &importer.Importer{}
 
 	templateFuncs := map[string]interface{}{
-		"goType": func(typ GoType) string {
+		"goType": func(typ graphql.GoType) string {
 			return typ.String(fileImporter)
 		},
 		"duration": func(duration int) int {
@@ -132,8 +138,6 @@ func (p *LoaderGenerator) renderLoaders(out *os.File) error {
 
 		fileImporter.New(service.CallInterface.Pkg)
 
-		method := dataLoaderModel.Method
-
 		requestGoType := dataLoaderModel.InputGoType
 
 		responseGoType := dataLoaderModel.OutputGoType
@@ -152,7 +156,7 @@ func (p *LoaderGenerator) renderLoaders(out *os.File) error {
 		loaders = append(loaders, Loader{
 			LoaderTypeName: loaderTypeName,
 			Service:        *service,
-			FetchCode:      method.DataLoaderFetch(fileImporter),
+			FetchCode:      dataLoaderModel.FetchCode(fileImporter),
 			RequestGoType:  requestGoType,
 			ResponseGoType: responseGoType,
 			Config:         dataLoaderModel.Config,
