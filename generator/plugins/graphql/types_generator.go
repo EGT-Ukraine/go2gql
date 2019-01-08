@@ -26,9 +26,10 @@ const (
 )
 
 type typesGenerator struct {
-	File          *TypesFile
-	tracerEnabled bool
-	imports       *importer.Importer
+	File                       *TypesFile
+	tracerEnabled              bool
+	imports                    *importer.Importer
+	outputObjectFieldRenderers []OutputObjectFieldRender
 }
 
 func (g typesGenerator) importFunc(importPath string) func() string {
@@ -39,9 +40,10 @@ func (g typesGenerator) importFunc(importPath string) func() string {
 
 func (g typesGenerator) bodyTemplateContext() interface{} {
 	return BodyContext{
-		File:          g.File,
-		Importer:      g.imports,
-		TracerEnabled: g.tracerEnabled,
+		File:                 g.File,
+		Importer:             g.imports,
+		TracerEnabled:        g.tracerEnabled,
+		OutputFieldRenderers: g.outputObjectFieldRenderers,
 	}
 
 }
@@ -173,6 +175,16 @@ func (g typesGenerator) generateHead() ([]byte, error) {
 }
 
 func (g typesGenerator) generate(out io.Writer) error {
+	fieldsRenderer := &fieldsRenderer{
+		templateFuncs: g.bodyTemplateFuncs(),
+	}
+
+	mapFieldsRenderer := &mapFieldsRenderer{
+		templateFuncs: g.bodyTemplateFuncs(),
+	}
+
+	g.outputObjectFieldRenderers = append(g.outputObjectFieldRenderers, fieldsRenderer, mapFieldsRenderer)
+
 	body, err := g.generateBody()
 	if err != nil {
 		return errors.Wrap(err, "failed to generate body")
@@ -196,7 +208,7 @@ func (g typesGenerator) generate(out io.Writer) error {
 	})
 	// TODO: fix this
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+		fmt.Fprintln(os.Stderr, err.Error(), string(r))
 	} else {
 		r = res
 	}

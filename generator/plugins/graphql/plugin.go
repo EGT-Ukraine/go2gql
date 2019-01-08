@@ -18,9 +18,10 @@ const (
 )
 
 type Plugin struct {
-	files         map[string]*TypesFile
-	schemaConfigs []SchemaConfig
-	generateCfg   *generator.GenerateConfig
+	files                      map[string]*TypesFile
+	schemaConfigs              []SchemaConfig
+	generateCfg                *generator.GenerateConfig
+	outputObjectFieldRenderers []OutputObjectFieldRender
 }
 
 type SchemaObjects struct {
@@ -35,6 +36,7 @@ type SchemaObjects struct {
 func (p *Plugin) Prepare() error {
 	return nil
 }
+
 func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plugin) error {
 	var cfgs []SchemaConfig
 	p.files = make(map[string]*TypesFile)
@@ -43,6 +45,7 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 		return errors.Wrap(err, "failed to decode config")
 	}
 	p.schemaConfigs = cfgs
+
 	p.generateCfg = config
 
 	if err = p.parseImports(); err != nil {
@@ -140,12 +143,15 @@ func (p *Plugin) findSchemaByName(name string) *SchemaConfig {
 func (p *Plugin) Types() map[string]*TypesFile {
 	return p.files
 }
+
 func (p *Plugin) AddTypesFile(outputPath string, file *TypesFile) {
 	p.files[outputPath] = file
 }
+
 func (p Plugin) Name() string {
 	return PluginName
 }
+
 func (p *Plugin) PrintInfo(infos generator.Infos) {
 	if infos.Contains("gql-services") {
 		for path, file := range p.files {
@@ -158,11 +164,21 @@ func (p *Plugin) PrintInfo(infos generator.Infos) {
 		}
 	}
 }
+
 func (p *Plugin) Infos() map[string]string {
 	return map[string]string{
 		"gql-services": "Info about all parsed GraphQL services",
 	}
 }
+
+type OutputObjectFieldRender interface {
+	RenderFields(o OutputObject, ctx BodyContext) (string, error)
+}
+
+func (p *Plugin) AddOutputObjectFieldRenderer(renderer OutputObjectFieldRender) {
+	p.outputObjectFieldRenderers = append(p.outputObjectFieldRenderers, renderer)
+}
+
 func (p *Plugin) generateTypes() error {
 	for outputPath, file := range p.files {
 		err := os.MkdirAll(filepath.Dir(outputPath), 0777)
@@ -179,17 +195,20 @@ func (p *Plugin) generateTypes() error {
 			imports: &importer.Importer{
 				CurrentPackage: file.Package,
 			},
+			outputObjectFieldRenderers: p.outputObjectFieldRenderers,
 		}.generate(out)
 		if err != nil {
 			if cerr := out.Close(); cerr != nil {
 				err = errors.Wrap(err, cerr.Error())
 			}
+
 			return errors.Wrapf(err, "failed to generate types file %s", outputPath)
 		}
 		if err = out.Close(); err != nil {
 			return errors.Wrapf(err, "failed to close generated types file %s", outputPath)
 		}
 	}
+
 	return nil
 }
 
@@ -226,13 +245,13 @@ func (p *Plugin) SchemasObjects() ([]SchemaObjects, error) {
 }
 
 func (p *Plugin) Generate() error {
-	err := p.generateTypes()
-	if err != nil {
+	if err := p.generateTypes(); err != nil {
 		return errors.Wrap(err, "failed to generate types files")
 	}
-	err = p.generateSchemas()
-	if err != nil {
+
+	if err := p.generateSchemas(); err != nil {
 		return errors.Wrap(err, "failed to generate schema files")
 	}
+
 	return nil
 }

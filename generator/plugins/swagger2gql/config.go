@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/names"
 )
 
@@ -12,12 +13,14 @@ type FieldConfig struct {
 	ContextKey string `mapstructure:"context_key"`
 }
 type ObjectConfig struct {
-	Fields map[string]FieldConfig `mapstructure:"fields"`
+	Fields      map[string]FieldConfig             `mapstructure:"fields"`
+	DataLoaders []dataloader.DataLoaderFieldConfig `mapstructure:"data_loaders"`
 }
 
 type MethodConfig struct {
-	Alias       string `mapstructure:"alias"`
-	RequestType string `mapstructure:"request_type"` // QUERY | MUTATION
+	Alias              string                              `mapstructure:"alias"`
+	RequestType        string                              `mapstructure:"request_type"` // QUERY | MUTATION
+	DataLoaderProvider dataloader.DataLoaderProviderConfig `mapstructure:"data_loader_provider"`
 }
 type TagConfig struct {
 	ClientGoPackage string                             `mapstructure:"client_go_package"`
@@ -60,7 +63,7 @@ type SwaggerFileConfig struct {
 	ParamsConfig []ParamConfig             `mapstructure:"params_config"`
 }
 
-func (pc *SwaggerFileConfig) objectConfig(objName string) (ObjectConfig, error) {
+func (pc *SwaggerFileConfig) ObjectConfig(objName string) (ObjectConfig, error) {
 	if pc == nil {
 		return ObjectConfig{}, nil
 	}
@@ -80,7 +83,7 @@ func (pc *SwaggerFileConfig) objectConfig(objName string) (ObjectConfig, error) 
 }
 
 func (pc *SwaggerFileConfig) FieldConfig(objName string, fieldName string) (FieldConfig, error) {
-	cfg, err := pc.objectConfig(objName)
+	cfg, err := pc.ObjectConfig(objName)
 
 	if err != nil {
 		return FieldConfig{}, errors.Wrap(err, "failed to resolve property config")

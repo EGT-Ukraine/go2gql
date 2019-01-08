@@ -1,0 +1,34 @@
+{{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/graphql.RenderFieldsContext*/ -}}
+{{ range $field := $.OutputObject.MapFields -}}
+    {{$.OutputObject.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
+        Name: "{{$field.Name}}",
+        Type: {{call $field.Type $.ObjectContext}},
+        Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
+            switch src := p.Source.(type){
+                case *{{goType $.OutputObject.GoType}}:
+                    if src == nil {
+                        return nil, nil
+                    }
+                    s := *src
+                    var res []map[string]interface{}
+                    for key, value := range {{call $field.Value "s" $.ObjectContext}} {
+                        res = append(res, map[string]interface{}{
+                            "key":   key,
+                            "value": value,
+                        })
+                    }
+                    return res, nil
+                case {{goType $.OutputObject.GoType}}:
+                    var res []map[string]interface{}
+                    for key, value := range {{call $field.Value "src" $.ObjectContext}} {
+                        res = append(res, map[string]interface{}{
+                            "key":   key,
+                            "value": value,
+                        })
+                    }
+                    return res, nil
+            }
+            return nil, {{errorsPkg}}.New("source of unknown type")
+        },
+    })
+{{ end -}}

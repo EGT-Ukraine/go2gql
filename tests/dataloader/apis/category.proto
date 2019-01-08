@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package apis;
+
+option go_package = "github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/apis;apis";
+
+service CategoryService {
+    rpc List (CategoryListRequest) returns (CategoryListResponse) {}
+}
+
+message CategoryListRequest {
+    repeated uint64 id = 1;
+}
+
+message CategoryListResponse {
+    repeated Category categories = 1;
+}
+
+message Category {
+    string name = 1;
+}

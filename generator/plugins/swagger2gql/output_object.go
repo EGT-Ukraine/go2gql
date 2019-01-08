@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/names"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/swagger2gql/parser"
@@ -69,12 +70,19 @@ func (p *Plugin) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, e
 					}
 
 				}
+
+				propGoType, err := p.goTypeByParserType(file, prop.Type, false)
+				if err != nil {
+					return errors.Wrap(err, "failed to resolve property go type")
+				}
+
 				propObj := graphql.ObjectField{
 					Name:          names.FilterNotSupportedFieldNameCharacters(prop.Name),
 					QuotedComment: strconv.Quote(prop.Description),
 					Type:          tr,
 					Value:         valueResolver,
 					NeedCast:      false,
+					GoType:        propGoType,
 				}
 				if prop.Type.Kind() == parser.KindMap {
 					mapFields = append(mapFields, propObj)
@@ -86,12 +94,26 @@ func (p *Plugin) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, e
 			sort.Slice(fields, func(i, j int) bool {
 				return fields[i].Name > fields[j].Name
 			})
+
+			objectName := p.outputObjectGQLName(file, t)
+			objectConfig, err := file.Config.ObjectConfig(objectName)
+
+			if err != nil {
+				return errors.Wrap(err, "failed to get object config "+objectName)
+			}
+
+			dataLoaderFields, err := p.dataLoaderFields(objectConfig.DataLoaders)
+			if err != nil {
+				return errors.Wrapf(err, "failed to resolve output object %s data loaders", objectName)
+			}
+
 			res = append(res, graphql.OutputObject{
-				VariableName: p.outputObjectVariable(file, t),
-				GraphQLName:  p.outputObjectGQLName(file, t),
-				GoType:       goTyp,
-				Fields:       fields,
-				MapFields:    mapFields,
+				VariableName:     p.outputObjectVariable(file, t),
+				GraphQLName:      p.outputObjectGQLName(file, t),
+				GoType:           goTyp,
+				Fields:           fields,
+				MapFields:        mapFields,
+				DataLoaderFields: dataLoaderFields,
 			})
 		case *parser.Array:
 			return handleType(t.ElemType)
@@ -112,4 +134,21 @@ func (p *Plugin) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, e
 		return res[i].VariableName > res[j].VariableName
 	})
 	return res, nil
+}
+
+func (p *Plugin) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig) ([]*graphql.DataLoaderField, error) {
+	var fields []*graphql.DataLoaderField
+
+	for _, cfg := range configs {
+		field := &graphql.DataLoaderField{
+			Name:                         cfg.FieldName,
+			ParentKeyFieldName:           cfg.KeyFieldName,
+			NormalizedParentKeyFieldName: pascalize(cfg.KeyFieldName),
+			DataLoaderName:               cfg.DataLoader,
+		}
+
+		fields = append(fields, field)
+	}
+
+	return fields, nil
 }

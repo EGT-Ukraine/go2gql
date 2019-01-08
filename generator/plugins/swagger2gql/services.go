@@ -6,17 +6,20 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/names"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/swagger2gql/parser"
 )
 
 var ErrMultipleSuccessResponses = errors.New("method  contains multiple success responses")
 
-func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag parser.Tag, method parser.Method) (*graphql.Method, error) {
+func (p *Plugin) graphqlMethod(tagCfg TagConfig, methodCfg MethodConfig, file *parsedFile, tag parser.Tag, method parser.Method) (*graphql.Method, error) {
 	name := method.OperationID
 	if methodCfg.Alias != "" {
 		name = methodCfg.Alias
@@ -54,6 +57,7 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve parameter '%s' type resolver", param.Name)
 		}
+
 		args = append(args, graphql.MethodArgument{
 			Name:          gqlName,
 			Type:          paramType,
@@ -67,6 +71,10 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 			Pkg:  file.Config.Tags[tag.Name].ClientGoPackage,
 			Name: pascalize(method.OperationID) + "Params",
 		},
+	}
+
+	if err := p.addDataLoaderProvider(methodCfg, tag, tagCfg, method, successResponse.ResultType, file); err != nil {
+		return nil, errors.Wrap(err, "failed add data loader provider")
 	}
 
 	return &graphql.Method{
@@ -98,6 +106,96 @@ func (p *Plugin) graphqlMethod(methodCfg MethodConfig, file *parsedFile, tag par
 		PayloadErrorAccessor: nil,
 	}, nil
 }
+
+func (p *Plugin) addDataLoaderProvider(
+	methodCfg MethodConfig,
+	tag parser.Tag,
+	tagCfg TagConfig,
+	method parser.Method,
+	successResponseResultType parser.Type,
+	file *parsedFile) error {
+	dataLoaderProviderConfig := methodCfg.DataLoaderProvider
+
+	if dataLoaderProviderConfig.Name == "" {
+		return nil
+	}
+
+	resType, ok := successResponseResultType.(*parser.Array)
+
+	if !ok {
+		return errors.New("Response type must be array")
+	}
+
+	responseGoType, err := p.goTypeByParserType(file, resType.ElemType, true)
+
+	dataLoaderOutType, err := p.TypeOutputTypeResolver(file, resType.ElemType, false)
+
+	if len(method.Parameters) != 1 {
+		return errors.Errorf("Method %s %s must have 1 input parameter", method.HTTPMethod, method.Path)
+	}
+
+	inputArgumentGoType, err := p.goTypeByParserType(file, method.Parameters[0].Type, true)
+
+	if err != nil {
+		return err
+	}
+
+	if inputArgumentGoType.Kind != reflect.Slice {
+		return errors.Errorf("Method %s %s input parameter must be array", method.HTTPMethod, method.Path)
+	}
+
+	if !inputArgumentGoType.ElemType.Scalar {
+		return errors.Errorf("Method %s %s input parameter must be array of scalars", method.HTTPMethod, method.Path)
+	}
+
+	dataLoaderProvider := dataloader.LoaderModel{
+		Service: &dataloader.Service{
+			Name:          p.tagName(tag, &tagCfg),
+			CallInterface: p.serviceCallInterface(&tagCfg),
+		},
+		FetchCode: func(importer *importer.Importer) string {
+			elemType := graphql.GoType{
+				Kind: reflect.Interface,
+				Pkg:  tagCfg.ClientGoPackage,
+				Name: pascalize(method.OperationID) + "Params",
+			}
+
+			paramsType := elemType.String(importer)
+			argName := ucFirst(method.Parameters[0].Name)
+			methodName := ucFirst(method.OperationID)
+
+			return `
+			params := &` + paramsType + `{
+				` + argName + `: keys,
+				Context: ctx,
+			}
+
+			response, err := client.` + methodName + `(params)
+
+			if err != nil {
+				return nil, []error{err}
+			}
+
+			return response.Payload, nil
+			`
+		},
+		InputGoType:       inputArgumentGoType,
+		OutputGoType:      responseGoType,
+		OutputGraphqlType: dataLoaderOutType,
+		Config:            dataLoaderProviderConfig,
+	}
+
+	p.dataLoaderPlugin.AddLoader(dataLoaderProvider)
+
+	return nil
+}
+
+func ucFirst(s string) string {
+	r := []rune(s)
+	r[0] = unicode.ToUpper(r[0])
+	return string(r)
+}
+
 func (p *Plugin) tagQueriesMethods(tagCfg TagConfig, file *parsedFile, tag parser.Tag) ([]graphql.Method, error) {
 	var res []graphql.Method
 	for _, method := range tag.Methods {
@@ -113,7 +211,7 @@ func (p *Plugin) tagQueriesMethods(tagCfg TagConfig, file *parsedFile, tag parse
 			continue
 		}
 
-		meth, err := p.graphqlMethod(methodCfg, file, tag, method)
+		meth, err := p.graphqlMethod(tagCfg, methodCfg, file, tag, method)
 		if err != nil {
 			if err == ErrMultipleSuccessResponses {
 				fmt.Println("Warning: Method: ", method.Path, "have multiple successful responses. I'll skip it")
@@ -142,7 +240,7 @@ func (p *Plugin) tagMutationsMethods(tagCfg TagConfig, file *parsedFile, tag par
 		} else if methodCfg.RequestType != "MUTATION" {
 			continue
 		}
-		meth, err := p.graphqlMethod(methodCfg, file, tag, method)
+		meth, err := p.graphqlMethod(tagCfg, methodCfg, file, tag, method)
 		if err != nil {
 			if err == ErrMultipleSuccessResponses {
 				fmt.Println("Warning: Method: ", method.Path, "have multiple successful responses. I'll skip it")
@@ -180,28 +278,34 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 			return nil, errors.Wrap(err, "failed to get tag mutations methods")
 		}
 
-		name := pascalize(tag.Name)
-
-		if tagCfg.ServiceName != "" {
-			name = tagCfg.ServiceName
-		}
 		res = append(res, graphql.Service{
-			Name:            name,
+			Name:            p.tagName(tag, tagCfg),
 			QuotedComment:   strconv.Quote(tag.Description),
 			QueryMethods:    queriesMethods,
 			MutationMethods: mutationsMethods,
-			CallInterface: graphql.GoType{
-				Kind: reflect.Ptr,
-				ElemType: &graphql.GoType{
-					Kind: reflect.Interface,
-					Pkg:  tagCfg.ClientGoPackage,
-					Name: "Client",
-				},
-			},
+			CallInterface:   p.serviceCallInterface(tagCfg),
 		})
 	}
 	sort.Slice(res, func(i, j int) bool {
 		return res[i].Name > res[j].Name
 	})
 	return res, nil
+}
+
+func (p *Plugin) tagName(tag parser.Tag, tagCfg *TagConfig) string {
+	name := pascalize(tag.Name)
+
+	if tagCfg.ServiceName != "" {
+		name = tagCfg.ServiceName
+	}
+
+	return name
+}
+
+func (p *Plugin) serviceCallInterface(tagCfg *TagConfig) graphql.GoType {
+	return graphql.GoType{
+		Kind: reflect.Interface,
+		Pkg:  tagCfg.ClientGoPackage,
+		Name: "IClient",
+	}
 }

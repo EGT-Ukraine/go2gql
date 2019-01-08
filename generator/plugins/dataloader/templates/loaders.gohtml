@@ -1,0 +1,59 @@
+{{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader.LoadersContext*/ -}}
+
+package loaders
+
+import (
+	"context"
+	"time"
+
+	{{range $import := $.Imports -}}
+		{{$import.Alias}} "{{$import.Path}}"
+	{{end -}}
+)
+
+type LoaderClients interface {
+	{{range $loader := $.Loaders -}}
+		Get{{$loader.Service.Name}}Client() {{goType $loader.Service.CallInterface}}
+	{{end -}}
+}
+
+type DataLoaders struct {
+	{{range $loader := $.Loaders -}}
+		{{$loader.Config.Name}}Loader {{$loader.LoaderTypeName}}Loader
+	{{end -}}
+}
+
+type dataLoadersContextKeyType struct{}
+
+var dataLoadersContextKey = dataLoadersContextKeyType{}
+
+func GetContextWithLoaders(ctx context.Context, apiClients LoaderClients) context.Context {
+	dataLoaders := &DataLoaders{
+	{{range $loader := $.Loaders -}}
+		{{$loader.Config.Name}}Loader: create{{$loader.Config.Name}}(ctx, apiClients.Get{{$loader.Service.Name}}Client()),
+	{{end -}}
+	}
+
+	return context.WithValue(ctx, dataLoadersContextKey, dataLoaders)
+}
+
+{{range $loader := $.Loaders -}}
+func create{{$loader.Config.Name}}(ctx context.Context, client {{goType $loader.Service.CallInterface}}) {{$loader.LoaderTypeName}}Loader {
+	return {{$loader.LoaderTypeName}}Loader{
+		fetch: func(keys {{goType $loader.RequestGoType}}) ([]{{goType $loader.ResponseGoType}}, []error) {
+			{{$loader.FetchCode}}
+		},
+		wait: {{duration $loader.Config.WaitDurationMs}} * time.Millisecond,
+	}
+}
+{{end -}}
+
+func GetDataLoadersFromContext(ctx context.Context) *DataLoaders {
+	val := ctx.Value(dataLoadersContextKey)
+
+	if val == nil {
+		return nil
+	}
+
+	return val.(*DataLoaders)
+}

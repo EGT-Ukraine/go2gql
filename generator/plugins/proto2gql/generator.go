@@ -1,6 +1,7 @@
 package proto2gql
 
 import (
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"path/filepath"
 	"strings"
 
@@ -42,11 +43,12 @@ type parsedFile struct {
 	GRPCSourcesPkg string
 }
 type Proto2GraphQL struct {
-	VendorPath      string
-	GenerateTracers bool
-	parser          parser.Parser
-	ParsedFiles     []*parsedFile
-	OutputPath      string
+	DataLoaderPlugin *dataloader.Plugin
+	VendorPath       string
+	GenerateTracers  bool
+	parser           parser.Parser
+	ParsedFiles      []*parsedFile
+	OutputPath       string
 }
 
 func (g *Proto2GraphQL) parsedFile(file *parser.File) (*parsedFile, error) {

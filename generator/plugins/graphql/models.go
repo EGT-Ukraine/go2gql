@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 )
@@ -84,18 +85,41 @@ type InputObject struct {
 type ObjectField struct {
 	Name          string
 	Type          TypeResolver
+	GoType        GoType
 	QuotedComment string
 	Value         ValueResolver
 	NeedCast      bool
 	CastTo        GoType
 }
-type OutputObject struct {
-	VariableName string
-	GraphQLName  string
-	GoType       GoType
-	Fields       []ObjectField
-	MapFields    []ObjectField
+type DataLoaderField struct {
+	Name                         string
+	Type                         string
+	ParentKeyFieldName           string
+	NormalizedParentKeyFieldName string
+	DataLoaderName               string
 }
+
+type OutputObject struct {
+	VariableName     string
+	GraphQLName      string
+	GoType           GoType
+	Fields           []ObjectField
+	DataLoaderFields []*DataLoaderField // TODO: move to dataloader plugin
+	MapFields        []ObjectField
+}
+
+func (s *OutputObject) FindFieldByName(name string) *ObjectField {
+	searchName := strings.ToLower(name)
+
+	for _, field := range s.Fields {
+		if strings.ToLower(field.Name) == searchName {
+			return &field
+		}
+	}
+
+	return nil
+}
+
 type Enum struct {
 	VariableName string
 	GraphQLName  string
@@ -166,9 +190,10 @@ type TypesFile struct {
 }
 
 type BodyContext struct {
-	File          *TypesFile
-	Importer      *importer.Importer
-	TracerEnabled bool
+	File                 *TypesFile
+	Importer             *importer.Importer
+	TracerEnabled        bool
+	OutputFieldRenderers []OutputObjectFieldRender
 }
 
 type ServiceContext struct {

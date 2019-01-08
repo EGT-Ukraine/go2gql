@@ -171,6 +171,19 @@ func (p *fileParser) parameterType(method *spec.Operation, parameter spec.Parame
 	if parameter.Ref.String() != "" || parameter.Schema != nil {
 		return p.resolveSchemaType([]string{method.ID}, parameter.Schema)
 	}
+
+	if parameter.Type == "array" {
+		elemType, err := resolveScalarType(parameter.Items.Type, parameter.Items.Format, parameter.Items.Enum)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &Array{
+			ElemType: elemType,
+		}, nil
+	}
+
 	return resolveScalarType(parameter.Type, parameter.Format, parameter.Enum)
 }
 func (p *fileParser) parseMethodParams(method *spec.Operation) ([]MethodParameter, error) {

@@ -22,7 +22,9 @@ func testFileInfo(file *File) *File {
 	var CommonCommonEnum = file.Imports[0].Enums[0]
 	var CommonCommonMessage = file.Imports[0].Messages[0]
 
-	var ParentScopeEnum = file.Imports[1].Enums[0]
+	var ParentScopeEnum = file.Imports[2].Enums[0]
+
+	var Proto2Message = file.Imports[1].Messages[0]
 
 	return &File{
 		Services: []*Service{
@@ -55,37 +57,38 @@ func testFileInfo(file *File) *File {
 					{Name: "n_r_empty_msg", Type: EmptyMessage, QuotedComment: `"non-repeated empty message field"`},
 					{Name: "leading_dot", Type: CommonCommonMessage, QuotedComment: `"leading dot in type name"`},
 					{Name: "parent_scope", Type: ParentScopeEnum, QuotedComment: `"parent scope"`},
+					{Name: "proto2message", Type: Proto2Message, QuotedComment: `""`},
 				},
 				OneOffs: []*OneOf{
 					{Name: "enum_first_oneoff", Fields: []*Field{
 						{Name: "e_f_o_e", Type: CommonCommonEnum, QuotedComment: `""`},
 						{Name: "e_f_o_s", Type: Int32Type, QuotedComment: `""`},
 						{Name: "e_f_o_m", Type: CommonCommonMessage, QuotedComment: `""`},
-						{Name: "e_f_o_em", Type: EmptyMessage, QuotedComment: `""`},
+						{Name: "e_f_o_em", Type: EmptyMessage, QuotedComment: `"non-repeated Message"`},
 					}},
 					{Name: "scalar_first_oneoff", Fields: []*Field{
-						{Name: "s_f_o_s", Type: Int32Type, QuotedComment: `""`},
-						{Name: "s_f_o_e", Type: RootEnum, QuotedComment: `""`},
-						{Name: "s_f_o_mes", Type: RootMessage2, QuotedComment: `""`},
-						{Name: "s_f_o_m", Type: EmptyMessage, QuotedComment: `""`},
+						{Name: "s_f_o_s", Type: Int32Type, QuotedComment: `"non-repeated Scalar"`},
+						{Name: "s_f_o_e", Type: RootEnum, QuotedComment: `"non-repeated Enum"`},
+						{Name: "s_f_o_mes", Type: RootMessage2, QuotedComment: `"non-repeated Message"`},
+						{Name: "s_f_o_m", Type: EmptyMessage, QuotedComment: `"non-repeated Message"`},
 					}},
 					{Name: "message_first_oneoff", Fields: []*Field{
-						{Name: "m_f_o_m", Type: RootMessage2, QuotedComment: `""`},
-						{Name: "m_f_o_s", Type: Int32Type, QuotedComment: `""`},
-						{Name: "m_f_o_e", Type: RootEnum, QuotedComment: `""`},
-						{Name: "m_f_o_em", Type: EmptyMessage, QuotedComment: `""`},
+						{Name: "m_f_o_m", Type: RootMessage2, QuotedComment: `"non-repeated Message"`},
+						{Name: "m_f_o_s", Type: Int32Type, QuotedComment: `"non-repeated Scalar"`},
+						{Name: "m_f_o_e", Type: RootEnum, QuotedComment: `"non-repeated Enum"`},
+						{Name: "m_f_o_em", Type: EmptyMessage, QuotedComment: `"non-repeated Message"`},
 					}},
 					{Name: "empty_first_oneoff", Fields: []*Field{
-						{Name: "em_f_o_em", Type: EmptyMessage, QuotedComment: `""`},
-						{Name: "em_f_o_s", Type: Int32Type, QuotedComment: `""`},
-						{Name: "em_f_o_en", Type: RootEnum, QuotedComment: `""`},
-						{Name: "em_f_o_m", Type: RootMessage2, QuotedComment: `""`},
+						{Name: "em_f_o_em", Type: EmptyMessage, QuotedComment: `"non-repeated Message"`},
+						{Name: "em_f_o_s", Type: Int32Type, QuotedComment: `"non-repeated Scalar"`},
+						{Name: "em_f_o_en", Type: RootEnum, QuotedComment: `"non-repeated Enum"`},
+						{Name: "em_f_o_m", Type: RootMessage2, QuotedComment: `"non-repeated Message"`},
 					}},
 				},
 				MapFields: []*MapField{
 					{
 						Name:          "map_enum",
-						QuotedComment: `"enum_map"`,
+						QuotedComment: `"enum_map\n Map with enum value"`,
 						Map: &Map{
 							Message:   RootMessage,
 							KeyType:   Int32Type,
@@ -95,7 +98,7 @@ func testFileInfo(file *File) *File {
 					},
 					{
 						Name:          "map_scalar",
-						QuotedComment: `"scalar map"`,
+						QuotedComment: `"scalar map\n Map with scalar value"`,
 						Map: &Map{
 							Message:   RootMessage,
 							KeyType:   Int32Type,
@@ -105,7 +108,7 @@ func testFileInfo(file *File) *File {
 					},
 					{
 						Name:          "map_msg",
-						QuotedComment: `""`,
+						QuotedComment: `"Map with Message value"`,
 						Map: &Map{
 							Message:   RootMessage,
 							KeyType:   StringType,
@@ -141,8 +144,8 @@ func testFileInfo(file *File) *File {
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootMessage", "NestedMessage"},
 				Fields: []*Field{
-					{Name: "sub_r_enum", Type: NestedEnum, Repeated: true, QuotedComment: `""`},
-					{Name: "sub_sub_r_enum", Type: NestedNestedEnum, Repeated: true, QuotedComment: `""`},
+					{Name: "sub_r_enum", Type: NestedEnum, Repeated: true, QuotedComment: `"repeated Enum"`},
+					{Name: "sub_sub_r_enum", Type: NestedNestedEnum, Repeated: true, QuotedComment: `"repeated Enum"`},
 				},
 			},
 			{
@@ -220,7 +223,7 @@ func TestParser_Parse(t *testing.T) {
 		So(test, ShouldNotEqual, test2)
 
 		Convey("Imports should be the same", func() {
-			So(len(test.Imports), ShouldEqual, 2)
+			So(len(test.Imports), ShouldEqual, 3)
 			So(len(test2.Imports), ShouldEqual, 1)
 			So(test.Imports[0], ShouldEqual, test2.Imports[0])
 		})

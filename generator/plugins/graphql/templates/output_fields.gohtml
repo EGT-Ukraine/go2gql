@@ -1,0 +1,29 @@
+{{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/graphql.RenderFieldsContext*/ -}}
+{{ range $field := $.OutputObject.Fields -}}
+    {{$.OutputObject.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
+        Name: "{{$field.Name}}",
+        Description: {{$field.QuotedComment}},
+        Type: {{call $field.Type $.ObjectContext}},
+        Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
+            switch src := p.Source.(type){
+                case *{{goType $.OutputObject.GoType}}:
+                    if src == nil {
+                        return nil, nil
+                    }
+                    s := *src
+                    {{if $field.NeedCast -}}
+                        return {{$field.CastTo}}({{call $field.Value "s" $.ObjectContext}}), nil
+                    {{else -}}
+                        return {{call $field.Value "s" $.ObjectContext}}, nil
+                    {{ end -}}
+                case {{goType $.OutputObject.GoType}}:
+                    {{if $field.NeedCast -}}
+                        return {{$field.CastTo}}({{call $field.Value "src" $}}), nil
+                    {{else -}}
+                        return {{call $field.Value "src" $.ObjectContext}}, nil
+                    {{end -}}
+            }
+            return nil, {{errorsPkg}}.New("source of unknown type")
+        },
+    })
+{{ end -}}

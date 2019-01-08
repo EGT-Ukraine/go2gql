@@ -262,6 +262,108 @@ func Plugin() generator.Plugin {
 func main(){}
 ```
 
+### Dataloader support
+
+Config example:
+
+```yml
+data_loaders:
+  output_path: "./generated/schema/loaders/"
+
+proto2gql:
+  output_path: "./generated/schema"
+  paths:
+    - "vendor"
+    - "$GOPATH/src"
+  imports_aliases:
+    - google/protobuf/empty.proto:      "github.com/golang/protobuf/ptypes/empty/empty.proto"
+  files:
+    - proto_path: "./apis/reviews.proto"
+      services:
+        ItemsReviewService:
+          methods:
+            List:
+              data_loader_provider:
+                name: "ItemReviewsLoader"
+    - proto_path: "./apis/category.proto"
+      services:
+        CategoryService:
+          methods:
+            List:
+              data_loader_provider:
+                name: "CategoryLoader"
+                wait_duration_ms: 5
+
+    - proto_path: "./apis/user.proto"
+      services:
+        UserService:
+          methods:
+            List:
+              data_loader_provider:
+                name: "UserLoader"
+                wait_duration_ms: 5
+    - proto_path: "./apis/items.proto"
+      services:
+        ItemsService:
+          methods:
+            List:
+              alias: "list"
+              request_type: "QUERY"
+      messages:
+        - "Item$":
+            data_loaders:
+              - field_name: "category"
+                key_field_name: "category_id"
+                data_loader_name: "CategoryLoader"
+              - field_name: "comments"
+                key_field_name: "id"
+                data_loader_name: "CommentsLoader"
+              - field_name: "reviews"
+                key_field_name: "id"
+                data_loader_name: "ItemReviewsLoader"
+
+swagger2gql:
+  output_path: "./generated/schema"
+  files:
+    - name: "Comments"
+      path: "apis/swagger.json"
+      models_go_path: "github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/models"
+      tags:
+        "comments-controller":
+          service_name: "CommentsService"
+          client_go_package: "github.com/EGT-Ukraine/go2gql/tests/dataloader/generated/clients/client/comments_controller"
+          methods:
+            "/items/comments/":
+              post:
+                data_loader_provider:
+                  name: "CommentsLoader"
+                  wait_duration_ms: 5
+      objects:
+        - "ItemComment$":
+            data_loaders:
+              - field_name: "user"
+                key_field_name: "user_id"
+                data_loader_name: "UserLoader"
+
+graphql_schemas:
+  - name: "API"
+    output_path: "./generated/schema/api.go"
+    output_package: "schema"
+    queries:
+      type: "OBJECT"
+      fields:
+        - field: "items"
+          object_name: "Items"
+          service: "ItemsService"
+          type: "SERVICE"
+
+
+```
+
+Default wait duration 10ms.
+
+Full example can be found in [tests](https://github.com/EGT-Ukraine/go2gql/tree/master/tests/dataloader).  
+
 ## UPGRADE FROM 1.x to 2.0
 
 ### Swagger plugin
@@ -287,7 +389,10 @@ Use `service_name` instead.
 `queries_service_name` & `mutations_service_name` config fields is removed.
 Use `service_name` instead.
 
-## UPGRADE FROM 3.x to 4.0
+
+## Note to users migrating from older releases
+
+### Migrating from 3.x to 4.0
 tracer.Tracer was replaced with opentracing.Tracer
 
 Schema initialization before:
@@ -310,6 +415,6 @@ var tracer opentracing_go.Tracer
 sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaApiInterceptor, tracer)
 ```
 
-## UPGRADE FROM 4.x to 5.0
+### Migrating from 4.x to 5.0
 
 `github.com/saturn4er/graphql` dependency was replaced with original `github.com/graphql-go/graphql` package.
