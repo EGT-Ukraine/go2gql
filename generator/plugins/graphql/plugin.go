@@ -175,7 +175,7 @@ type OutputObjectFieldRender interface {
 	RenderFields(o OutputObject, ctx BodyContext) (string, error)
 }
 
-func (p *Plugin) Add(renderer OutputObjectFieldRender) {
+func (p *Plugin) AddOutputObjectFieldRenderer(renderer OutputObjectFieldRender) {
 	p.outputObjectFieldRenderers = append(p.outputObjectFieldRenderers, renderer)
 }
 

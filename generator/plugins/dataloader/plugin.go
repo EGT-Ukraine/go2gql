@@ -138,7 +138,7 @@ func (p *Plugin) Generate() error {
 
 	p.dataLoader = dataLoader
 
-	p.gqlPlugin.Add(&fieldsRenderer{
+	p.gqlPlugin.AddOutputObjectFieldRenderer(&fieldsRenderer{
 		dataLoader: p.dataLoader,
 	})
 
