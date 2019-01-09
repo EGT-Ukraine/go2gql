@@ -1,12 +1,15 @@
 package dataloader
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"reflect"
 	"text/template"
 
 	"github.com/EGT-Ukraine/dataloaden/pkg/generator"
 	"github.com/pkg/errors"
+	"golang.org/x/tools/imports"
 
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
@@ -14,8 +17,11 @@ import (
 
 const DefaultWaitDurationMs = 10
 
-type LoadersContext struct {
+type LoadersHeadContext struct {
 	Imports []importer.Import
+}
+
+type LoadersBodyContext struct {
 	Loaders []Loader
 }
 
@@ -31,17 +37,14 @@ type Loader struct {
 
 type LoaderGenerator struct {
 	dataLoader *DataLoader
+	importer   *importer.Importer
 }
 
 func NewLoaderGenerator(dataLoader *DataLoader) *LoaderGenerator {
-	return &LoaderGenerator{dataLoader: dataLoader}
+	return &LoaderGenerator{dataLoader: dataLoader, importer: &importer.Importer{}}
 }
 
 func (p *LoaderGenerator) GenerateDataLoaders() error {
-	if len(p.dataLoader.Loaders) == 0 {
-		return nil
-	}
-
 	if err := os.MkdirAll(p.dataLoader.OutputPath, os.ModePerm); err != nil {
 		return errors.Wrap(err, "failed to create output path dir "+p.dataLoader.OutputPath)
 	}
@@ -105,17 +108,24 @@ func (p *LoaderGenerator) generateSchemaLoaders() error {
 	return nil
 }
 
-func (p *LoaderGenerator) renderLoaders(out *os.File) error {
-	tmpl, err := templatesLoadersGohtmlBytes()
+func (p *LoaderGenerator) generateBody() ([]byte, error) {
+	buf := new(bytes.Buffer)
+
+	tmpl, err := templatesLoaders_bodyGohtmlBytes()
 	if err != nil {
-		return errors.Wrap(err, "failed to get loaders template")
+		return nil, errors.Wrap(err, "failed to get loaders template")
 	}
 
-	fileImporter := &importer.Importer{}
+	importFunc := func(importPath string) func() string {
+		return func() string {
+			return p.importer.New(importPath)
+		}
+	}
 
 	templateFuncs := map[string]interface{}{
+		"timePkg": importFunc("time"),
 		"goType": func(typ graphql.GoType) string {
-			return typ.String(fileImporter)
+			return typ.String(p.importer)
 		},
 		"duration": func(duration int) int {
 			if duration == 0 {
@@ -126,9 +136,9 @@ func (p *LoaderGenerator) renderLoaders(out *os.File) error {
 		},
 	}
 
-	servicesTpl, err := template.New("config").Funcs(templateFuncs).Parse(string(tmpl))
+	servicesTpl, err := template.New("loaders_body").Funcs(templateFuncs).Parse(string(tmpl))
 	if err != nil {
-		return errors.Wrap(err, "failed to parse template")
+		return nil, errors.Wrap(err, "failed to parse template")
 	}
 
 	var loaders []Loader
@@ -136,41 +146,87 @@ func (p *LoaderGenerator) renderLoaders(out *os.File) error {
 	for _, dataLoaderModel := range p.dataLoader.Loaders {
 		service := dataLoaderModel.Service
 
-		fileImporter.New(service.CallInterface.Pkg)
-
 		requestGoType := dataLoaderModel.InputGoType
 
 		responseGoType := dataLoaderModel.OutputGoType
-
-		fileImporter.New(requestGoType.Pkg)
 
 		loaderTypeName := responseGoType.ElemType.Name
 
 		if responseGoType.Kind == reflect.Slice {
 			loaderTypeName = responseGoType.ElemType.ElemType.Name + "Slice"
-			fileImporter.New(responseGoType.ElemType.ElemType.Pkg)
-		} else {
-			fileImporter.New(responseGoType.Pkg)
 		}
 
 		loaders = append(loaders, Loader{
 			LoaderTypeName: loaderTypeName,
 			Service:        *service,
-			FetchCode:      dataLoaderModel.FetchCode(fileImporter),
+			FetchCode:      dataLoaderModel.FetchCode(p.importer),
 			RequestGoType:  requestGoType,
 			ResponseGoType: responseGoType,
 			Config:         dataLoaderModel.Config,
 		})
 	}
 
-	configContext := LoadersContext{
-		Imports: fileImporter.Imports(),
+	context := LoadersBodyContext{
 		Loaders: loaders,
 	}
 
-	err = servicesTpl.Execute(out, configContext)
+	err = servicesTpl.Execute(buf, context)
 	if err != nil {
-		return errors.Wrap(err, "failed to execute template")
+		return nil, errors.Wrap(err, "failed to execute template")
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (p *LoaderGenerator) generateHead() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	tmpl, err := templatesLoaders_headGohtmlBytes()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get head template")
+	}
+	bodyTpl, err := template.New("loaders_head").Parse(string(tmpl))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse template")
+	}
+
+	context := LoadersHeadContext{
+		Imports: p.importer.Imports(),
+	}
+
+	err = bodyTpl.Execute(buf, context)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to execute template")
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (p *LoaderGenerator) renderLoaders(out *os.File) error {
+	body, err := p.generateBody()
+	if err != nil {
+		return errors.Wrap(err, "failed to generate body")
+	}
+	head, err := p.generateHead()
+	if err != nil {
+		return errors.Wrap(err, "failed to generate head")
+	}
+	r := bytes.Join([][]byte{
+		head,
+		body,
+	}, nil)
+
+	res, err := imports.Process("file", r, &imports.Options{
+		Comments: true,
+	})
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+	} else {
+		r = res
+	}
+	_, err = out.Write(r)
+	if err != nil {
+		return errors.Wrap(err, "failed to write  output")
 	}
 
 	return nil

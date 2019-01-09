@@ -1,0 +1,11 @@
+{{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader.LoadersHeadContext*/ -}}
+
+package loaders
+
+import (
+"context"
+
+{{range $import := $.Imports -}}
+    {{$import.Alias}} "{{$import.Path}}"
+{{end -}}
+)
