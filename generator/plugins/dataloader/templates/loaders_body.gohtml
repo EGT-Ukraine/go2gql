@@ -1,15 +1,4 @@
-{{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader.LoadersContext*/ -}}
-
-package loaders
-
-import (
-	"context"
-	"time"
-
-	{{range $import := $.Imports -}}
-		{{$import.Alias}} "{{$import.Path}}"
-	{{end -}}
-)
+{{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader.LoadersBodyContext*/ -}}
 
 type LoaderClients interface {
 	{{range $loader := $.Loaders -}}
@@ -43,7 +32,7 @@ func create{{$loader.Config.Name}}(ctx context.Context, client {{goType $loader.
 		fetch: func(keys {{goType $loader.RequestGoType}}) ([]{{goType $loader.ResponseGoType}}, []error) {
 			{{$loader.FetchCode}}
 		},
-		wait: {{duration $loader.Config.WaitDurationMs}} * time.Millisecond,
+		wait: {{duration $loader.Config.WaitDurationMs}} * {{timePkg}}.Millisecond,
 	}
 }
 {{end -}}
