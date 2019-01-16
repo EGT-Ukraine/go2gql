@@ -110,15 +110,21 @@ func (g *Proto2GraphQL) outputMessageMapFields(msgCfg MessageConfig, file *parse
 	return res, nil
 }
 
-func (g *Proto2GraphQL) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig) ([]*graphql.DataLoaderField, error) {
+func (g *Proto2GraphQL) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig, msg *parser.Message) ([]*graphql.DataLoaderField, error) {
 	var fields []*graphql.DataLoaderField
 
 	for _, cfg := range configs {
+		msgField := msg.GetFieldByName(cfg.KeyFieldName)
+
+		if msgField == nil {
+			return nil, errors.Errorf("Can't find field %s for dataloader", cfg.FieldName)
+		}
+
 		field := &graphql.DataLoaderField{
 			Name: cfg.FieldName,
 			NormalizedParentKeyFieldName: camelCase(cfg.KeyFieldName),
 			ParentKeyFieldName:           cfg.KeyFieldName,
-			KeyFieldSlice:                cfg.KeyFieldSlice,
+			KeyFieldSlice:                msgField.Repeated,
 			DataLoaderName:               cfg.DataLoader,
 		}
 
@@ -144,7 +150,7 @@ func (g *Proto2GraphQL) fileOutputMessages(file *parsedFile) ([]graphql.OutputOb
 			return nil, errors.Wrapf(err, "failed to resolve message %s map fields", msg.Name)
 		}
 
-		dataLoaderFields, err := g.dataLoaderFields(cfg.DataLoaders)
+		dataLoaderFields, err := g.dataLoaderFields(cfg.DataLoaders, msg)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve message %s data loaders", msg.Name)
 		}

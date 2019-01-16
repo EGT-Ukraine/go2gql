@@ -46,6 +46,16 @@ func (m Message) HaveFields() bool {
 	return false
 }
 
+func (m Message) GetFieldByName(name string) *Field {
+	for _, field := range m.Fields {
+		if field.Name == name {
+			return field
+		}
+	}
+
+	return nil
+}
+
 func (m Message) HaveFieldsExcept(field string) bool {
 	for _, f := range m.Fields {
 		if f.Name != field {

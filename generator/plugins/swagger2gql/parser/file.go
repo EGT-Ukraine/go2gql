@@ -74,6 +74,15 @@ type Object struct {
 	Properties []ObjectProperty
 }
 
+func (o *Object) GetPropertyByName(name string) *ObjectProperty {
+	for _, prop := range o.Properties {
+		if prop.Name == name {
+			return &prop
+		}
+	}
+	return nil
+}
+
 func (Object) Kind() Kind {
 	return KindObject
 }

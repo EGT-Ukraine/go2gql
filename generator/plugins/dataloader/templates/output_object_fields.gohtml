@@ -1,49 +1,41 @@
 {{- /*gotype: github.com/EGT-Ukraine/go2gql/generator/plugins/graphql.RenderFieldsContext*/ -}}
 {{ range $field := $.OutputObject.DataLoaderFields -}}
-    {{$.OutputObject.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
-        Name:        "{{$field.Name}}",
-        Description: "",
-        Type:        {{graphqlOutputLoaderTypeName $.ObjectContext $field}},
-        Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-            parent := p.Source.(*{{goType $.OutputObject.GoType}})
+	{{$.OutputObject.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
+		Name:		"{{$field.Name}}",
+		Description: "",
+		Type:		{{graphqlOutputLoaderTypeName $.ObjectContext $field}},
+		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			parent := p.Source.(*{{goType $.OutputObject.GoType}})
 
-            loaders := {{loadersPkg}}.GetDataLoadersFromContext(p.Context)
+			loaders := {{loadersPkg}}.GetDataLoadersFromContext(p.Context)
 
-            if loaders == nil {
-                return nil, errors.New("Data loaders not found in context. Call loaders.GetContextWithLoaders")
-            }
-
-            {{if $field.KeyFieldSlice}}
-            results := make([]func() (({{outputGoType $.ObjectContext $field}}), error), len(parent.{{$field.NormalizedParentKeyFieldName}}))
-
-			for i, key := range parent.{{$field.NormalizedParentKeyFieldName}} {
-				results[i] = loaders.{{$field.DataLoaderName}}Loader.LoadThunk(key)
+			if loaders == nil {
+				return nil, errors.New("Data loaders not found in context. Call loaders.GetContextWithLoaders")
 			}
 
+			{{if $field.KeyFieldSlice}}
+			thunk := loaders.{{$field.DataLoaderName}}Loader.LoadAllThunk(parent.{{$field.NormalizedParentKeyFieldName}})
+
 			return func() (interface{}, error) {
-				var lastErr error
+				var loaderErrors error
 
-				data := make([]{{outputGoType $.ObjectContext $field}}, len(parent.{{$field.NormalizedParentKeyFieldName}}))
+				result, errs := thunk()
 
-				for i, thunk := range results {
-					var err error
-
-                    data[i], err = thunk()
-
+				for _, err := range errs {
 					if err != nil {
-						lastErr = err
+						loaderErrors = {{multierrorPkg}}.Append(loaderErrors, err)
 					}
 				}
 
-				return data, lastErr
+				return result, loaderErrors
 			}, nil
-            {{else}}
-            thunk := loaders.{{$field.DataLoaderName}}Loader.LoadThunk(parent.{{$field.NormalizedParentKeyFieldName}})
+			{{else}}
+			thunk := loaders.{{$field.DataLoaderName}}Loader.LoadThunk(parent.{{$field.NormalizedParentKeyFieldName}})
 
-            return func() (interface{}, error) {
-                return thunk()
-            }, nil
-            {{end}}
-        },
-    })
+			return func() (interface{}, error) {
+				return thunk()
+			}, nil
+			{{end}}
+		},
+	})
 {{ end -}}

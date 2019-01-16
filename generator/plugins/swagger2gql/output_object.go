@@ -102,7 +102,7 @@ func (p *Plugin) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, e
 				return errors.Wrap(err, "failed to get object config "+objectName)
 			}
 
-			dataLoaderFields, err := p.dataLoaderFields(objectConfig.DataLoaders)
+			dataLoaderFields, err := p.dataLoaderFields(objectConfig.DataLoaders, t)
 			if err != nil {
 				return errors.Wrapf(err, "failed to resolve output object %s data loaders", objectName)
 			}
@@ -136,14 +136,20 @@ func (p *Plugin) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, e
 	return res, nil
 }
 
-func (p *Plugin) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig) ([]*graphql.DataLoaderField, error) {
+func (p *Plugin) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig, object *parser.Object) ([]*graphql.DataLoaderField, error) {
 	var fields []*graphql.DataLoaderField
 
 	for _, cfg := range configs {
+		prop := object.GetPropertyByName(cfg.KeyFieldName)
+
+		if prop == nil {
+			return nil, errors.Errorf("Can't find property %s for dataloader", cfg.KeyFieldName)
+		}
+
 		field := &graphql.DataLoaderField{
 			Name:                         cfg.FieldName,
 			ParentKeyFieldName:           cfg.KeyFieldName,
-			KeyFieldSlice:                cfg.KeyFieldSlice,
+			KeyFieldSlice:                prop.Type.Kind() == parser.KindArray,
 			NormalizedParentKeyFieldName: pascalize(cfg.KeyFieldName),
 			DataLoaderName:               cfg.DataLoader,
 		}

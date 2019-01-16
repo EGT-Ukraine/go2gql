@@ -3,11 +3,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3557be88fa8640a0981e27bb611e7bcb75190fe40f588a01a4fc040e68f34465"
+  digest = "1:0df3845780c681e2d96822a2de491cb8913e59a6020a40664ae9147beebc4eb9"
   name = "github.com/EGT-Ukraine/dataloaden"
   packages = ["pkg/generator"]
   pruneopts = ""
-  revision = "c1f9fc194f2fea3da01530f445794a03f9be61af"
+  revision = "5b62e8a86618ef6a763213de324b62838d215626"
 
 [[projects]]
   digest = "1:8e47871087b94913898333f37af26732faaab30cdb41571136cf7aec9921dae7"
@@ -42,12 +42,12 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:2eb252b946fc4d4e9cc929c8f748b430220db73b7e6545ec7cb92b05a6a116d4"
+  digest = "1:c0658003778a2753077d761055d1c8b39a636c4ad14d75ab96d02188c58998dd"
   name = "github.com/emicklei/proto"
   packages = ["."]
   pruneopts = ""
-  revision = "e4c3d8119041027a1d3b012ca2160948802618d7"
-  version = "v1.6.7"
+  revision = "6a34d38c8fe27a73b3adb076ab02f9614e70fff0"
+  version = "v1.6.8"
 
 [[projects]]
   branch = "master"
@@ -212,6 +212,22 @@
   version = "v0.2.3"
 
 [[projects]]
+  digest = "1:8e3bd93036b4a925fe2250d3e4f38f21cadb8ef623561cd80c3c50c114b13201"
+  name = "github.com/hashicorp/errwrap"
+  packages = ["."]
+  pruneopts = ""
+  revision = "8a6fb523712970c966eefc6b39ed2c5e74880354"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:72308fdd6d5ef61106a95be7ca72349a5565809042b6426a3cfb61d99483b824"
+  name = "github.com/hashicorp/go-multierror"
+  packages = ["."]
+  pruneopts = ""
+  revision = "886a7fbe3eb1c874d46f623bfa70af45f425b3d1"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:387bc9c583e744c448f77cd90d0551634fc682d0af505d2fa955243a73f37c24"
   name = "github.com/jtolds/gls"
   packages = ["."]
@@ -297,7 +313,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4ab2fc83e3222b69759dfd717e01d0cf38b133aabfacc29a86057021a2f1abd9"
+  digest = "1:7ec13687f85b25087fe05f6ea8dd116013a8263f8eb7e057da7664bc7599d2d4"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -309,15 +325,15 @@
     "trace",
   ]
   pruneopts = ""
-  revision = "927f97764cc334a6575f4b7a1584a147864d5723"
+  revision = "915654e7eabcea33ae277abbecf52f0d8b7a9fdc"
 
 [[projects]]
   branch = "master"
-  digest = "1:1790bdba70a251611d2c92eea82b02b66a37d76a153d705a1ecb19c93588dc6a"
+  digest = "1:69b7ecfaddca30f8e8d97798822ff2b8ddfa7634ed16661561b54f30c63c2a42"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "badf5585203e739f88c2c6cd34188a6f54b5d619"
+  revision = "a457fd036447854c0c02e89ea439481bdcf941a2"
 
 [[projects]]
   digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
@@ -345,7 +361,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4c5e914d5d7704ae6591bb9f57374d15f1790a8c52486f50c2b2a443bf2adf4b"
+  digest = "1:819363f25609028d165f1b4464b4bce06fbcc2a9c49ec92b76b2639e74b17845"
   name = "golang.org/x/tools"
   packages = [
     "go/ast/astutil",
@@ -361,18 +377,18 @@
     "internal/semver",
   ]
   pruneopts = ""
-  revision = "498d95493402f719ce3de5c8cb60d1b50d0a1239"
+  revision = "2e4132e53b93d8d81f7a076566396511238b89b0"
 
 [[projects]]
   branch = "master"
-  digest = "1:8c7bf8f974d0b63a83834e83b6dd39c2b40d61d409d76172c81d67eba8fee4a8"
+  digest = "1:1aa609a0033ef2927e083f2e5e07203ca35fe21c4a24b563de9fea16ddaae9ba"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = ""
-  revision = "bd9b4fb69e2ffd37621a6caa54dcbead29b546f2"
+  revision = "db91494dd46c1fdcbbde05e5ff5eb56df8f7d79a"
 
 [[projects]]
-  digest = "1:d141efe4aaad714e3059c340901aab3147b6253e58c85dafbcca3dd8b0e88ad6"
+  digest = "1:39d4d828b87d58d114fdc211f0638f32dcae84019fe17d6b48f9b697f4b60213"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -408,8 +424,8 @@
     "tap",
   ]
   pruneopts = ""
-  revision = "df014850f6dee74ba2fc94874043a9f3f75fbfd8"
-  version = "v1.17.0"
+  revision = "a02b0774206b209466313a0b525d2c738fe407eb"
+  version = "v1.18.0"
 
 [[projects]]
   digest = "1:cedccf16b71e86db87a24f8d4c70b0a855872eb967cb906a66b95de56aefbd0d"
@@ -440,6 +456,7 @@
     "github.com/graphql-go/graphql/language/ast",
     "github.com/graphql-go/graphql/language/kinds",
     "github.com/graphql-go/handler",
+    "github.com/hashicorp/go-multierror",
     "github.com/mitchellh/mapstructure",
     "github.com/pkg/errors",
     "github.com/smartystreets/goconvey/convey",

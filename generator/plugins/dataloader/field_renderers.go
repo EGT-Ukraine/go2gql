@@ -21,6 +21,9 @@ func (r *fieldsRenderer) RenderFields(o graphql.OutputObject, ctx graphql.BodyCo
 		"gqlPkg": func() string {
 			return ctx.Importer.New(graphql.GraphqlPkgPath)
 		},
+		"multierrorPkg": func() string {
+			return ctx.Importer.New("github.com/hashicorp/go-multierror")
+		},
 		"loadersPkg": func() string {
 			return ctx.Importer.New(r.dataLoader.Pkg)
 		},
@@ -33,16 +36,7 @@ func (r *fieldsRenderer) RenderFields(o graphql.OutputObject, ctx graphql.BodyCo
 				resolver = graphql.GqlListTypeResolver(resolver)
 			}
 
-			res := resolver(ctx)
-
-			return res
-		},
-		"outputGoType": func(ctx graphql.BodyContext, dataLoaderFieldConfig graphql.DataLoaderField) string {
-			dataLoaderConfig := r.dataLoader.Loaders[dataLoaderFieldConfig.DataLoaderName]
-
-			typ := dataLoaderConfig.OutputGoType
-
-			return typ.String(ctx.Importer)
+			return resolver(ctx)
 		},
 	}
 
