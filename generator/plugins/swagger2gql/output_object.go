@@ -143,6 +143,7 @@ func (p *Plugin) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig) ([
 		field := &graphql.DataLoaderField{
 			Name:                         cfg.FieldName,
 			ParentKeyFieldName:           cfg.KeyFieldName,
+			KeyFieldSlice:                cfg.KeyFieldSlice,
 			NormalizedParentKeyFieldName: pascalize(cfg.KeyFieldName),
 			DataLoaderName:               cfg.DataLoader,
 		}

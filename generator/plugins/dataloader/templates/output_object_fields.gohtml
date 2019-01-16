@@ -3,7 +3,7 @@
     {{$.OutputObject.VariableName}}.AddFieldConfig("{{$field.Name}}", &{{gqlPkg}}.Field{
         Name:        "{{$field.Name}}",
         Description: "",
-        Type:        {{graphqlOutputLoaderTypeName $.ObjectContext $field.DataLoaderName}},
+        Type:        {{graphqlOutputLoaderTypeName $.ObjectContext $field}},
         Resolve: func(p graphql.ResolveParams) (interface{}, error) {
             parent := p.Source.(*{{goType $.OutputObject.GoType}})
 
@@ -13,11 +13,37 @@
                 return nil, errors.New("Data loaders not found in context. Call loaders.GetContextWithLoaders")
             }
 
+            {{if $field.KeyFieldSlice}}
+            results := make([]func() (({{outputGoType $.ObjectContext $field}}), error), len(parent.{{$field.NormalizedParentKeyFieldName}}))
+
+			for i, key := range parent.{{$field.NormalizedParentKeyFieldName}} {
+				results[i] = loaders.{{$field.DataLoaderName}}Loader.LoadThunk(key)
+			}
+
+			return func() (interface{}, error) {
+				var lastErr error
+
+				data := make([]{{outputGoType $.ObjectContext $field}}, len(parent.{{$field.NormalizedParentKeyFieldName}}))
+
+				for i, thunk := range results {
+					var err error
+
+                    data[i], err = thunk()
+
+					if err != nil {
+						lastErr = err
+					}
+				}
+
+				return data, lastErr
+			}, nil
+            {{else}}
             thunk := loaders.{{$field.DataLoaderName}}Loader.LoadThunk(parent.{{$field.NormalizedParentKeyFieldName}})
 
             return func() (interface{}, error) {
                 return thunk()
             }, nil
+            {{end}}
         },
     })
 {{ end -}}

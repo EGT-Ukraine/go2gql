@@ -8,7 +8,8 @@ type DataLoaderProviderConfig struct {
 	WaitDurationMs int    `mapstructure:"wait_duration_ms"`
 }
 type DataLoaderFieldConfig struct {
-	FieldName    string `mapstructure:"field_name"`
-	KeyFieldName string `mapstructure:"key_field_name"`
-	DataLoader   string `mapstructure:"data_loader_name"`
+	FieldName     string `mapstructure:"field_name"`
+	KeyFieldName  string `mapstructure:"key_field_name"`
+	KeyFieldSlice bool   `mapstructure:"key_field_slice"`
+	DataLoader    string `mapstructure:"data_loader_name"`
 }

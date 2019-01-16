@@ -24,10 +24,25 @@ func (r *fieldsRenderer) RenderFields(o graphql.OutputObject, ctx graphql.BodyCo
 		"loadersPkg": func() string {
 			return ctx.Importer.New(r.dataLoader.Pkg)
 		},
-		"graphqlOutputLoaderTypeName": func(ctx graphql.BodyContext, dataLoaderName string) string {
-			dataLoaderConfig := r.dataLoader.Loaders[dataLoaderName]
+		"graphqlOutputLoaderTypeName": func(ctx graphql.BodyContext, dataLoaderFieldConfig graphql.DataLoaderField) string {
+			dataLoaderConfig := r.dataLoader.Loaders[dataLoaderFieldConfig.DataLoaderName]
 
-			return dataLoaderConfig.OutputGraphqlType(ctx)
+			resolver := dataLoaderConfig.OutputGraphqlType
+
+			if dataLoaderFieldConfig.KeyFieldSlice {
+				resolver = graphql.GqlListTypeResolver(resolver)
+			}
+
+			res := resolver(ctx)
+
+			return res
+		},
+		"outputGoType": func(ctx graphql.BodyContext, dataLoaderFieldConfig graphql.DataLoaderField) string {
+			dataLoaderConfig := r.dataLoader.Loaders[dataLoaderFieldConfig.DataLoaderName]
+
+			typ := dataLoaderConfig.OutputGoType
+
+			return typ.String(ctx.Importer)
 		},
 	}
 

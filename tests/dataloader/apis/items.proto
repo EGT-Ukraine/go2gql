@@ -16,7 +16,8 @@ message ItemListResponse {
 }
 
 message Item {
-    int64 id           = 1;
-    string name        = 2;
-    uint64 category_id = 3;
+    int64 id                     = 1;
+    string name                  = 2;
+    uint64 category_id           = 3;
+    repeated uint64 category_ids = 4;
 }

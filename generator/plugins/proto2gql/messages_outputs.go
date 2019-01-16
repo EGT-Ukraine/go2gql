@@ -118,6 +118,7 @@ func (g *Proto2GraphQL) dataLoaderFields(configs []dataloader.DataLoaderFieldCon
 			Name: cfg.FieldName,
 			NormalizedParentKeyFieldName: camelCase(cfg.KeyFieldName),
 			ParentKeyFieldName:           cfg.KeyFieldName,
+			KeyFieldSlice:                cfg.KeyFieldSlice,
 			DataLoaderName:               cfg.DataLoader,
 		}
 

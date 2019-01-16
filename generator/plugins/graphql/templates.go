@@ -89,7 +89,7 @@ func templatesOutput_fieldsGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/output_fields.gohtml", size: 1380, mode: os.FileMode(436), modTime: time.Unix(1546955341, 0)}
+	info := bindataFileInfo{name: "templates/output_fields.gohtml", size: 1380, mode: os.FileMode(436), modTime: time.Unix(1547025125, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -109,7 +109,7 @@ func templatesOutput_map_fieldsGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/output_map_fields.gohtml", size: 1541, mode: os.FileMode(436), modTime: time.Unix(1546958010, 0)}
+	info := bindataFileInfo{name: "templates/output_map_fields.gohtml", size: 1541, mode: os.FileMode(436), modTime: time.Unix(1547025125, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -129,7 +129,7 @@ func templatesSchemas_bodyGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/schemas_body.gohtml", size: 2390, mode: os.FileMode(436), modTime: time.Unix(1546618902, 0)}
+	info := bindataFileInfo{name: "templates/schemas_body.gohtml", size: 2390, mode: os.FileMode(436), modTime: time.Unix(1547025125, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -169,7 +169,7 @@ func templatesTypes_bodyGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/types_body.gohtml", size: 7831, mode: os.FileMode(436), modTime: time.Unix(1546955341, 0)}
+	info := bindataFileInfo{name: "templates/types_body.gohtml", size: 7831, mode: os.FileMode(436), modTime: time.Unix(1547025125, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -266,13 +266,13 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"templates/output_fields.gohtml":     templatesOutput_fieldsGohtml,
+	"templates/output_fields.gohtml": templatesOutput_fieldsGohtml,
 	"templates/output_map_fields.gohtml": templatesOutput_map_fieldsGohtml,
-	"templates/schemas_body.gohtml":      templatesSchemas_bodyGohtml,
-	"templates/schemas_head.gohtml":      templatesSchemas_headGohtml,
-	"templates/types_body.gohtml":        templatesTypes_bodyGohtml,
-	"templates/types_head.gohtml":        templatesTypes_headGohtml,
-	"templates/types_service.gohtml":     templatesTypes_serviceGohtml,
+	"templates/schemas_body.gohtml": templatesSchemas_bodyGohtml,
+	"templates/schemas_head.gohtml": templatesSchemas_headGohtml,
+	"templates/types_body.gohtml": templatesTypes_bodyGohtml,
+	"templates/types_head.gohtml": templatesTypes_headGohtml,
+	"templates/types_service.gohtml": templatesTypes_serviceGohtml,
 }
 
 // AssetDir returns the file names below a certain
@@ -314,16 +314,15 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
-
 var _bintree = &bintree{nil, map[string]*bintree{
 	"templates": &bintree{nil, map[string]*bintree{
-		"output_fields.gohtml":     &bintree{templatesOutput_fieldsGohtml, map[string]*bintree{}},
+		"output_fields.gohtml": &bintree{templatesOutput_fieldsGohtml, map[string]*bintree{}},
 		"output_map_fields.gohtml": &bintree{templatesOutput_map_fieldsGohtml, map[string]*bintree{}},
-		"schemas_body.gohtml":      &bintree{templatesSchemas_bodyGohtml, map[string]*bintree{}},
-		"schemas_head.gohtml":      &bintree{templatesSchemas_headGohtml, map[string]*bintree{}},
-		"types_body.gohtml":        &bintree{templatesTypes_bodyGohtml, map[string]*bintree{}},
-		"types_head.gohtml":        &bintree{templatesTypes_headGohtml, map[string]*bintree{}},
-		"types_service.gohtml":     &bintree{templatesTypes_serviceGohtml, map[string]*bintree{}},
+		"schemas_body.gohtml": &bintree{templatesSchemas_bodyGohtml, map[string]*bintree{}},
+		"schemas_head.gohtml": &bintree{templatesSchemas_headGohtml, map[string]*bintree{}},
+		"types_body.gohtml": &bintree{templatesTypes_bodyGohtml, map[string]*bintree{}},
+		"types_head.gohtml": &bintree{templatesTypes_headGohtml, map[string]*bintree{}},
+		"types_service.gohtml": &bintree{templatesTypes_serviceGohtml, map[string]*bintree{}},
 	}},
 }}
 
@@ -373,3 +372,4 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
+

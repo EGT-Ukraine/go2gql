@@ -95,6 +95,94 @@ func TestDataLoader(t *testing.T) {
 	}`, response)
 }
 
+func TestDataLoaderWithKeyFieldSlice(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.ItemListResponse{
+		Items: []*apis.Item{
+			{
+				Name:        "item 1",
+				CategoryIds: []uint64{12, 11},
+			},
+			{
+				Name:        "item 2",
+				CategoryIds: []uint64{11, 15},
+			},
+		},
+	}, nil).AnyTimes()
+
+	categoryClient := mock.NewMockCategoryServiceClient(mockCtrl)
+
+	categoryClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.CategoryListResponse{
+		Categories: []*apis.Category{
+			{
+				Name: "category 12",
+			},
+			{
+				Name: "category 11",
+			},
+			{
+				Name: "category 15",
+			},
+		},
+	}, nil).AnyTimes()
+
+	clients := &mock.Clients{
+		ItemsClient:    itemsClient,
+		CategoryClient: categoryClient,
+	}
+
+	response := makeRequest(t, clients, &handler.RequestOptions{
+		Query: `{
+			items {
+				list {
+					items {
+						name
+						categories {
+							name
+						}
+					}
+				}
+			}
+		}`,
+	})
+
+	tests.AssertJSON(t, `{
+	"data": {
+		"items": {
+			"list": {
+				"items": [
+					{
+						"name": "item 1",
+						"categories": [
+							{
+								"name": "category 12"
+							},
+							{
+								"name": "category 11"
+							}
+						]
+					},
+					{
+						"name": "item 2",
+						"categories": [
+							{
+								"name": "category 11"
+							},
+							{
+								"name": "category 15"
+							}
+						]
+					}
+				]
+			}
+		}
+	}
+}`, response)
+}
+
 func TestDataLoaderServiceMakeOnlyOneRequest(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
