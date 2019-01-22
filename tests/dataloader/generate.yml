@@ -14,6 +14,7 @@ proto2gql:
         ItemsReviewService:
           methods:
             List:
+              unwrap_response_field: true
               data_loader_provider:
                 name: "ItemReviewsLoader"
     - proto_path: "./apis/category.proto"
@@ -38,6 +39,7 @@ proto2gql:
         ItemsService:
           methods:
             List:
+              unwrap_response_field: true
               alias: "list"
               request_type: "QUERY"
       messages:

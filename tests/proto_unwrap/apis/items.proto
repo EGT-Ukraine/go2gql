@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package apis;
+
+option go_package = "github.com/EGT-Ukraine/go2gql/tests/proto_unwrap/generated/clients/apis;apis";
+
+import "google/protobuf/empty.proto";
+
+service ItemsService {
+    rpc List (google.protobuf.Empty) returns (ItemListResponse) {}
+    rpc Activated (google.protobuf.Empty) returns (ActivatedResponse) {}
+}
+
+message ActivatedResponse {
+    bool activated = 1;
+}
+
+message ItemListResponse {
+    repeated Item items = 1;
+}
+
+message Item {
+    int64 id           = 1;
+    string name        = 2;
+}
