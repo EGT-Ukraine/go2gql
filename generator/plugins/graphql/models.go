@@ -95,6 +95,7 @@ type DataLoaderField struct {
 	Name                         string
 	Type                         string
 	ParentKeyFieldName           string
+	KeyFieldSlice                bool
 	NormalizedParentKeyFieldName string
 	DataLoaderName               string
 }
