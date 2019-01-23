@@ -138,11 +138,9 @@ func TestDataLoaderWithKeyFieldSlice(t *testing.T) {
 		Query: `{
 			items {
 				list {
-					items {
+					name
+					categories {
 						name
-						categories {
-							name
-						}
 					}
 				}
 			}
@@ -152,32 +150,30 @@ func TestDataLoaderWithKeyFieldSlice(t *testing.T) {
 	tests.AssertJSON(t, `{
 	"data": {
 		"items": {
-			"list": {
-				"items": [
-					{
-						"name": "item 1",
-						"categories": [
-							{
-								"name": "category 12"
-							},
-							{
-								"name": "category 11"
-							}
-						]
-					},
-					{
-						"name": "item 2",
-						"categories": [
-							{
-								"name": "category 11"
-							},
-							{
-								"name": "category 15"
-							}
-						]
-					}
-				]
-			}
+			"list": [
+				{
+					"name": "item 1",
+					"categories": [
+						{
+							"name": "category 12"
+						},
+						{
+							"name": "category 11"
+						}
+					]
+				},
+				{
+					"name": "item 2",
+					"categories": [
+						{
+							"name": "category 11"
+						},
+						{
+							"name": "category 15"
+						}
+					]
+				}
+			]
 		}
 	}
 }`, response)
