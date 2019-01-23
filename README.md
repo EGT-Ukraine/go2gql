@@ -135,6 +135,8 @@ proto2gql:
               "methodName":           # method name
                 alias: "methodAlias"
                 request_type: "QUERY" # method type in GraphQL Schema (QUERY|MUTATION)
+                unwrap_response_field: true # In proto we can't use primitive or repeated type in method response.
+                                            # If unwrap_response_field = true unpack response gql object with 1 field.
         messages:                     # messages settings
           - "Request$":               # message name match regex
               fields:
@@ -364,7 +366,9 @@ Default wait duration 10ms.
 
 Full example can be found in [tests](https://github.com/EGT-Ukraine/go2gql/tree/master/tests/dataloader).  
 
-## UPGRADE FROM 1.x to 2.0
+## Note to users migrating from older releases
+
+### Migrating from 1.x to 2.0
 
 ### Swagger plugin
 
@@ -377,7 +381,7 @@ Use `queries_service_name` & `mutations_service_name` instead.
 
 Use `queries_service_name` & `mutations_service_name` instead.
 
-## UPGRADE FROM 2.x to 3.0
+## Migrating from 2.x to 3.0
 
 ### Swagger plugin
 
@@ -389,8 +393,6 @@ Use `service_name` instead.
 `queries_service_name` & `mutations_service_name` config fields is removed.
 Use `service_name` instead.
 
-
-## Note to users migrating from older releases
 
 ### Migrating from 3.x to 4.0
 tracer.Tracer was replaced with opentracing.Tracer

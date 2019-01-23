@@ -22,9 +22,10 @@ type MessageConfig struct {
 	DataLoaders []dataloader.DataLoaderFieldConfig `mapstructure:"data_loaders"`
 }
 type MethodConfig struct {
-	Alias              string                              `mapstructure:"alias"`
-	RequestType        string                              `mapstructure:"request_type"` // QUERY | MUTATION
-	DataLoaderProvider dataloader.DataLoaderProviderConfig `mapstructure:"data_loader_provider"`
+	Alias               string                              `mapstructure:"alias"`
+	RequestType         string                              `mapstructure:"request_type"` // QUERY | MUTATION
+	DataLoaderProvider  dataloader.DataLoaderProviderConfig `mapstructure:"data_loader_provider"`
+	UnwrapResponseField bool                                `mapstructure:"unwrap_response_field"`
 }
 type ServiceConfig struct {
 	ServiceName string                  `mapstructure:"service_name"`

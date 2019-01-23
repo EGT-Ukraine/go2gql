@@ -1,0 +1,35 @@
+data_loaders:
+  output_path: "./generated/schema/loaders/"
+
+proto2gql:
+  output_path: "./generated/schema"
+  paths:
+    - "vendor"
+    - "$GOPATH/src"
+  imports_aliases:
+    - google/protobuf/empty.proto:      "github.com/golang/protobuf/ptypes/empty/empty.proto"
+  files:
+    - proto_path: "./apis/items.proto"
+      services:
+        ItemsService:
+          methods:
+            List:
+              unwrap_response_field: true
+              alias: "list"
+              request_type: "QUERY"
+            Activated:
+              unwrap_response_field: true
+              alias: "activated"
+              request_type: "QUERY"
+
+graphql_schemas:
+  - name: "API"
+    output_path: "./generated/schema/api.go"
+    output_package: "schema"
+    queries:
+      type: "OBJECT"
+      fields:
+        - field: "items"
+          object_name: "Items"
+          service: "ItemsService"
+          type: "SERVICE"

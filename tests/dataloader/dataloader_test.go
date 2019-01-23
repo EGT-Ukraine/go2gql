@@ -64,11 +64,9 @@ func TestDataLoader(t *testing.T) {
 		Query: `{
 			items {
 				list {
-					items {
+					name
+					category {
 						name
-						category {
-							name
-						}
 					}
 				}
 			}
@@ -78,8 +76,7 @@ func TestDataLoader(t *testing.T) {
 	tests.AssertJSON(t, `{
 		"data": {
 			"items": {
-				"list": {
-					"items": [
+				"list": [
 						{
 							"name": "item 1",
 							"category": {
@@ -92,8 +89,7 @@ func TestDataLoader(t *testing.T) {
 								"name": "category 11"
 							}
 						}
-					]
-				}
+				]
 			}
 		}
 	}`, response)
@@ -139,11 +135,9 @@ func TestDataLoaderServiceMakeOnlyOneRequest(t *testing.T) {
 		Query: `{
 			items {
 				list {
-					items {
+					name
+					category {
 						name
-						category {
-							name
-						}
 					}
 				}
 			}
@@ -249,13 +243,11 @@ func TestDataLoaderWithSwagger(t *testing.T) {
 		Query: `{
 			items {
 				list {
-					items {
-						comments {
-							id
-							text
-							user {
-								name
-							}
+					comments {
+						id
+						text
+						user {
+							name
 						}
 					}
 				}
@@ -266,27 +258,25 @@ func TestDataLoaderWithSwagger(t *testing.T) {
 	tests.AssertJSON(t, `{
 		"data": {
 			"items": {
-				"list": {
-					"items": [
-						{
-							"comments": [
-								{
-									"id": 111,
-									"text": "test comment",
-									"user": {
-		                  				"name": "Test User"
-		                			}
-								}
-							]
-						}
-					]
-				}
+				"list": [
+					{
+						"comments": [
+							{
+								"id": 111,
+								"text": "test comment",
+								"user": {
+	                  				"name": "Test User"
+	                			}
+							}
+						]
+					}
+				]
 			}
 		}
 	}`, response)
 }
 
-func TestDataLoaderGetOneWithGRPCArrayLoader(t *testing.T) {
+func TestDataLoaderWithProtoFieldUnwrapping(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
@@ -320,9 +310,7 @@ func TestDataLoaderGetOneWithGRPCArrayLoader(t *testing.T) {
 			items {
 				GetOne {
 					reviews {
-						item_review {
-							text
-						}
+						text
 					}
 				}
 			}
@@ -333,32 +321,15 @@ func TestDataLoaderGetOneWithGRPCArrayLoader(t *testing.T) {
 		"data": {
 			"items": {
 				"GetOne": {
-					"reviews": {
-						"item_review": [
-							{
-								"text": "excellent item"
-							}
-						]
-					}
+					"reviews": [
+						{
+							"text": "excellent item"
+						}
+					]
 				}
 			}
 		}
 	}`, response)
-
-	// TODO: after proto field unwrapping implementation should be:
-	//tests.AssertJSON(t, `{
-	//	"data": {
-	//		"items": {
-	//			"GetOne": {
-	//				"reviews": [
-	//					{
-	//						"text": "excellent item"
-	//					}
-	//				]
-	//			}
-	//		}
-	//	}
-	//}`, response)
 }
 
 func makeRequest(t *testing.T, clients *mock.Clients, opts *handler.RequestOptions) *graphql.Result {
