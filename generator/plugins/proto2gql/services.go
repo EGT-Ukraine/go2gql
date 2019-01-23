@@ -149,17 +149,48 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 		return nil, errors.Wrap(err, "failed to resolve file type file")
 	}
 
-	if cfg.UnwrapResponseField && len(method.OutputMessage.Fields) != 1 {
-		return nil, errors.Errorf("can't unwrap `%s` service `%s` method response. Output message must have 1 field.", method.Service.Name, method.Name)
+	clientMethodCaller := func(client, arg string, ctx graphql.BodyContext) string {
+		return client + "." + camelCase(method.Name) + "(ctx," + arg + ")"
 	}
 
 	var outProtoType parser.Type
 	var outProtoTypeRepeated bool
 
 	if cfg.UnwrapResponseField {
+		if len(method.OutputMessage.Fields) != 1 {
+			return nil, errors.Errorf(
+				"can't unwrap `%s` service `%s` method response. Output message must have 1 field.",
+				method.Service.Name,
+				method.Name,
+			)
+		}
+
 		outProtoType = method.OutputMessage.Fields[0].Type
 		outProtoTypeRepeated = method.OutputMessage.Fields[0].Repeated
+
+		unwrapFieldName := camelCase(method.OutputMessage.Fields[0].Name)
+
+		clientMethodCaller = func(client, arg string, ctx graphql.BodyContext) string {
+			return `func() (interface{}, error) {
+				res, err :=  ` + client + "." + camelCase(method.Name) + `(ctx,` + arg + `)
+
+				if err != nil {
+					return nil, err
+				}
+
+				return res.` + unwrapFieldName + `, nil
+			}()`
+		}
 	} else {
+		if len(method.OutputMessage.Fields) == 1 {
+			fmt.Printf(
+				"Suggestion: service `%s` method `%s` in file `%s` has 1 output field. Can be unwrapped.\n",
+				method.Service.Name,
+				method.Name,
+				file.File.FilePath,
+			)
+		}
+
 		outProtoType = method.OutputMessage
 	}
 
@@ -195,35 +226,6 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 
 	if err := g.addDataLoaderProvider(sc, cfg, file, method); err != nil {
 		return nil, errors.Wrap(err, "failed add data loader provider")
-	}
-
-	clientMethodCaller := func(client, arg string, ctx graphql.BodyContext) string {
-		return client + "." + camelCase(method.Name) + "(ctx," + arg + ")"
-	}
-
-	if len(method.OutputMessage.Fields) == 1 && !cfg.UnwrapResponseField {
-		fmt.Printf(
-			"Suggestion: service `%s` method `%s` in file `%s` has 1 output field. Can be unwrapped.\n",
-			method.Service.Name,
-			method.Name,
-			file.File.FilePath,
-		)
-	}
-
-	if cfg.UnwrapResponseField {
-		unwrapFieldName := camelCase(method.OutputMessage.Fields[0].Name)
-
-		clientMethodCaller = func(client, arg string, ctx graphql.BodyContext) string {
-			return `func() (interface{}, error) {
-				res, err :=  ` + client + "." + camelCase(method.Name) + `(ctx,` + arg + `)
-
-				if err != nil {
-					return nil, err
-				}
-
-				return res.` + unwrapFieldName + `, nil
-			}()`
-		}
 	}
 
 	return &graphql.Method{
