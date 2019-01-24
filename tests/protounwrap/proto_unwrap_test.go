@@ -1,4 +1,4 @@
-package proto_unwrap
+package protounwrap
 
 import (
 	"context"
@@ -10,9 +10,9 @@ import (
 
 	"github.com/EGT-Ukraine/go2gql/api/interceptors"
 	"github.com/EGT-Ukraine/go2gql/tests"
-	"github.com/EGT-Ukraine/go2gql/tests/proto_unwrap/generated/clients/apis"
-	"github.com/EGT-Ukraine/go2gql/tests/proto_unwrap/generated/schema"
-	"github.com/EGT-Ukraine/go2gql/tests/proto_unwrap/mock"
+	"github.com/EGT-Ukraine/go2gql/tests/protounwrap/generated/clients/apis"
+	"github.com/EGT-Ukraine/go2gql/tests/protounwrap/generated/schema"
+	"github.com/EGT-Ukraine/go2gql/tests/protounwrap/mock"
 )
 
 //go:generate mockgen -destination=mock/item.go -package=mock github.com/EGT-Ukraine/go2gql/tests/proto_unwrap/generated/clients/apis ItemsServiceClient
@@ -111,5 +111,5 @@ func makeRequest(t *testing.T, clients *mock.Clients, opts *handler.RequestOptio
 
 	ctx := context.Background()
 
-	return tests.MakeRequest(apiSchema, opts, ctx)
+	return tests.MakeRequest(ctx, apiSchema, opts)
 }

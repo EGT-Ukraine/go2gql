@@ -36,9 +36,18 @@ func (p plugin) Generate() error {
 			if len(service.QueryMethods) == 0 {
 				continue
 			}
-			file.WriteString(service.Name + ":\n")
+			_, err := file.WriteString(service.Name + ":\n")
+
+			if err != nil {
+				return errors.Wrap(err, "failed to write to file")
+			}
+
 			for _, method := range service.QueryMethods {
-				file.WriteString("   " + method.Name + ":\n")
+				_, err := file.WriteString("   " + method.Name + ":\n")
+
+				if err != nil {
+					return errors.Wrap(err, "failed to write to file")
+				}
 			}
 		}
 	}
@@ -49,7 +58,7 @@ func (plugin) Prepare() error                 { return nil }
 func (plugin) PrintInfo(info generator.Infos) {}
 func (plugin) Infos() map[string]string       { return nil }
 
-func Plugin() generator.Plugin {
+func Plugin() generator.Plugin { //nolint:deadcode
 	return new(plugin)
 }
 

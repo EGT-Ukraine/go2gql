@@ -25,8 +25,6 @@ type Plugin struct {
 	dataLoaderPlugin *dataloader.Plugin
 	config           *Config
 	generateConfig   *generator.GenerateConfig
-
-	parsedFiles []*parsedFile
 }
 
 func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plugin) error {
@@ -39,10 +37,10 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 		}
 	}
 	if p.graphql == nil {
-		return errors.New("'graphql' plugin is not installed.")
+		return errors.New("'graphql' plugin is not installed")
 	}
 	if p.dataLoaderPlugin == nil {
-		return errors.New("'dataloader' plugin is not installed.")
+		return errors.New("'dataloader' plugin is not installed")
 	}
 	cfg := new(Config)
 	err := mapstructure.Decode(config.PluginsConfigs[PluginConfigKey], cfg)

@@ -17,15 +17,15 @@ type FieldsConfig struct {
 	ContextKey string `mapstructure:"context_key"`
 }
 type MessageConfig struct {
-	ErrorField  string                             `mapstructure:"error_field"`
-	Fields      map[string]FieldsConfig            `mapstructure:"fields"`
-	DataLoaders []dataloader.DataLoaderFieldConfig `mapstructure:"data_loaders"`
+	ErrorField  string                   `mapstructure:"error_field"`
+	Fields      map[string]FieldsConfig  `mapstructure:"fields"`
+	DataLoaders []dataloader.FieldConfig `mapstructure:"data_loaders"`
 }
 type MethodConfig struct {
-	Alias               string                              `mapstructure:"alias"`
-	RequestType         string                              `mapstructure:"request_type"` // QUERY | MUTATION
-	DataLoaderProvider  dataloader.DataLoaderProviderConfig `mapstructure:"data_loader_provider"`
-	UnwrapResponseField bool                                `mapstructure:"unwrap_response_field"`
+	Alias               string                    `mapstructure:"alias"`
+	RequestType         string                    `mapstructure:"request_type"` // QUERY | MUTATION
+	DataLoaderProvider  dataloader.ProviderConfig `mapstructure:"data_loader_provider"`
+	UnwrapResponseField bool                      `mapstructure:"unwrap_response_field"`
 }
 type ServiceConfig struct {
 	ServiceName string                  `mapstructure:"service_name"`

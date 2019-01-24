@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/EGT-Ukraine/go2gql/generator"
 )

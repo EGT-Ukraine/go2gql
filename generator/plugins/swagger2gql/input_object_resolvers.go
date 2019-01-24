@@ -11,10 +11,10 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/swagger2gql/parser"
 )
 
-func (p *Plugin) objectResolverFunctionName(file *parsedFile, obj *parser.Object) string {
+func (p *Plugin) objectResolverFunctionName(obj *parser.Object) string {
 	return "Resolve" + snakeCamelCaseSlice(obj.Route)
 }
-func (p *Plugin) methodParametersObjectResolverFuncName(file *parsedFile, method parser.Method) string {
+func (p *Plugin) methodParametersObjectResolverFuncName(method parser.Method) string {
 	return "Resolve" + pascalize(method.OperationID) + "Params"
 }
 
@@ -48,7 +48,7 @@ func (p *Plugin) methodParametersInputObjectResolver(file *parsedFile, tag strin
 	}
 
 	return &graphql.InputObjectResolver{
-		FunctionName: p.methodParametersObjectResolverFuncName(file, method),
+		FunctionName: p.methodParametersObjectResolverFuncName(method),
 		Fields:       fields,
 		OutputGoType: graphql.GoType{
 			Kind: reflect.Ptr,
@@ -115,7 +115,7 @@ func (p *Plugin) fileInputMessagesResolvers(file *parsedFile) ([]graphql.InputOb
 				return fields[i].GraphQLInputFieldName > fields[j].GraphQLInputFieldName
 			})
 			res = append(res, graphql.InputObjectResolver{
-				FunctionName: p.objectResolverFunctionName(file, t),
+				FunctionName: p.objectResolverFunctionName(t),
 				Fields:       fields,
 				OutputGoType: resGoType,
 			})

@@ -16,11 +16,6 @@ func (p *Plugin) mapInputObjectVariable(messageFile *parsedFile, obj *parser.Map
 	return messageFile.Config.GetGQLMessagePrefix() + pascalize(strings.Join(obj.Route, "")) + "Input"
 }
 
-func (p *Plugin) mapInputMessageTypeResolver(messageFile *parsedFile, obj *parser.Map) (graphql.TypeResolver, error) {
-	return func(ctx graphql.BodyContext) string {
-		return ctx.Importer.Prefix(messageFile.OutputPkg) + p.mapInputObjectVariable(messageFile, obj)
-	}, nil
-}
 func (p *Plugin) fileMapInputMessages(file *parsedFile) ([]graphql.MapInputObject, error) {
 	var res []graphql.MapInputObject
 	handledObjects := map[parser.Type]struct{}{}

@@ -49,7 +49,7 @@ func Plugins(c *cli.Context) []generator.Plugin {
 	return res
 }
 
-func init() {
+func init() { //nolint:gochecknoinits
 	appFlags = append(appFlags, cli.StringFlag{
 		Name:  "plugins, p",
 		Usage: "Plugins directory",

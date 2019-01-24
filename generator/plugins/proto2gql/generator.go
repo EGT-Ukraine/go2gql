@@ -1,12 +1,12 @@
 package proto2gql
 
 import (
-	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
 
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/proto2gql/parser"
 )
@@ -88,10 +88,8 @@ func (g *Proto2GraphQL) parsedFile(file *parser.File) (*parsedFile, error) {
 
 }
 func (g *Proto2GraphQL) prepareFile(file *parsedFile) (*graphql.TypesFile, error) {
-	enums, err := g.prepareFileEnums(file)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to resolve file enums")
-	}
+	enums := g.prepareFileEnums(file)
+
 	inputs, err := g.fileInputObjects(file)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare file input objects")

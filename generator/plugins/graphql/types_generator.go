@@ -17,7 +17,7 @@ import (
 
 const (
 	ScalarsPkgPath       = "github.com/EGT-Ukraine/go2gql/api/scalars"
-	MultipartFilePkgPath = "github.com/EGT-Ukraine/go2gql/api/multipart_file"
+	MultipartFilePkgPath = "github.com/EGT-Ukraine/go2gql/api/multipartfile"
 	InterceptorsPkgPath  = "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	GraphqlPkgPath       = "github.com/graphql-go/graphql"
 	OpentracingPkgPath   = "github.com/opentracing/opentracing-go"

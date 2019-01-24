@@ -43,19 +43,19 @@ func (f *File) findTypeInMessage(msg *Message, typ string) (Type, bool) {
 func (f *File) findSymbol(fullName string) (Type, bool) {
 	symbol, ok := f.Descriptors[fullName]
 
-	if ok == true {
+	if ok {
 		return symbol, ok
-	} else {
-		for _, importedFile := range f.Imports {
-			symbol, ok := importedFile.findSymbol(fullName)
-
-			if ok == true {
-				return symbol, ok
-			}
-		}
-
-		return nil, false
 	}
+
+	for _, importedFile := range f.Imports {
+		symbol, ok := importedFile.findSymbol(fullName)
+
+		if ok {
+			return symbol, ok
+		}
+	}
+
+	return nil, false
 }
 
 func (f *File) findType(name string, relativeToFullName string) (Type, bool) {
@@ -87,7 +87,7 @@ func (f *File) findType(name string, relativeToFullName string) (Type, bool) {
 
 				result, ok = f.findSymbol(scopeToTry)
 
-				if ok == true {
+				if ok {
 					break
 				}
 
@@ -228,8 +228,9 @@ func (f *File) parseMessages() {
 
 func (f *File) parseMessagesInMessage(msgTypeName TypeName, msg *Message) {
 	for _, el := range msg.Descriptor.Elements {
-		switch elv := el.(type) {
-		case *proto.Message:
+		elv, ok := el.(*proto.Message)
+
+		if ok {
 			tn := msgTypeName.NewSubTypeName(elv.Name)
 			m := message(f, elv, tn, msg)
 			f.Messages = append(f.Messages, m)

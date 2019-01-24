@@ -23,10 +23,8 @@ func (g *Proto2GraphQL) TypeOutputTypeResolver(typeFile *parsedFile, typ parser.
 		if !pType.HaveFieldsExcept(msgCfg.ErrorField) {
 			return graphql.GqlNoDataTypeResolver, nil
 		}
-		res, err := g.outputMessageTypeResolver(typeFile, pType)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get message type resolver")
-		}
+		res := g.outputMessageTypeResolver(typeFile, pType)
+
 		return res, nil
 	case *parser.Enum:
 		file, err := g.parsedFile(pType.File())
@@ -52,10 +50,8 @@ func (g *Proto2GraphQL) TypeInputTypeResolver(typeFile *parsedFile, typ parser.T
 		}
 		return resolver, nil
 	case *parser.Message:
-		res, err := g.inputMessageTypeResolver(typeFile, pType)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get message type resolver")
-		}
+		res := g.inputMessageTypeResolver(typeFile, pType)
+
 		return res, nil
 	case *parser.Enum:
 		res, err := g.enumTypeResolver(typeFile, pType)
@@ -177,11 +173,11 @@ func (g *Proto2GraphQL) FieldOutputValueResolver(fieldFile *parsedFile, fieldNam
 					"\n 	return res" +
 					"\n	}(" + arg + ".Get" + camelCase(fieldName) + "())"
 			}, nil
-		} else {
-			return func(arg string, ctx graphql.BodyContext) string {
-				return "int(" + arg + ".Get" + camelCase(fieldName) + "())"
-			}, nil
 		}
+
+		return func(arg string, ctx graphql.BodyContext) string {
+			return "int(" + arg + ".Get" + camelCase(fieldName) + "())"
+		}, nil
 	}
 	return func(arg string, ctx graphql.BodyContext) string {
 		return arg + "// not implemented"

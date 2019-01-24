@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/EGT-Ukraine/go2gql/generator"
 )
@@ -60,7 +60,9 @@ graphql_schemas:
 		Convey("When the graphql plugin is initialized", func() {
 			graphqlPlugin := new(Plugin)
 
-			graphqlPlugin.Init(gc, []generator.Plugin{})
+			if err := graphqlPlugin.Init(gc, []generator.Plugin{}); err != nil {
+				t.Fatalf(err.Error())
+			}
 
 			Convey("Graphql schema should be merged recursively", func() {
 				So(graphqlPlugin.schemaConfigs[0], ShouldResemble, SchemaConfig{
@@ -70,23 +72,23 @@ graphql_schemas:
 					Queries: &SchemaNodeConfig{
 						Type: "OBJECT",
 						Fields: []SchemaNodeConfig{
-							SchemaNodeConfig{
+							{
 								Type:       "OBJECT",
 								ObjectName: "Common",
 								Field:      "common",
 								Fields: []SchemaNodeConfig{
-									SchemaNodeConfig{
+									{
 										Type:       "OBJECT",
 										ObjectName: "CommonNested",
 										Field:      "commonNested",
 										Fields: []SchemaNodeConfig{
-											SchemaNodeConfig{
+											{
 												Type:       "SERVICE",
 												Service:    "Service1",
 												ObjectName: "Service1Object",
 												Field:      "service1Field",
 											},
-											SchemaNodeConfig{
+											{
 												Type:       "SERVICE",
 												Service:    "Service2",
 												ObjectName: "Service2Object",

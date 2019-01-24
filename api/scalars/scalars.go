@@ -8,7 +8,7 @@ import (
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/graphql-go/graphql/language/kinds"
 
-	"github.com/EGT-Ukraine/go2gql/api/multipart_file"
+	"github.com/EGT-Ukraine/go2gql/api/multipartfile"
 )
 
 var GraphQLInt64Scalar = graphql.NewScalar(graphql.ScalarConfig{
@@ -23,7 +23,7 @@ var GraphQLInt64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			if val == nil {
 				return nil
 			}
-			return int64(*val)
+			return *val
 		case int32:
 			return int64(val)
 		case *int32:
@@ -88,7 +88,7 @@ var GraphQLInt32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			if val == nil {
 				return nil
 			}
-			return int32(*val)
+			return *val
 		case int:
 			return int32(val)
 		case *int:
@@ -114,7 +114,7 @@ var GraphQLInt32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			if val == nil {
 				return nil
 			}
-			return int32(*val)
+			return *val
 		case int64:
 			return int32(val)
 		case *int64:
@@ -156,7 +156,7 @@ var GraphQLUInt64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			if val == nil {
 				return nil
 			}
-			return uint64(*val)
+			return *val
 		case uint32:
 			return uint64(val)
 		case *uint32:
@@ -221,14 +221,14 @@ var GraphQLUInt32Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			if val == nil {
 				return nil
 			}
-			return uint32(*val)
+			return *val
 		case uint:
 			return uint32(val)
 		case *uint:
 			if val == nil {
 				return nil
 			}
-			return uint(*val)
+			return *val
 		}
 
 		return nil
@@ -330,7 +330,7 @@ var GraphQLFloat64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			if err != nil {
 				return nil
 			}
-			return float64(value)
+			return value
 		case *string:
 			if val == nil {
 				return nil
@@ -339,7 +339,7 @@ var GraphQLFloat64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			if err != nil {
 				return nil
 			}
-			return float64(value)
+			return value
 		case float32:
 			return float64(val)
 		case *float32:
@@ -366,7 +366,7 @@ var GraphQLFloat64Scalar = graphql.NewScalar(graphql.ScalarConfig{
 			if err != nil {
 				return nil
 			}
-			return float64(val)
+			return val
 		}
 
 		return nil
@@ -426,9 +426,9 @@ var MultipartFile = graphql.NewScalar(graphql.ScalarConfig{
 	Description: "The `Upload` scalar type represents no data.",
 	Serialize: func(value interface{}) interface{} {
 		switch t := value.(type) {
-		case multipart_file.MultipartFile:
+		case multipartfile.MultipartFile:
 			return t.Header.Filename
-		case *multipart_file.MultipartFile:
+		case *multipartfile.MultipartFile:
 			return t.Header.Filename
 		}
 
@@ -436,9 +436,9 @@ var MultipartFile = graphql.NewScalar(graphql.ScalarConfig{
 	},
 	ParseValue: func(value interface{}) interface{} {
 		switch t := value.(type) {
-		case multipart_file.MultipartFile:
+		case multipartfile.MultipartFile:
 			return &t
-		case *multipart_file.MultipartFile:
+		case *multipartfile.MultipartFile:
 			return t
 		}
 

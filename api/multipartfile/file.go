@@ -1,4 +1,4 @@
-package multipart_file
+package multipartfile
 
 import (
 	"mime/multipart"

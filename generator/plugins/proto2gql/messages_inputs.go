@@ -15,14 +15,14 @@ func (g *Proto2GraphQL) inputMessageVariable(msgFile *parsedFile, message *parse
 	return msgFile.Config.GetGQLMessagePrefix() + snakeCamelCaseSlice(message.TypeName) + "Input"
 }
 
-func (g *Proto2GraphQL) inputMessageTypeResolver(msgFile *parsedFile, message *parser.Message) (graphql.TypeResolver, error) {
+func (g *Proto2GraphQL) inputMessageTypeResolver(msgFile *parsedFile, message *parser.Message) graphql.TypeResolver {
 	if !message.HaveFields() {
-		return graphql.GqlNoDataTypeResolver, nil
+		return graphql.GqlNoDataTypeResolver
 	}
 
 	return func(ctx graphql.BodyContext) string {
 		return ctx.Importer.Prefix(msgFile.OutputPkg) + g.inputMessageVariable(msgFile, message)
-	}, nil
+	}
 }
 
 func (g *Proto2GraphQL) inputMessageFieldTypeResolver(file *parsedFile, field *parser.Field) (graphql.TypeResolver, error) {

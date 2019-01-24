@@ -18,9 +18,6 @@ func (p *Plugin) inputObjectGQLName(file *parsedFile, obj *parser.Object) string
 func (p *Plugin) inputObjectVariable(msgFile *parsedFile, obj *parser.Object) string {
 	return msgFile.Config.GetGQLMessagePrefix() + pascalize(strings.Join(obj.Route, "")) + "Input"
 }
-func (p *Plugin) methodParamsInputObjectVariable(file *parsedFile, method parser.Method) string {
-	return file.Config.GetGQLMessagePrefix() + pascalize(method.OperationID+"Params") + "Input"
-}
 func (p *Plugin) methodParamsInputObjectGQLName(file *parsedFile, method parser.Method) string {
 	return file.Config.GetGQLMessagePrefix() + pascalize(method.OperationID+"Params") + "Input"
 }

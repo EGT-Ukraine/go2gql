@@ -433,5 +433,5 @@ func makeRequest(t *testing.T, clients *mock.Clients, opts *handler.RequestOptio
 
 	ctx = loaders.GetContextWithLoaders(ctx, loadersAPIClients)
 
-	return tests.MakeRequest(apiSchema, opts, ctx)
+	return tests.MakeRequest(ctx, apiSchema, opts)
 }

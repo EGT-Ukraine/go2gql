@@ -3,6 +3,7 @@ package dataloader
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 	"text/template"
@@ -32,7 +33,7 @@ type Loader struct {
 	RequestGoType     graphql.GoType
 	ResponseGoType    graphql.GoType
 	OutputGraphqlType graphql.TypeResolver
-	Config            DataLoaderProviderConfig
+	Config            ProviderConfig
 }
 
 type LoaderGenerator struct {
@@ -201,7 +202,7 @@ func (p *LoaderGenerator) generateHead() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (p *LoaderGenerator) renderLoaders(out *os.File) error {
+func (p *LoaderGenerator) renderLoaders(out io.Writer) error {
 	body, err := p.generateBody()
 	if err != nil {
 		return errors.Wrap(err, "failed to generate body")
