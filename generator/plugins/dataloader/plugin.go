@@ -108,7 +108,7 @@ func (p *Plugin) validateOutputObjects(gqlFiles map[string]*graphql.TypesFile) e
 
 				if dataLoader.InputGoType.ElemType.Kind != outputArgument.GoType.Kind {
 					// TODO: use type casting if possible.
-					return errors.New("Input argument must be same type as output")
+					return errors.New("input argument must be same type as output")
 				}
 			}
 		}
@@ -129,8 +129,7 @@ func (p *Plugin) Generate() error {
 		return nil
 	}
 
-	gqlFiles := p.gqlPlugin.Types()
-	dataLoader, err := p.createDataLoader(p.dataLoaderConfigs, p.generateCfg.VendorPath, gqlFiles)
+	dataLoader, err := p.createDataLoader(p.dataLoaderConfigs, p.generateCfg.VendorPath)
 
 	if err != nil {
 		return errors.Wrap(err, "failed to process dataloader config")
@@ -142,7 +141,7 @@ func (p *Plugin) Generate() error {
 		dataLoader: p.dataLoader,
 	})
 
-	if err := p.validateOutputObjects(gqlFiles); err != nil {
+	if err := p.validateOutputObjects(p.gqlPlugin.Types()); err != nil {
 		return errors.Wrap(err, "failed to validate graphql files")
 	}
 

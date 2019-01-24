@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"github.com/EGT-Ukraine/go2gql/tests/proto_unwrap/generated/clients/apis"
+	"github.com/EGT-Ukraine/go2gql/tests/protounwrap/generated/clients/apis"
 )
 
 type Clients struct {

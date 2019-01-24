@@ -1,0 +1,22 @@
+linters:
+  enable-all: true
+  disable:
+    - gochecknoglobals
+    - scopelint
+    - prealloc
+    - maligned
+    - unparam
+    - megacheck
+    - nakedret
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/EGT-Ukraine/go2gql
+  gocyclo:
+    min-complexity: 20 # todo: decrease
+  lll:
+    line-length: 180   # todo: decrease
+  golint:
+    min-confidence: 0
+  dupl:
+    threshold: 260     # todo: decrease

@@ -13,7 +13,7 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/proto2gql/parser"
 )
 
-func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, cfg MethodConfig, method *parser.Method) ([]graphql.MethodArgument, error) {
+func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, method *parser.Method) ([]graphql.MethodArgument, error) {
 	var args []graphql.MethodArgument
 	for _, field := range method.InputMessage.Fields {
 		typeFile, err := g.parsedFile(field.Type.File())
@@ -207,7 +207,7 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get request go type for method: %s", method.Name)
 	}
-	args, err := g.serviceMethodArguments(file, cfg, method)
+	args, err := g.serviceMethodArguments(file, method)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare service method arguments")
 	}
@@ -297,7 +297,7 @@ func (g Proto2GraphQL) addDataLoaderProvider(sc ServiceConfig, cfg MethodConfig,
 		return errors.Wrap(err, "failed to prepare service method arguments")
 	}
 
-	if method.InputMessage.Fields[0].Repeated != true {
+	if !method.InputMessage.Fields[0].Repeated {
 		return errors.Errorf("Service %s input message %s parameter must be repeated", svc.Name, method.Name)
 	}
 
@@ -359,7 +359,12 @@ func (g Proto2GraphQL) dataLoaderFetchCode(file *parsedFile, method *parser.Meth
 	}
 }
 
-func (g Proto2GraphQL) dataLoaderFetchCodeUnwrappedSlice(file *parsedFile, method *parser.Method, responseGoType graphql.GoType, outProtoType *parser.Field) func(importer *importer.Importer) string {
+func (g Proto2GraphQL) dataLoaderFetchCodeUnwrappedSlice(
+	file *parsedFile,
+	method *parser.Method,
+	responseGoType graphql.GoType,
+	outProtoType *parser.Field) func(importer *importer.Importer) string {
+
 	return func(importer *importer.Importer) string {
 		requestTypeName := method.InputMessage.Name
 		requestFieldName := camelCase(method.InputMessage.Fields[0].Name)

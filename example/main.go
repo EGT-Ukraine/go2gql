@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/EGT-Ukraine/go2gql/example/out/schema"
-	"github.com/EGT-Ukraine/go2gql/example/proto"
+	example "github.com/EGT-Ukraine/go2gql/example/proto"
 )
 
 type Client struct {

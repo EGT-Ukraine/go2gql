@@ -29,11 +29,7 @@ func (p *Plugin) TypeOutputTypeResolver(typeFile *parsedFile, typ parser.Type, r
 		}
 		res = resolver
 	case *parser.Object:
-		msgResolver, err := p.outputMessageTypeResolver(typeFile, t)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get message type resolver")
-		}
-		res = msgResolver
+		res = p.outputMessageTypeResolver(typeFile, t)
 	case *parser.Array:
 		elemResolver, err := p.TypeOutputTypeResolver(typeFile, t.ElemType, true)
 		if err != nil {
@@ -77,7 +73,12 @@ func (p *Plugin) TypeInputTypeResolver(typeFile *parsedFile, typ parser.Type) (g
 	}
 	return nil, errors.New("not implemented " + typ.Kind().String())
 }
-func (p *Plugin) TypeValueResolver(file *parsedFile, typ parser.Type, required bool, ctxKey string) (_ graphql.ValueResolver, withErr, fromArgs bool, err error) {
+func (p *Plugin) TypeValueResolver(
+	file *parsedFile,
+	typ parser.Type,
+	required bool,
+	ctxKey string) (_ graphql.ValueResolver, withErr, fromArgs bool, err error) {
+
 	if ctxKey != "" {
 		goType, err := p.goTypeByParserType(file, typ, true)
 		if err != nil {
@@ -152,13 +153,13 @@ func (p *Plugin) TypeValueResolver(file *parsedFile, typ parser.Type, required b
 						panic(errors.Wrap(err, "failed to render ptr datetime resolver"))
 					}
 					return res
-				} else {
-					res, err := p.renderDatetimeValueResolverTemplate(arg, ctx)
-					if err != nil {
-						panic(errors.Wrap(err, "failed to render ptr datetime resolver"))
-					}
-					return res
 				}
+
+				res, err := p.renderDatetimeValueResolverTemplate(arg, ctx)
+				if err != nil {
+					panic(errors.Wrap(err, "failed to render ptr datetime resolver"))
+				}
+				return res
 			}, true, true, nil
 		}
 		return graphql.ResolverCall(file.OutputPkg, "Resolve"+snakeCamelCaseSlice(t.Route)), true, true, nil

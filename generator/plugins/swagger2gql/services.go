@@ -95,6 +95,9 @@ func (p *Plugin) graphqlMethod(tagCfg TagConfig, methodCfg MethodConfig, file *p
 					panic(errors.Wrap(err, "failed to resolve result go type"))
 				}
 				res, err = p.renderMethodCaller(respType.String(ctx.Importer), reqType.String(ctx.Importer), req, client, pascalize(method.OperationID))
+				if err != nil {
+					panic(errors.Wrap(err, "failed to render method caller"))
+				}
 			}
 			if err != nil {
 				panic(errors.Wrap(err, "failed to render method caller"))
@@ -123,12 +126,20 @@ func (p *Plugin) addDataLoaderProvider(
 	resType, ok := successResponseResultType.(*parser.Array)
 
 	if !ok {
-		return errors.New("Response type must be array")
+		return errors.New("response type must be array")
 	}
 
 	responseGoType, err := p.goTypeByParserType(file, resType.ElemType, true)
 
+	if err != nil {
+		return err
+	}
+
 	dataLoaderOutType, err := p.TypeOutputTypeResolver(file, resType.ElemType, false)
+
+	if err != nil {
+		return err
+	}
 
 	if len(method.Parameters) != 1 {
 		return errors.Errorf("Method %s %s must have 1 input parameter", method.HTTPMethod, method.Path)

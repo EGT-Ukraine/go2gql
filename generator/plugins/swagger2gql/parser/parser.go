@@ -80,9 +80,9 @@ func resolveScalarType(typ string, format string, enum []interface{}) (Type, err
 				values[i] = enum.(string)
 			}
 			return scalarString, nil
-		} else {
-			return scalarString, nil
 		}
+
+		return scalarString, nil
 	case "file":
 		return scalarFile, nil
 	}

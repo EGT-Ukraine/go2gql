@@ -238,7 +238,7 @@ type gqlObject struct {
 }
 
 func (gqlObject *gqlObject) TypeName() string {
-	if gqlObject.QueryObject == true {
+	if gqlObject.QueryObject {
 		return "Query"
 	}
 

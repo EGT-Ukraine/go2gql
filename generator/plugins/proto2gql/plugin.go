@@ -36,10 +36,10 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 
 	}
 	if p.graphql == nil {
-		return errors.New("'graphql' plugin is not installed.")
+		return errors.New("'graphql' plugin is not installed")
 	}
 	if p.dataLoaderPlugin == nil {
-		return errors.New("'dataloader' plugin is not installed.")
+		return errors.New("'dataloader' plugin is not installed")
 	}
 	cfg := new(Config)
 	err := mapstructure.Decode(config.PluginsConfigs[PluginConfigKey], cfg)
@@ -105,9 +105,8 @@ func (p *Plugin) normalizeGenerateConfigPaths() error {
 
 func (p *Plugin) prepareFileConfig(fileCfg *ProtoFileConfig) {
 	fileCfg.Paths = append(fileCfg.Paths, p.config.Paths...)
-	for _, aliases := range p.config.ImportsAliases {
-		fileCfg.ImportsAliases = append(fileCfg.ImportsAliases, aliases)
-	}
+
+	fileCfg.ImportsAliases = append(fileCfg.ImportsAliases, p.config.ImportsAliases...)
 }
 
 func (p *Plugin) PrintInfo(info generator.Infos) {

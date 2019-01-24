@@ -10,7 +10,7 @@ import (
 	"github.com/graphql-go/handler"
 )
 
-func MakeRequest(schema graphql.Schema, opts *handler.RequestOptions, ctx context.Context) *graphql.Result {
+func MakeRequest(ctx context.Context, schema graphql.Schema, opts *handler.RequestOptions) *graphql.Result {
 	return graphql.Do(graphql.Params{
 		Schema:         schema,
 		RequestString:  opts.Query,

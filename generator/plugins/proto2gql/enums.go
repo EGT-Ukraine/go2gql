@@ -19,7 +19,7 @@ func (g *Proto2GraphQL) enumVariable(enumFile *parsedFile, enum *parser.Enum) st
 	return enumFile.Config.GetGQLEnumsPrefix() + camelCaseSlice(enum.TypeName)
 }
 
-func (g *Proto2GraphQL) prepareFileEnums(file *parsedFile) ([]graphql.Enum, error) {
+func (g *Proto2GraphQL) prepareFileEnums(file *parsedFile) []graphql.Enum {
 	var res []graphql.Enum
 	for _, enum := range file.File.Enums {
 		vals := make([]graphql.EnumValue, len(enum.Values))
@@ -37,5 +37,6 @@ func (g *Proto2GraphQL) prepareFileEnums(file *parsedFile) ([]graphql.Enum, erro
 			Values:       vals,
 		})
 	}
-	return res, nil
+
+	return res
 }

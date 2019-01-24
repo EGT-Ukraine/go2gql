@@ -18,17 +18,17 @@ func (g *Proto2GraphQL) outputMessageVariable(messageFile *parsedFile, message *
 	return messageFile.Config.GetGQLMessagePrefix() + snakeCamelCaseSlice(message.TypeName)
 }
 
-func (g *Proto2GraphQL) outputMessageTypeResolver(messageFile *parsedFile, message *parser.Message) (graphql.TypeResolver, error) {
+func (g *Proto2GraphQL) outputMessageTypeResolver(messageFile *parsedFile, message *parser.Message) graphql.TypeResolver {
 	if !message.HaveFields() {
-		return graphql.GqlNoDataTypeResolver, nil
+		return graphql.GqlNoDataTypeResolver
 	}
 
 	return func(ctx graphql.BodyContext) string {
 		return ctx.Importer.Prefix(messageFile.OutputPkg) + g.outputMessageVariable(messageFile, message)
-	}, nil
+	}
 }
 
-func (g *Proto2GraphQL) outputMessageFields(msgCfg MessageConfig, file *parsedFile, msg *parser.Message) ([]graphql.ObjectField, error) {
+func (g *Proto2GraphQL) outputMessageFields(msgCfg MessageConfig, msg *parser.Message) ([]graphql.ObjectField, error) {
 	var res []graphql.ObjectField
 	for _, field := range msg.Fields {
 		if msgCfg.ErrorField == field.Name {
@@ -110,7 +110,7 @@ func (g *Proto2GraphQL) outputMessageMapFields(msgCfg MessageConfig, file *parse
 	return res, nil
 }
 
-func (g *Proto2GraphQL) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig, msg *parser.Message) ([]*graphql.DataLoaderField, error) {
+func (g *Proto2GraphQL) dataLoaderFields(configs []dataloader.FieldConfig, msg *parser.Message) ([]*graphql.DataLoaderField, error) {
 	var fields []*graphql.DataLoaderField
 
 	for _, cfg := range configs {
@@ -121,7 +121,7 @@ func (g *Proto2GraphQL) dataLoaderFields(configs []dataloader.DataLoaderFieldCon
 		}
 
 		field := &graphql.DataLoaderField{
-			Name: cfg.FieldName,
+			Name:                         cfg.FieldName,
 			NormalizedParentKeyFieldName: camelCase(cfg.KeyFieldName),
 			ParentKeyFieldName:           cfg.KeyFieldName,
 			KeyFieldSlice:                msgField.Repeated,
@@ -141,7 +141,7 @@ func (g *Proto2GraphQL) fileOutputMessages(file *parsedFile) ([]graphql.OutputOb
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve message %s config", msg.Name)
 		}
-		fields, err := g.outputMessageFields(cfg, file, msg)
+		fields, err := g.outputMessageFields(cfg, msg)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve message %s fields", msg.Name)
 		}

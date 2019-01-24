@@ -83,15 +83,15 @@ func (p *Plugin) parseImportedSchema(cfg *SchemaConfig) error {
 	schema := p.findSchemaByName(importedSchemaName)
 
 	if schema == nil {
-		return errors.New("Schema " + importedSchemaName + " not defined")
+		return errors.New("schema " + importedSchemaName + " not defined")
 	}
 
 	if cfg.Queries != nil && schema.Queries.Type == SchemaNodeTypeService {
-		return errors.New("Cannot merge object with service in query")
+		return errors.New("cannot merge object with service in query")
 	}
 
 	if cfg.Mutations != nil && schema.Mutations.Type == SchemaNodeTypeService {
-		return errors.New("Cannot merge object with service in mutations")
+		return errors.New("cannot merge object with service in mutations")
 	}
 
 	if cfg.Queries != nil {
@@ -221,7 +221,7 @@ func (p *Plugin) SchemasObjects() ([]SchemaObjects, error) {
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve schema %s output go package", schema.Name)
 		}
-		parser := NewSchemaParser(schema, p.files)
+		parser := newSchemaParser(schema, p.files)
 
 		schemaContext, err := parser.SchemaObjects()
 

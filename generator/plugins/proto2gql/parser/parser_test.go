@@ -344,9 +344,9 @@ func CompareTypes(t1, t2 Type) {
 	So(t1, ShouldNotBeNil)
 	So(t2, ShouldNotBeNil)
 
-	switch t1.(type) {
+	switch protoType := t1.(type) {
 	case *Scalar:
-		So(t1.(*Scalar).ScalarName, ShouldEqual, t2.(*Scalar).ScalarName)
+		So(protoType.ScalarName, ShouldEqual, t2.(*Scalar).ScalarName)
 	case *Message:
 		So(t1, ShouldEqual, t2)
 		So(t1.File(), ShouldEqual, t2.File())

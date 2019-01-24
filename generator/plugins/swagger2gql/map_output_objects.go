@@ -16,11 +16,6 @@ func (p *Plugin) mapOutputObjectVariable(messageFile *parsedFile, obj *parser.Ma
 	return messageFile.Config.GetGQLMessagePrefix() + strings.Join(obj.Route, "")
 }
 
-func (p *Plugin) mapOutputMessageTypeResolver(messageFile *parsedFile, obj *parser.Map) (graphql.TypeResolver, error) {
-	return func(ctx graphql.BodyContext) string {
-		return ctx.Importer.Prefix(messageFile.OutputPkg) + p.mapOutputObjectVariable(messageFile, obj)
-	}, nil
-}
 func (p *Plugin) fileMapOutputMessages(file *parsedFile) ([]graphql.MapOutputObject, error) {
 	var res []graphql.MapOutputObject
 	handledObjects := map[parser.Type]struct{}{}

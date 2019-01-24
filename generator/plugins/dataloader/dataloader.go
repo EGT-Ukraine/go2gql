@@ -25,10 +25,10 @@ type LoaderModel struct {
 	OutputGoType      graphql.GoType
 	OutputGraphqlType graphql.TypeResolver
 	FetchCode         func(importer *importer.Importer) string
-	Config            DataLoaderProviderConfig
+	Config            ProviderConfig
 }
 
-func (p *Plugin) createDataLoader(config *DataLoadersConfig, vendorPath string, files map[string]*graphql.TypesFile) (*DataLoader, error) {
+func (p *Plugin) createDataLoader(config *DataLoadersConfig, vendorPath string) (*DataLoader, error) {
 	if config == nil {
 		return nil, nil
 	}

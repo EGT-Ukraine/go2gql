@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package apis;
 
-option go_package = "github.com/EGT-Ukraine/go2gql/tests/proto_unwrap/generated/clients/apis;apis";
+option go_package = "github.com/EGT-Ukraine/go2gql/tests/protounwrap/generated/clients/apis;apis";
 
 import "google/protobuf/empty.proto";
 

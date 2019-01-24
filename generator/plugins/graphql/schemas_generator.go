@@ -171,7 +171,7 @@ func (p *Plugin) generateSchemas() error {
 			return errors.Wrapf(err, "failed to resolve schema %s output go package", schema.Name)
 		}
 
-		parser := NewSchemaParser(schema, p.files)
+		parser := newSchemaParser(schema, p.files)
 
 		g := schemaGenerator{
 			parser:        parser,

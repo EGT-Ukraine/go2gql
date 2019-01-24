@@ -20,13 +20,13 @@ func (p *Plugin) outputObjectVariable(messageFile *parsedFile, obj *parser.Objec
 	return messageFile.Config.GetGQLMessagePrefix() + pascalize(strings.Join(obj.Route, ""))
 }
 
-func (p *Plugin) outputMessageTypeResolver(messageFile *parsedFile, obj *parser.Object) (graphql.TypeResolver, error) {
+func (p *Plugin) outputMessageTypeResolver(messageFile *parsedFile, obj *parser.Object) graphql.TypeResolver {
 	if len(obj.Properties) == 0 {
-		return graphql.GqlNoDataTypeResolver, nil
+		return graphql.GqlNoDataTypeResolver
 	}
 	return func(ctx graphql.BodyContext) string {
 		return ctx.Importer.Prefix(messageFile.OutputPkg) + p.outputObjectVariable(messageFile, obj)
-	}, nil
+	}
 }
 
 func (p *Plugin) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, error) {
@@ -136,7 +136,7 @@ func (p *Plugin) fileOutputMessages(file *parsedFile) ([]graphql.OutputObject, e
 	return res, nil
 }
 
-func (p *Plugin) dataLoaderFields(configs []dataloader.DataLoaderFieldConfig, object *parser.Object) ([]*graphql.DataLoaderField, error) {
+func (p *Plugin) dataLoaderFields(configs []dataloader.FieldConfig, object *parser.Object) ([]*graphql.DataLoaderField, error) {
 	var fields []*graphql.DataLoaderField
 
 	for _, cfg := range configs {

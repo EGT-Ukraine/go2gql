@@ -15,4 +15,7 @@ test:
 	$(MAKE) -C tests
 	go test ./...
 
+lint:
+	golangci-lint run -v
+
 .PHONY: install

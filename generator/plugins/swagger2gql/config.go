@@ -13,14 +13,14 @@ type FieldConfig struct {
 	ContextKey string `mapstructure:"context_key"`
 }
 type ObjectConfig struct {
-	Fields      map[string]FieldConfig             `mapstructure:"fields"`
-	DataLoaders []dataloader.DataLoaderFieldConfig `mapstructure:"data_loaders"`
+	Fields      map[string]FieldConfig   `mapstructure:"fields"`
+	DataLoaders []dataloader.FieldConfig `mapstructure:"data_loaders"`
 }
 
 type MethodConfig struct {
-	Alias              string                              `mapstructure:"alias"`
-	RequestType        string                              `mapstructure:"request_type"` // QUERY | MUTATION
-	DataLoaderProvider dataloader.DataLoaderProviderConfig `mapstructure:"data_loader_provider"`
+	Alias              string                    `mapstructure:"alias"`
+	RequestType        string                    `mapstructure:"request_type"` // QUERY | MUTATION
+	DataLoaderProvider dataloader.ProviderConfig `mapstructure:"data_loader_provider"`
 }
 type TagConfig struct {
 	ClientGoPackage string                             `mapstructure:"client_go_package"`
@@ -94,7 +94,7 @@ func (pc *SwaggerFileConfig) FieldConfig(objName string, fieldName string) (Fiel
 
 		paramCfg, ok := cfg.Fields[paramGqlName]
 
-		if ok == true {
+		if ok {
 			return paramCfg, nil
 		}
 	}

@@ -26,6 +26,11 @@ func (p *Plugin) fileInputMapResolvers(file *parsedFile) ([]graphql.MapInputObje
 				return errors.Wrap(err, "failed to resolve map value go type")
 			}
 			valueResolver, valueWithErr, _, err := p.TypeValueResolver(file, t.ElemType, false, "")
+
+			if err != nil {
+				return err
+			}
+
 			res = append(res, graphql.MapInputObjectResolver{
 				FunctionName: p.mapResolverFunctionName(file, t),
 				KeyGoType: graphql.GoType{

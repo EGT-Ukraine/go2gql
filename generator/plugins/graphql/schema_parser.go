@@ -19,7 +19,7 @@ type schemaParser struct {
 	types     map[string]*TypesFile
 }
 
-func NewSchemaParser(schemaCfg SchemaConfig, types map[string]*TypesFile) *schemaParser {
+func newSchemaParser(schemaCfg SchemaConfig, types map[string]*TypesFile) *schemaParser {
 	return &schemaParser{schemaCfg, types}
 }
 
@@ -70,7 +70,7 @@ func (g *schemaParser) resolveObjectFields(nodeCfg SchemaNodeConfig, object *gql
 
 		var serviceMethods []Method
 
-		if object.QueryObject == true {
+		if object.QueryObject {
 			serviceMethods = service.QueryMethods
 		} else {
 			serviceMethods = service.MutationMethods

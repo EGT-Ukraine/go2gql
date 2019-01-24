@@ -9,7 +9,13 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
 )
 
-func (p *Plugin) renderArrayValueResolver(arg string, resultGoTyp graphql.GoType, ctx graphql.BodyContext, elemResolver graphql.ValueResolver, elemResolverWithErr bool) (string, error) {
+func (p *Plugin) renderArrayValueResolver(
+	arg string,
+	resultGoTyp graphql.GoType,
+	ctx graphql.BodyContext,
+	elemResolver graphql.ValueResolver,
+	elemResolverWithErr bool) (string, error) {
+
 	tplBody, err := templatesValue_resolver_arrayGohtmlBytes()
 	if err != nil {
 		panic(errors.Wrap(err, "failed to get array value resolver template").Error())
@@ -30,7 +36,7 @@ func (p *Plugin) renderArrayValueResolver(arg string, resultGoTyp graphql.GoType
 		"rootCtx":             ctx,
 		"elemResolver":        elemResolver,
 		"elemResolverWithErr": elemResolverWithErr,
-		"arg": arg,
+		"arg":                 arg,
 	})
 	return res.String(), err
 }
