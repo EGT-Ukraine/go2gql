@@ -6,13 +6,11 @@ package mock
 
 import (
 	context "context"
-	reflect "reflect"
-
+	apis "github.com/EGT-Ukraine/go2gql/tests/protounwrap/generated/clients/apis"
 	gomock "github.com/golang/mock/gomock"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
-
-	apis "github.com/EGT-Ukraine/go2gql/tests/protounwrap/generated/clients/apis"
+	reflect "reflect"
 )
 
 // MockItemsServiceClient is a mock of ItemsServiceClient interface
@@ -76,4 +74,64 @@ func (mr *MockItemsServiceClientMockRecorder) List(arg0, arg1 interface{}, arg2 
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockItemsServiceClient)(nil).List), varargs...)
+}
+
+// TestRequestUnwrap mocks base method
+func (m *MockItemsServiceClient) TestRequestUnwrap(arg0 context.Context, arg1 *apis.TestRequestUnwrapRequest, arg2 ...grpc.CallOption) (*empty.Empty, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "TestRequestUnwrap", varargs...)
+	ret0, _ := ret[0].(*empty.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TestRequestUnwrap indicates an expected call of TestRequestUnwrap
+func (mr *MockItemsServiceClientMockRecorder) TestRequestUnwrap(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TestRequestUnwrap", reflect.TypeOf((*MockItemsServiceClient)(nil).TestRequestUnwrap), varargs...)
+}
+
+// TestRequestUnwrapInnerMessage mocks base method
+func (m *MockItemsServiceClient) TestRequestUnwrapInnerMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapInnerMessageRequest, arg2 ...grpc.CallOption) (*empty.Empty, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "TestRequestUnwrapInnerMessage", varargs...)
+	ret0, _ := ret[0].(*empty.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TestRequestUnwrapInnerMessage indicates an expected call of TestRequestUnwrapInnerMessage
+func (mr *MockItemsServiceClientMockRecorder) TestRequestUnwrapInnerMessage(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TestRequestUnwrapInnerMessage", reflect.TypeOf((*MockItemsServiceClient)(nil).TestRequestUnwrapInnerMessage), varargs...)
+}
+
+// TestRequestUnwrapRepeatedMessage mocks base method
+func (m *MockItemsServiceClient) TestRequestUnwrapRepeatedMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapRepeatedMessageRequest, arg2 ...grpc.CallOption) (*empty.Empty, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "TestRequestUnwrapRepeatedMessage", varargs...)
+	ret0, _ := ret[0].(*empty.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TestRequestUnwrapRepeatedMessage indicates an expected call of TestRequestUnwrapRepeatedMessage
+func (mr *MockItemsServiceClientMockRecorder) TestRequestUnwrapRepeatedMessage(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TestRequestUnwrapRepeatedMessage", reflect.TypeOf((*MockItemsServiceClient)(nil).TestRequestUnwrapRepeatedMessage), varargs...)
 }

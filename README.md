@@ -139,6 +139,7 @@ proto2gql:
                                             # If unwrap_response_field = true unpack response gql object with 1 field.
         messages:                     # messages settings
           - "Request$":               # message name match regex
+              unwrap_field: true      # unpack input message field. Useful for google.protobuf.wrappers.
               fields:
                 "ip_address":
                   context_key: "ip"   # context key, where unmarshaller will get this field from

@@ -19,6 +19,61 @@ func (g *Proto2GraphQL) oneOfValueAssigningWrapper(file *parsedFile, msg *parser
 	}
 }
 
+func (g *Proto2GraphQL) inputUnwrappedMessagesResolver(file *parsedFile, msg *parser.Message) (*graphql.InputObjectResolver, error) {
+	msgGoType, err := g.goTypeByParserType(msg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to resolve message go type")
+	}
+
+	if len(msg.Fields) != 1 {
+		return nil, errors.Wrapf(err, "can't unwrap message %s. Must have 1 field", msg.Name)
+	}
+
+	fld := msg.Fields[0]
+
+	goType, err := g.goTypeByParserType(fld.Type)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get go type by parser type")
+	}
+
+	return &graphql.InputObjectResolver{
+		FunctionName: g.inputMessageResolverName(file, msg),
+		OutputGoType: msgGoType,
+		Fields: []graphql.InputObjectResolverField{
+			{
+				GraphQLInputFieldName: fld.Name,
+				OutputFieldName:       camelCase(fld.Name),
+				ValueResolver: func(arg string, ctx graphql.BodyContext) string {
+					pType := fld.Type.(*parser.Scalar)
+					gt, ok := goTypesScalars[pType.ScalarName]
+					if !ok {
+						panic("unknown scalar: " + pType.ScalarName)
+					}
+
+					// We can't use default graphql input objects resolver. So goType never be a slice.
+					if fld.Repeated {
+						goTypeString := "[]" + goType.String(ctx.Importer)
+
+						return `func() ` + goTypeString + ` {
+								in := i.([]interface{})
+								res := make(` + goTypeString + `, len(in))
+								for i, val := range in {
+									res[i] = ` + "val.(" + gt.String(ctx.Importer) + ")" + `
+								}
+
+								return res
+							}()
+						`
+					}
+
+					return "i.(" + gt.String(ctx.Importer) + ")"
+				},
+				GoType: goType,
+			},
+		},
+	}, nil
+}
+
 func (g *Proto2GraphQL) fileInputMessagesResolvers(file *parsedFile) ([]graphql.InputObjectResolver, error) {
 	var res []graphql.InputObjectResolver
 	for _, msg := range file.File.Messages {
@@ -26,6 +81,18 @@ func (g *Proto2GraphQL) fileInputMessagesResolvers(file *parsedFile) ([]graphql.
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve message '%s' config", msg.Name)
 		}
+
+		if msgCfg.UnwrapField {
+			resolver, err := g.inputUnwrappedMessagesResolver(file, msg)
+			if err != nil {
+				return nil, err
+			}
+
+			res = append(res, *resolver)
+
+			continue
+		}
+
 		var oneOffs []graphql.InputObjectResolverOneOf
 		for _, oneOf := range msg.OneOffs {
 			var fields []graphql.InputObjectResolverOneOfField

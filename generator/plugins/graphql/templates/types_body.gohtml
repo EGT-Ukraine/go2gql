@@ -39,7 +39,7 @@ func {{$resolver.FunctionName}}(ctx {{ctxPkg}}.Context, i interface{}) (_ {{goTy
 	if i == nil {
 		return nil, nil
 	}
-	args := i.(map[string]interface{})
+	args, _ := i.(map[string]interface{})
 	_ = args
 	var result = new({{goTypeForNew $resolver.OutputGoType}})
 	{{ range $field := $resolver.Fields -}}

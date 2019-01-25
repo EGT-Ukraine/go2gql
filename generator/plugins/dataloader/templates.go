@@ -125,7 +125,7 @@ func templatesOutput_object_fieldsGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/output_object_fields.gohtml", size: 1305, mode: os.FileMode(436), modTime: time.Unix(1548252235, 0)}
+	info := bindataFileInfo{name: "templates/output_object_fields.gohtml", size: 1305, mode: os.FileMode(436), modTime: time.Unix(1548323628, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

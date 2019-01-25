@@ -1,11 +1,12 @@
+vendor_path: "../../vendor"
+
 data_loaders:
   output_path: "./generated/schema/loaders/"
 
 proto2gql:
   output_path: "./generated/schema"
   paths:
-    - "vendor"
-    - "$GOPATH/src"
+    - "../../vendor"
   imports_aliases:
     - google/protobuf/empty.proto:      "github.com/golang/protobuf/ptypes/empty/empty.proto"
   files:

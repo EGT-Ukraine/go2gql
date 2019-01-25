@@ -20,6 +20,7 @@ type MessageConfig struct {
 	ErrorField  string                   `mapstructure:"error_field"`
 	Fields      map[string]FieldsConfig  `mapstructure:"fields"`
 	DataLoaders []dataloader.FieldConfig `mapstructure:"data_loaders"`
+	UnwrapField bool                     `mapstructure:"unwrap_field"`
 }
 type MethodConfig struct {
 	Alias               string                    `mapstructure:"alias"`

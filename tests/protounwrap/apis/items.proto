@@ -5,13 +5,21 @@ package apis;
 option go_package = "github.com/EGT-Ukraine/go2gql/tests/protounwrap/generated/clients/apis;apis";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 service ItemsService {
     rpc List (google.protobuf.Empty) returns (ItemListResponse) {}
     rpc Activated (google.protobuf.Empty) returns (ActivatedResponse) {}
+    rpc TestRequestUnwrap (TestRequestUnwrapRequest) returns (google.protobuf.Empty) {}
+    rpc TestRequestUnwrapInnerMessage (TestRequestUnwrapInnerMessageRequest) returns (google.protobuf.Empty) {}
+    rpc TestRequestUnwrapRepeatedMessage (TestRequestUnwrapRepeatedMessageRequest) returns (google.protobuf.Empty) {}
 }
 
-message ActivatedResponse {
+message TestRequestUnwrapRequest {
+    google.protobuf.StringValue name = 1;
+}
+
+    message ActivatedResponse {
     bool activated = 1;
 }
 
@@ -22,4 +30,21 @@ message ItemListResponse {
 message Item {
     int64 id           = 1;
     string name        = 2;
+}
+
+message TestRequestUnwrapInnerMessageRequest {
+    repeated TestRequestUnwrapInnerMessageRequestPayload payload = 1;
+}
+
+message TestRequestUnwrapInnerMessageRequestPayload {
+    repeated google.protobuf.StringValue names = 1;
+    bool activated                             = 2;
+}
+
+message TestRequestUnwrapRepeatedMessageRequest {
+    TestRequestUnwrapRepeatedMessageRequestPayload payload = 1;
+}
+
+message TestRequestUnwrapRepeatedMessageRequestPayload {
+    repeated string test = 1;
 }
