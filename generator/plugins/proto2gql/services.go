@@ -110,7 +110,12 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 	var outProtoType parser.Type
 	var outProtoTypeRepeated bool
 
-	if cfg.UnwrapResponseField {
+	msgCfg, err := file.Config.MessageConfig(method.OutputMessage.Name)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to resolve message %s config", method.OutputMessage.Name)
+	}
+
+	if msgCfg.UnwrapField {
 		if len(method.OutputMessage.Fields) != 1 {
 			return nil, errors.Errorf(
 				"can't unwrap `%s` service `%s` method response. Output message must have 1 field.",
@@ -209,7 +214,12 @@ func (g Proto2GraphQL) addDataLoaderProvider(sc ServiceConfig, cfg MethodConfig,
 
 	var outProtoType *parser.Field
 
-	if cfg.UnwrapResponseField {
+	msgCfg, err := file.Config.MessageConfig(method.OutputMessage.Name)
+	if err != nil {
+		return errors.Wrapf(err, "failed to resolve message %s config", method.OutputMessage.Name)
+	}
+
+	if msgCfg.UnwrapField {
 		if len(method.OutputMessage.Fields) != 1 {
 			return errors.Errorf("response field unwrapping failed for method: %s. Output message must have 1 field", method.Name)
 		}
@@ -227,7 +237,7 @@ func (g Proto2GraphQL) addDataLoaderProvider(sc ServiceConfig, cfg MethodConfig,
 
 	responseGoType, err := g.goTypeByParserType(outProtoType.Type)
 
-	if cfg.UnwrapResponseField && outProtoType.Repeated {
+	if msgCfg.UnwrapField && outProtoType.Repeated {
 		elementGoType := responseGoType
 
 		responseGoType = graphql.GoType{
@@ -271,7 +281,7 @@ func (g Proto2GraphQL) addDataLoaderProvider(sc ServiceConfig, cfg MethodConfig,
 
 	fetchCode := g.dataLoaderFetchCode(file, method)
 
-	if cfg.UnwrapResponseField && outProtoType.Repeated {
+	if msgCfg.UnwrapField && outProtoType.Repeated {
 		dataLoaderOutType = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(dataLoaderOutType))
 		fetchCode = g.dataLoaderFetchCodeUnwrappedSlice(file, method, responseGoType, outProtoType)
 	}

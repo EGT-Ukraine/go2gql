@@ -23,10 +23,9 @@ type MessageConfig struct {
 	UnwrapField bool                     `mapstructure:"unwrap_field"`
 }
 type MethodConfig struct {
-	Alias               string                    `mapstructure:"alias"`
-	RequestType         string                    `mapstructure:"request_type"` // QUERY | MUTATION
-	DataLoaderProvider  dataloader.ProviderConfig `mapstructure:"data_loader_provider"`
-	UnwrapResponseField bool                      `mapstructure:"unwrap_response_field"`
+	Alias              string                    `mapstructure:"alias"`
+	RequestType        string                    `mapstructure:"request_type"` // QUERY | MUTATION
+	DataLoaderProvider dataloader.ProviderConfig `mapstructure:"data_loader_provider"`
 }
 type ServiceConfig struct {
 	ServiceName string                  `mapstructure:"service_name"`

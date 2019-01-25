@@ -44,21 +44,15 @@ func (g *Proto2GraphQL) inputUnwrappedMessagesResolver(file *parsedFile, msg *pa
 				GraphQLInputFieldName: fld.Name,
 				OutputFieldName:       camelCase(fld.Name),
 				ValueResolver: func(arg string, ctx graphql.BodyContext) string {
-					pType := fld.Type.(*parser.Scalar)
-					gt, ok := goTypesScalars[pType.ScalarName]
-					if !ok {
-						panic("unknown scalar: " + pType.ScalarName)
-					}
+					goTypeString := goType.String(ctx.Importer)
 
 					// We can't use default graphql input objects resolver. So goType never be a slice.
 					if fld.Repeated {
-						goTypeString := "[]" + goType.String(ctx.Importer)
-
-						return `func() ` + goTypeString + ` {
+						return `func() []` + goTypeString + ` {
 								in := i.([]interface{})
-								res := make(` + goTypeString + `, len(in))
+								res := make([]` + goTypeString + `, len(in))
 								for i, val := range in {
-									res[i] = ` + "val.(" + gt.String(ctx.Importer) + ")" + `
+									res[i] = ` + "val.(" + goTypeString + ")" + `
 								}
 
 								return res
@@ -66,7 +60,7 @@ func (g *Proto2GraphQL) inputUnwrappedMessagesResolver(file *parsedFile, msg *pa
 						`
 					}
 
-					return "i.(" + gt.String(ctx.Importer) + ")"
+					return "i.(" + goTypeString + ")"
 				},
 				GoType: goType,
 			},

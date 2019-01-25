@@ -16,11 +16,9 @@ proto2gql:
         ItemsService:
           methods:
             List:
-              unwrap_response_field: true
               alias: "list"
               request_type: "QUERY"
             Activated:
-              unwrap_response_field: true
               alias: "activated"
               request_type: "QUERY"
             TestRequestUnwrap:
@@ -33,6 +31,10 @@ proto2gql:
               alias: "testRequestUnwrapRepeatedMessage"
               request_type: "QUERY"
       messages:
+        - "^ActivatedResponse$":
+            unwrap_field: true
+        - "^ItemListResponse$":
+            unwrap_field: true
         - "TestRequestUnwrapRepeatedMessageRequestPayload":
             unwrap_field: true
 

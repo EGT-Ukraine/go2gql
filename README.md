@@ -135,8 +135,6 @@ proto2gql:
               "methodName":           # method name
                 alias: "methodAlias"
                 request_type: "QUERY" # method type in GraphQL Schema (QUERY|MUTATION)
-                unwrap_response_field: true # In proto we can't use primitive or repeated type in method response.
-                                            # If unwrap_response_field = true unpack response gql object with 1 field.
         messages:                     # messages settings
           - "Request$":               # message name match regex
               unwrap_field: true      # unpack input message field. Useful for google.protobuf.wrappers.
@@ -144,6 +142,8 @@ proto2gql:
                 "ip_address":
                   context_key: "ip"   # context key, where unmarshaller will get this field from
           - "Response$":
+              unwrap_field: true      # In proto we can't use primitive or repeated type in method response.
+                                      # If unwrap_field = true unpack response gql object with 1 field.
               error_field: "Error"    # name of payload error field
       - ...
       - ...
