@@ -179,7 +179,29 @@ func (p *Plugin) AddOutputObjectFieldRenderer(renderer OutputObjectFieldRender) 
 	p.outputObjectFieldRenderers = append(p.outputObjectFieldRenderers, renderer)
 }
 
+func (p *Plugin) validateInputObjects() error {
+	objectNames := map[string]string{}
+
+	for _, file := range p.files {
+		for _, fileInputObjects := range file.InputObjects {
+			name := fileInputObjects.GraphQLName
+
+			if val, ok := objectNames[name]; ok {
+				return errors.Errorf("duplicated graphql input object name: `%s` in `%s` and `%s`. Try to add messages prefix", name, val, file.Package)
+			}
+
+			objectNames[name] = file.Package
+		}
+	}
+
+	return nil
+}
+
 func (p *Plugin) generateTypes() error {
+	if err := p.validateInputObjects(); err != nil {
+		return errors.Wrap(err, "failed to validate input objects")
+	}
+
 	for outputPath, file := range p.files {
 		err := os.MkdirAll(filepath.Dir(outputPath), 0777)
 		if err != nil {
