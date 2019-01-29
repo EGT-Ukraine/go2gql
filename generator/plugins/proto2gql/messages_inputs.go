@@ -107,23 +107,13 @@ func (g *Proto2GraphQL) getMessageFields(file *parsedFile, msg *parser.Message) 
 			}
 
 			if fieldTypeMsgCfg.UnwrapField {
-				if len(fieldTypeMessage.Fields) != 1 {
-					return nil, errors.Wrapf(err, "can't unwrap message %s. Must have 1 field", msg.Name)
-				}
+				unwrappedField, err := g.getUnwrappedField(field)
 
-				fieldTypeFields, err := g.getMessageFields(fieldTypeFile, fieldTypeMessage)
 				if err != nil {
-					return nil, err
+					return nil, errors.Wrapf(err, "failed to resolve unwrapped message %s field", fieldTypeMessage.Name)
 				}
 
-				fieldTypeField := fieldTypeFields[0]
-				fieldTypeField.Name = field.Name
-
-				if field.Repeated {
-					fieldTypeField.Type = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(fieldTypeField.Type))
-				}
-
-				fields = append(fields, fieldTypeField)
+				fields = append(fields, *unwrappedField)
 
 				continue
 			}
@@ -170,4 +160,32 @@ func (g *Proto2GraphQL) getMessageFields(file *parsedFile, msg *parser.Message) 
 	}
 
 	return fields, nil
+}
+
+func (g *Proto2GraphQL) getUnwrappedField(field *parser.Field) (*graphql.ObjectField, error) {
+	unwrappedMessage, ok := field.Type.(*parser.Message)
+
+	if !ok {
+		return nil, errors.New("can't unwrap field. Not a message")
+	}
+
+	unwrappedMessageFile, err := g.parsedFile(unwrappedMessage.File())
+
+	if len(unwrappedMessage.Fields) != 1 {
+		return nil, errors.Wrapf(err, "can't unwrap message. Must have 1 field")
+	}
+
+	messageFields, err := g.getMessageFields(unwrappedMessageFile, unwrappedMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	unwrappedField := &messageFields[0]
+	unwrappedField.Name = field.Name
+
+	if field.Repeated {
+		unwrappedField.Type = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(unwrappedField.Type))
+	}
+
+	return unwrappedField, nil
 }
