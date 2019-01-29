@@ -63,28 +63,15 @@ func (g *Proto2GraphQL) parsedFile(file *parser.File) (*parsedFile, error) {
 			return f, nil
 		}
 	}
-	outPath, err := g.fileOutputPath(nil, file)
+
+	parsedFile, err := g.createParsedFile(file, nil)
+
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to resolve file '%s' output path", file.FilePath)
+		return nil, err
 	}
-	outPkgName, outPkg, err := g.fileOutputPackage(nil, file)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to resolve file '%s' output Go package", file.FilePath)
-	}
-	grpcPkg, err := g.fileGRPCSourcesPackage(nil, file)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to resolve file '%s' GRPC sources Go package", file.FilePath)
-	}
-	res := &parsedFile{
-		File:           file,
-		Config:         nil,
-		OutputPath:     outPath,
-		OutputPkg:      outPkg,
-		OutputPkgName:  outPkgName,
-		GRPCSourcesPkg: grpcPkg,
-	}
-	g.ParsedFiles = append(g.ParsedFiles, res)
-	return res, nil
+
+	g.ParsedFiles = append(g.ParsedFiles, parsedFile)
+	return parsedFile, nil
 
 }
 func (g *Proto2GraphQL) prepareFile(file *parsedFile) (*graphql.TypesFile, error) {
@@ -206,25 +193,37 @@ func (g *Proto2GraphQL) AddSourceByConfig(config *ProtoFileConfig) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to parse proto file")
 	}
+
+	parsedFile, err := g.createParsedFile(file, config)
+
+	if err != nil {
+		return err
+	}
+
+	g.ParsedFiles = append(g.ParsedFiles, parsedFile)
+	return nil
+}
+
+func (g *Proto2GraphQL) createParsedFile(file *parser.File, config *ProtoFileConfig) (*parsedFile, error) {
 	outPath, err := g.fileOutputPath(config, file)
 	if err != nil {
-		return errors.Wrapf(err, "failed to resolve file '%s' output path", file.FilePath)
+		return nil, errors.Wrapf(err, "failed to resolve file '%s' output path", file.FilePath)
 	}
 	outPkgName, outPkg, err := g.fileOutputPackage(config, file)
 	if err != nil {
-		return errors.Wrapf(err, "failed to resolve file '%s' output Go package", file.FilePath)
+		return nil, errors.Wrapf(err, "failed to resolve file '%s' output Go package", file.FilePath)
 	}
 	grpcPkg, err := g.fileGRPCSourcesPackage(config, file)
 	if err != nil {
-		return errors.Wrapf(err, "failed to resolve file '%s' GRPC sources Go package", file.FilePath)
+		return nil, errors.Wrapf(err, "failed to resolve file '%s' GRPC sources Go package", file.FilePath)
 	}
-	g.ParsedFiles = append(g.ParsedFiles, &parsedFile{
+
+	return &parsedFile{
 		File:           file,
 		Config:         config,
 		OutputPath:     outPath,
 		OutputPkg:      outPkg,
 		OutputPkgName:  outPkgName,
 		GRPCSourcesPkg: grpcPkg,
-	})
-	return nil
+	}, nil
 }

@@ -132,7 +132,7 @@ func (p *Plugin) Prepare() error {
 	for _, file := range pr.parser.ParsedFiles() {
 		pf, err := pr.parsedFile(file)
 		if err != nil {
-			return errors.Wrapf(err, "failed to resovle parsed file of '%s'", file.FilePath)
+			return errors.Wrapf(err, "failed to resolve parsed file of '%s'", file.FilePath)
 		}
 
 		commonFile, err := pr.prepareFile(pf)

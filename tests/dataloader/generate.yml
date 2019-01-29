@@ -1,11 +1,12 @@
+vendor_path: "../../vendor"
+
 data_loaders:
   output_path: "./generated/schema/loaders/"
 
 proto2gql:
   output_path: "./generated/schema"
   paths:
-    - "vendor"
-    - "$GOPATH/src"
+    - "../../vendor"
   imports_aliases:
     - google/protobuf/empty.proto:      "github.com/golang/protobuf/ptypes/empty/empty.proto"
   files:
@@ -14,9 +15,12 @@ proto2gql:
         ItemsReviewService:
           methods:
             List:
-              unwrap_response_field: true
               data_loader_provider:
                 name: "ItemReviewsLoader"
+      messages:
+        - "^ListResponse$":
+            unwrap_field: true
+
     - proto_path: "./apis/category.proto"
       services:
         CategoryService:
@@ -39,10 +43,11 @@ proto2gql:
         ItemsService:
           methods:
             List:
-              unwrap_response_field: true
               alias: "list"
               request_type: "QUERY"
       messages:
+        - "^ItemListResponse$":
+            unwrap_field: true
         - "Item$":
             data_loaders:
               - field_name: "category"

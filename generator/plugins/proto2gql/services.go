@@ -15,66 +15,20 @@ import (
 
 func (g Proto2GraphQL) serviceMethodArguments(file *parsedFile, method *parser.Method) ([]graphql.MethodArgument, error) {
 	var args []graphql.MethodArgument
-	for _, field := range method.InputMessage.Fields {
-		typeFile, err := g.parsedFile(field.Type.File())
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to resolve field '%s' file", field.Name)
-		}
-		msgCfg, err := file.Config.MessageConfig(method.InputMessage.Name)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to resolve message %s config", method.InputMessage.Name)
-		}
-		fldCfg := msgCfg.Fields[field.Name]
-		if fldCfg.ContextKey != "" {
-			continue
-		}
-		typResolver, err := g.TypeInputTypeResolver(typeFile, field.Type)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to prepare input type resolver")
-		}
 
-		if field.Repeated {
-			typResolver = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(typResolver))
-		}
+	messageFields, err := g.getMessageFields(file, method.InputMessage)
+	if err != nil {
+		return nil, err
+	}
 
+	for _, messageField := range messageFields {
 		args = append(args, graphql.MethodArgument{
-			Name:          field.Name,
-			Type:          typResolver,
-			QuotedComment: field.QuotedComment,
+			Name:          messageField.Name,
+			Type:          messageField.Type,
+			QuotedComment: messageField.QuotedComment,
 		})
 	}
-	for _, field := range method.InputMessage.MapFields {
-		typeFile, err := g.parsedFile(field.Map.File())
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to resolve field '%s' file", field.Name)
-		}
-		typResolver, err := g.TypeInputTypeResolver(typeFile, field.Map)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to prepare input type resolver")
-		}
-		args = append(args, graphql.MethodArgument{
-			Name:          field.Name,
-			Type:          typResolver,
-			QuotedComment: field.QuotedComment,
-		})
-	}
-	for _, oneOff := range method.InputMessage.OneOffs {
-		for _, field := range oneOff.Fields {
-			typeFile, err := g.parsedFile(field.Type.File())
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to resolve field '%s' file", field.Name)
-			}
-			typResolver, err := g.TypeInputTypeResolver(typeFile, field.Type)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to prepare input type resolver")
-			}
-			args = append(args, graphql.MethodArgument{
-				Name:          field.Name,
-				Type:          typResolver,
-				QuotedComment: field.QuotedComment,
-			})
-		}
-	}
+
 	return args, nil
 }
 func (g Proto2GraphQL) messagePayloadErrorParams(message *parser.Message) (checker graphql.PayloadErrorChecker, accessor graphql.PayloadErrorAccessor, err error) {
@@ -156,7 +110,12 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 	var outProtoType parser.Type
 	var outProtoTypeRepeated bool
 
-	if cfg.UnwrapResponseField {
+	msgCfg, err := file.Config.MessageConfig(method.OutputMessage.Name)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to resolve message %s config", method.OutputMessage.Name)
+	}
+
+	if msgCfg.UnwrapField {
 		if len(method.OutputMessage.Fields) != 1 {
 			return nil, errors.Errorf(
 				"can't unwrap `%s` service `%s` method response. Output message must have 1 field.",
@@ -255,7 +214,12 @@ func (g Proto2GraphQL) addDataLoaderProvider(sc ServiceConfig, cfg MethodConfig,
 
 	var outProtoType *parser.Field
 
-	if cfg.UnwrapResponseField {
+	msgCfg, err := file.Config.MessageConfig(method.OutputMessage.Name)
+	if err != nil {
+		return errors.Wrapf(err, "failed to resolve message %s config", method.OutputMessage.Name)
+	}
+
+	if msgCfg.UnwrapField {
 		if len(method.OutputMessage.Fields) != 1 {
 			return errors.Errorf("response field unwrapping failed for method: %s. Output message must have 1 field", method.Name)
 		}
@@ -273,7 +237,7 @@ func (g Proto2GraphQL) addDataLoaderProvider(sc ServiceConfig, cfg MethodConfig,
 
 	responseGoType, err := g.goTypeByParserType(outProtoType.Type)
 
-	if cfg.UnwrapResponseField && outProtoType.Repeated {
+	if msgCfg.UnwrapField && outProtoType.Repeated {
 		elementGoType := responseGoType
 
 		responseGoType = graphql.GoType{
@@ -317,7 +281,7 @@ func (g Proto2GraphQL) addDataLoaderProvider(sc ServiceConfig, cfg MethodConfig,
 
 	fetchCode := g.dataLoaderFetchCode(file, method)
 
-	if cfg.UnwrapResponseField && outProtoType.Repeated {
+	if msgCfg.UnwrapField && outProtoType.Repeated {
 		dataLoaderOutType = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(dataLoaderOutType))
 		fetchCode = g.dataLoaderFetchCodeUnwrappedSlice(file, method, responseGoType, outProtoType)
 	}

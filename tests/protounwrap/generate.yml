@@ -1,26 +1,48 @@
+vendor_path: "../../vendor"
+
 data_loaders:
   output_path: "./generated/schema/loaders/"
 
 proto2gql:
   output_path: "./generated/schema"
   paths:
-    - "vendor"
-    - "$GOPATH/src"
+    - "../../vendor"
   imports_aliases:
     - google/protobuf/empty.proto:      "github.com/golang/protobuf/ptypes/empty/empty.proto"
+    - google/protobuf/wrappers.proto:   "github.com/golang/protobuf/ptypes/wrappers/wrappers.proto"
   files:
     - proto_path: "./apis/items.proto"
       services:
         ItemsService:
           methods:
             List:
-              unwrap_response_field: true
               alias: "list"
               request_type: "QUERY"
             Activated:
-              unwrap_response_field: true
               alias: "activated"
               request_type: "QUERY"
+            TestRequestUnwrap:
+              alias: "testRequestUnwrap"
+              request_type: "QUERY"
+            TestRequestUnwrapInnerMessage:
+              alias: "testRequestUnwrapInnerMessage"
+              request_type: "QUERY"
+            TestRequestUnwrapRepeatedMessage:
+              alias: "testRequestUnwrapRepeatedMessage"
+              request_type: "QUERY"
+      messages:
+        - "^ActivatedResponse$":
+            unwrap_field: true
+        - "^ItemListResponse$":
+            unwrap_field: true
+        - "TestRequestUnwrapRepeatedMessageRequestPayload":
+            unwrap_field: true
+
+    - proto_path: "../../vendor/github.com/golang/protobuf/ptypes/wrappers/wrappers.proto"
+      proto_go_package: "github.com/golang/protobuf/ptypes/wrappers"
+      messages:
+        - "Value$":
+            unwrap_field: true
 
 graphql_schemas:
   - name: "API"
