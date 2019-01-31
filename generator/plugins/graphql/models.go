@@ -13,10 +13,15 @@ const (
 )
 
 type TypeResolver func(ctx BodyContext) string
+
 type ValueResolver func(arg string, ctx BodyContext) string
+
 type AssigningWrapper func(arg string, ctx BodyContext) string
+
 type PayloadErrorChecker func(arg string) string
+
 type PayloadErrorAccessor func(arg string) string
+
 type ClientMethodCaller func(client string, req string, ctx BodyContext) string
 
 const KindBytes = reflect.Kind(255)
@@ -58,16 +63,19 @@ type InputObjectResolver struct {
 	Fields       []InputObjectResolverField
 	OneOfFields  []InputObjectResolverOneOf
 }
+
 type InputObjectResolverOneOf struct {
 	OutputFieldName string
 	Fields          []InputObjectResolverOneOfField
 }
+
 type InputObjectResolverOneOfField struct {
 	GraphQLInputFieldName string
 	ValueResolver         ValueResolver
 	ResolverWithError     bool
 	AssigningWrapper      AssigningWrapper
 }
+
 type InputObjectResolverField struct {
 	OutputFieldName       string
 	GraphQLInputFieldName string
@@ -82,6 +90,7 @@ type InputObject struct {
 	GraphQLName  string
 	Fields       []ObjectField
 }
+
 type ObjectField struct {
 	Name          string
 	Type          TypeResolver
@@ -91,9 +100,11 @@ type ObjectField struct {
 	NeedCast      bool
 	CastTo        GoType
 }
+
 type DataLoaderField struct {
 	Name                         string
 	Type                         string
+	IsSlice                      bool
 	ParentKeyFieldName           string
 	KeyFieldSlice                bool
 	NormalizedParentKeyFieldName string
@@ -127,17 +138,20 @@ type Enum struct {
 	Comment      string
 	Values       []EnumValue
 }
+
 type EnumValue struct {
 	Name    string
 	Value   int
 	Comment string
 }
+
 type MapInputObject struct {
 	VariableName    string
 	GraphQLName     string
 	KeyObjectType   TypeResolver
 	ValueObjectType TypeResolver
 }
+
 type MapInputObjectResolver struct {
 	FunctionName           string
 	KeyGoType              GoType
@@ -147,12 +161,14 @@ type MapInputObjectResolver struct {
 	ValueResolver          ValueResolver
 	ValueResolverWithError bool
 }
+
 type MapOutputObject struct {
 	VariableName    string
 	GraphQLName     string
 	KeyObjectType   TypeResolver
 	ValueObjectType TypeResolver
 }
+
 type Service struct {
 	Name            string
 	QuotedComment   string
@@ -160,6 +176,7 @@ type Service struct {
 	QueryMethods    []Method
 	MutationMethods []Method
 }
+
 type Method struct {
 	Name                   string
 	QuotedComment          string
@@ -172,11 +189,13 @@ type Method struct {
 	PayloadErrorChecker    PayloadErrorChecker
 	PayloadErrorAccessor   PayloadErrorAccessor
 }
+
 type MethodArgument struct {
 	Name          string
 	Type          TypeResolver
 	QuotedComment string
 }
+
 type TypesFile struct {
 	PackageName             string
 	Package                 string
@@ -230,6 +249,7 @@ type fieldConfig struct {
 	Service       *SchemaService
 	Object        *gqlObject
 }
+
 type gqlObject struct {
 	QueryObject   bool
 	Name          string

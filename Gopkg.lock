@@ -26,14 +26,6 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
-  digest = "1:d8a2bb36a048d1571bcc1aee208b61f39dc16c6c53823feffd37449dde162507"
-  name = "github.com/asaskevich/govalidator"
-  packages = ["."]
-  pruneopts = ""
-  revision = "ccb8e960c48f04d6935e72476ae4a51028f9e22f"
-  version = "v9"
-
-[[projects]]
   digest = "1:0deddd908b6b4b768cfc272c16ee61e7088a60f7fe2f06c547bd3d8e1f8b8e77"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -48,36 +40,6 @@
   pruneopts = ""
   revision = "6a34d38c8fe27a73b3adb076ab02f9614e70fff0"
   version = "v1.6.8"
-
-[[projects]]
-  branch = "master"
-  digest = "1:e9ffb9315dce0051beb757d0f0fc25db57c4da654efc4eada4ea109c2d9da815"
-  name = "github.com/globalsign/mgo"
-  packages = [
-    "bson",
-    "internal/json",
-  ]
-  pruneopts = ""
-  revision = "eeefdecb41b842af6dc652aaea4026e8403e62df"
-
-[[projects]]
-  digest = "1:48f9a43c330434d61098a65bdf4d8cbfbdc0eecf30ab35b1b88405868df6a42b"
-  name = "github.com/go-openapi/analysis"
-  packages = [
-    ".",
-    "internal",
-  ]
-  pruneopts = ""
-  revision = "e2f3fdbb7ed0e56e070ccbfb6fc75b288a33c014"
-  version = "v0.18.0"
-
-[[projects]]
-  digest = "1:90d75a4ad18e82be220162df5f551537c917ef2c0bfa4f04b3bde61130b6286a"
-  name = "github.com/go-openapi/errors"
-  packages = ["."]
-  pruneopts = ""
-  revision = "7a7ff1b7b8020f22574411a32f28b4d168d69237"
-  version = "v0.18.0"
 
 [[projects]]
   digest = "1:c8052dcf3ec378a9a6bc4f00ecc10d6d5eb3cc1f8faaf6b2f70f047e8881d446"
@@ -96,31 +58,6 @@
   version = "v0.18.0"
 
 [[projects]]
-  digest = "1:e6529722d1b6bb2e80126d20a03bc05ab4409ace3f006cfa8717c74a8b5ad075"
-  name = "github.com/go-openapi/loads"
-  packages = ["."]
-  pruneopts = ""
-  revision = "74628589c3b94e3526a842d24f46589980f5ab22"
-  version = "v0.18.0"
-
-[[projects]]
-  digest = "1:708923386755f46d63d254e484c77c70ceb1706bf3cb58a45426b3e1469376a1"
-  name = "github.com/go-openapi/runtime"
-  packages = [
-    ".",
-    "client",
-    "logger",
-    "middleware",
-    "middleware/denco",
-    "middleware/header",
-    "middleware/untyped",
-    "security",
-  ]
-  pruneopts = ""
-  revision = "41e24cc66d7af6af39eb9b5a6418e901bcdd333c"
-  version = "v0.18.0"
-
-[[projects]]
   digest = "1:54af405aae840f810418f3d25211012af1c4bfd56d07d3de6482a7a3b762528a"
   name = "github.com/go-openapi/spec"
   packages = ["."]
@@ -129,27 +66,11 @@
   version = "v0.18.0"
 
 [[projects]]
-  digest = "1:8673b4ec9f67eda2cdf08386179ab0bc232b9bda4671c585aa71ed684d3d48fb"
-  name = "github.com/go-openapi/strfmt"
-  packages = ["."]
-  pruneopts = ""
-  revision = "e471370ae57ac74eaf0afe816a66e4ddd7f1b027"
-  version = "v0.18.0"
-
-[[projects]]
   digest = "1:417789264f7cc44cbb3431ac997473e085018b01bdd98df57e6039981428aca4"
   name = "github.com/go-openapi/swag"
   packages = ["."]
   pruneopts = ""
   revision = "1d29f06aebd59ccdf11ae04aa0334ded96e2d909"
-  version = "v0.18.0"
-
-[[projects]]
-  digest = "1:3e3802ad256a6bc362935373649a355abe1d1e419bb920f65507abfac3675ae4"
-  name = "github.com/go-openapi/validate"
-  packages = ["."]
-  pruneopts = ""
-  revision = "d2eab7d93009e9215fc85b2faa2c2f2a98c2af48"
   version = "v0.18.0"
 
 [[projects]]
@@ -170,6 +91,7 @@
     "ptypes/duration",
     "ptypes/empty",
     "ptypes/timestamp",
+    "ptypes/wrappers",
   ]
   pruneopts = ""
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
@@ -442,16 +364,13 @@
     "github.com/EGT-Ukraine/dataloaden/pkg/generator",
     "github.com/davecgh/go-spew/spew",
     "github.com/emicklei/proto",
-    "github.com/go-openapi/errors",
-    "github.com/go-openapi/runtime",
-    "github.com/go-openapi/runtime/client",
     "github.com/go-openapi/spec",
-    "github.com/go-openapi/strfmt",
     "github.com/go-openapi/swag",
     "github.com/golang/mock/gomock",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes/empty",
     "github.com/golang/protobuf/ptypes/timestamp",
+    "github.com/golang/protobuf/ptypes/wrappers",
     "github.com/graphql-go/graphql",
     "github.com/graphql-go/graphql/language/ast",
     "github.com/graphql-go/graphql/language/kinds",

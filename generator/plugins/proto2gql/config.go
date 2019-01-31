@@ -2,6 +2,7 @@ package proto2gql
 
 import (
 	"regexp"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -13,24 +14,41 @@ const (
 	RequestTypeMutation = "MUTATION"
 )
 
+const (
+	DataLoaderType1ToN = "1-N"
+	DataLoaderType1To1 = "1-1"
+)
+
 type FieldsConfig struct {
 	ContextKey string `mapstructure:"context_key"`
 }
+
 type MessageConfig struct {
 	ErrorField  string                   `mapstructure:"error_field"`
 	Fields      map[string]FieldsConfig  `mapstructure:"fields"`
 	DataLoaders []dataloader.FieldConfig `mapstructure:"data_loaders"`
 	UnwrapField bool                     `mapstructure:"unwrap_field"`
 }
+
 type MethodConfig struct {
-	Alias              string                    `mapstructure:"alias"`
-	RequestType        string                    `mapstructure:"request_type"` // QUERY | MUTATION
-	DataLoaderProvider dataloader.ProviderConfig `mapstructure:"data_loader_provider"`
+	Alias              string                      `mapstructure:"alias"`
+	RequestType        string                      `mapstructure:"request_type"` // QUERY | MUTATION
+	DataLoaderProvider map[string]DataLoaderConfig `mapstructure:"data_loaders"`
 }
+
+type DataLoaderConfig struct {
+	RequestField string        `mapstructure:"request_field"`
+	ResultField  string        `mapstructure:"result_field"`
+	MatchField   string        `mapstructure:"match_field"`
+	Type         string        `mapstructure:"type"`
+	WaitDuration time.Duration `mapstructure:"wait_duration"`
+}
+
 type ServiceConfig struct {
 	ServiceName string                  `mapstructure:"service_name"`
 	Methods     map[string]MethodConfig `mapstructure:"methods"`
 }
+
 type Config struct {
 	Files []*ProtoFileConfig `mapstructure:"files"`
 
@@ -186,6 +204,7 @@ type SchemaNodeConfig struct {
 	ExcludeMethods []string           `mapstructure:"exclude_methods"`
 	FilterMethods  []string           `mapstructure:"filter_methods"`
 }
+
 type SchemaConfig struct {
 	Name          string            `mapstructure:"name"`
 	OutputPath    string            `mapstructure:"output_path"`
@@ -193,6 +212,7 @@ type SchemaConfig struct {
 	Queries       *SchemaNodeConfig `mapstructure:"queries"`
 	Mutations     *SchemaNodeConfig `mapstructure:"mutations"`
 }
+
 type GenerateConfig struct {
 	Tracer     bool
 	VendorPath string

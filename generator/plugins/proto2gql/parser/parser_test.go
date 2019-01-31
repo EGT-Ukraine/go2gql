@@ -9,17 +9,27 @@ import (
 
 func testFileInfo(file *File) *File {
 	var Int32Type = &Scalar{file: file, ScalarName: "int32"}
+
 	var StringType = &Scalar{file: file, ScalarName: "string"}
+
 	var RootMessage = file.Messages[0]
+
 	var RootMessage2 = file.Messages[4]
+
 	var RootEnum = file.Enums[0]
+
 	var EmptyMessage = file.Messages[2]
+
 	var NestedMessage = file.Messages[1]
+
 	var NestedEnum = file.Enums[1]
+
 	var NestedNestedEnum = file.Enums[2]
+
 	var MessageWithEmpty = file.Messages[3]
 
 	var CommonCommonEnum = file.Imports[0].Enums[0]
+
 	var CommonCommonMessage = file.Imports[0].Messages[0]
 
 	var ParentScopeEnum = file.Imports[2].Enums[0]
@@ -45,7 +55,7 @@ func testFileInfo(file *File) *File {
 				Name:          "RootMessage",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootMessage"},
-				Fields: []*Field{
+				NormalFields: []*NormalField{
 					{Name: "r_msg", Type: NestedMessage, Repeated: true, QuotedComment: `"repeated Message"`},
 					{Name: "r_scalar", Type: Int32Type, Repeated: true, QuotedComment: `"repeated Scalar"`},
 					{Name: "r_enum", Type: RootEnum, Repeated: true, QuotedComment: `"repeated Enum"`},
@@ -60,25 +70,25 @@ func testFileInfo(file *File) *File {
 					{Name: "proto2message", Type: Proto2Message, QuotedComment: `""`},
 				},
 				OneOffs: []*OneOf{
-					{Name: "enum_first_oneoff", Fields: []*Field{
+					{Name: "enum_first_oneoff", Fields: []*NormalField{
 						{Name: "e_f_o_e", Type: CommonCommonEnum, QuotedComment: `""`},
 						{Name: "e_f_o_s", Type: Int32Type, QuotedComment: `""`},
 						{Name: "e_f_o_m", Type: CommonCommonMessage, QuotedComment: `""`},
 						{Name: "e_f_o_em", Type: EmptyMessage, QuotedComment: `"non-repeated Message"`},
 					}},
-					{Name: "scalar_first_oneoff", Fields: []*Field{
+					{Name: "scalar_first_oneoff", Fields: []*NormalField{
 						{Name: "s_f_o_s", Type: Int32Type, QuotedComment: `"non-repeated Scalar"`},
 						{Name: "s_f_o_e", Type: RootEnum, QuotedComment: `"non-repeated Enum"`},
 						{Name: "s_f_o_mes", Type: RootMessage2, QuotedComment: `"non-repeated Message"`},
 						{Name: "s_f_o_m", Type: EmptyMessage, QuotedComment: `"non-repeated Message"`},
 					}},
-					{Name: "message_first_oneoff", Fields: []*Field{
+					{Name: "message_first_oneoff", Fields: []*NormalField{
 						{Name: "m_f_o_m", Type: RootMessage2, QuotedComment: `"non-repeated Message"`},
 						{Name: "m_f_o_s", Type: Int32Type, QuotedComment: `"non-repeated Scalar"`},
 						{Name: "m_f_o_e", Type: RootEnum, QuotedComment: `"non-repeated Enum"`},
 						{Name: "m_f_o_em", Type: EmptyMessage, QuotedComment: `"non-repeated Message"`},
 					}},
-					{Name: "empty_first_oneoff", Fields: []*Field{
+					{Name: "empty_first_oneoff", Fields: []*NormalField{
 						{Name: "em_f_o_em", Type: EmptyMessage, QuotedComment: `"non-repeated Message"`},
 						{Name: "em_f_o_s", Type: Int32Type, QuotedComment: `"non-repeated Scalar"`},
 						{Name: "em_f_o_en", Type: RootEnum, QuotedComment: `"non-repeated Enum"`},
@@ -143,7 +153,7 @@ func testFileInfo(file *File) *File {
 				Name:          "NestedMessage",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootMessage", "NestedMessage"},
-				Fields: []*Field{
+				NormalFields: []*NormalField{
 					{Name: "sub_r_enum", Type: NestedEnum, Repeated: true, QuotedComment: `"repeated Enum"`},
 					{Name: "sub_sub_r_enum", Type: NestedNestedEnum, Repeated: true, QuotedComment: `"repeated Enum"`},
 				},
@@ -159,7 +169,7 @@ func testFileInfo(file *File) *File {
 				Name:          "MessageWithEmpty",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"MessageWithEmpty"},
-				Fields: []*Field{
+				NormalFields: []*NormalField{
 					{Name: "empt", Type: EmptyMessage, QuotedComment: `""`},
 				},
 			},
@@ -168,7 +178,7 @@ func testFileInfo(file *File) *File {
 				Name:          "RootMessage2",
 				QuotedComment: `""`,
 				TypeName:      TypeName{"RootMessage2"},
-				Fields: []*Field{
+				NormalFields: []*NormalField{
 					{Name: "some_field", Type: Int32Type, QuotedComment: `""`},
 				},
 			},
@@ -271,9 +281,9 @@ func TestParser_Parse(t *testing.T) {
 					So(msg.File(), ShouldEqual, test)
 					So(msg.TypeName, ShouldResemble, validMsg.TypeName)
 					So(msg.QuotedComment, ShouldEqual, validMsg.QuotedComment)
-					So(msg.Fields, ShouldHaveLength, len(validMsg.Fields))
-					for i, fld := range msg.Fields {
-						validFld := validMsg.Fields[i]
+					So(msg.NormalFields, ShouldHaveLength, len(validMsg.NormalFields))
+					for i, fld := range msg.NormalFields {
+						validFld := validMsg.NormalFields[i]
 						Convey("Should have valid parsed "+strings.Join(validMsg.TypeName, "_")+"."+validFld.Name+" field", func() {
 							So(fld.Name, ShouldEqual, validFld.Name)
 							So(fld.Repeated, ShouldEqual, validFld.Repeated)

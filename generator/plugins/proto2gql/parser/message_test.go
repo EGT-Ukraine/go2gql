@@ -9,13 +9,13 @@ import (
 func TestMessageMethods(t *testing.T) {
 	Convey("Test Message.HaveFields", t, func() {
 		Convey("Should return true, if there's a normal field", func() {
-			So(Message{Fields: []*Field{{}}}.HaveFields(), ShouldBeTrue)
+			So(Message{NormalFields: []*NormalField{{}}}.HaveFields(), ShouldBeTrue)
 		})
 		Convey("Should return true, if there's a map field", func() {
 			So(Message{MapFields: []*MapField{{}}}.HaveFields(), ShouldBeTrue)
 		})
 		Convey("Should return true, if there's a oneof", func() {
-			So(Message{OneOffs: []*OneOf{{Fields: []*Field{{}}}}}.HaveFields(), ShouldBeTrue)
+			So(Message{OneOffs: []*OneOf{{Fields: []*NormalField{{}}}}}.HaveFields(), ShouldBeTrue)
 		})
 		Convey("Should return false, if there no fields", func() {
 			So(Message{}.HaveFields(), ShouldBeFalse)
@@ -23,7 +23,7 @@ func TestMessageMethods(t *testing.T) {
 	})
 	Convey("Test Message.HaveFieldsExcept", t, func() {
 		Convey("Should return true, if there's a normal field", func() {
-			msg := Message{Fields: []*Field{
+			msg := Message{NormalFields: []*NormalField{
 				{Name: "a"},
 				{Name: "b"},
 			}}
@@ -39,7 +39,7 @@ func TestMessageMethods(t *testing.T) {
 		Convey("Should return true, if there's a oneof", func() {
 			msg := Message{OneOffs: []*OneOf{
 				{
-					Fields: []*Field{
+					Fields: []*NormalField{
 						{Name: "a"},
 						{Name: "b"},
 						{Name: "c"},
@@ -49,7 +49,7 @@ func TestMessageMethods(t *testing.T) {
 			So(msg.HaveFieldsExcept("b"), ShouldBeTrue)
 		})
 		Convey("Should return false, if there's only excepted normal field", func() {
-			msg := Message{Fields: []*Field{
+			msg := Message{NormalFields: []*NormalField{
 				{Name: "a"},
 			}}
 			So(msg.HaveFieldsExcept("a"), ShouldBeFalse)
@@ -64,7 +64,7 @@ func TestMessageMethods(t *testing.T) {
 		Convey("Should return false, if there's only excepted oneof field", func() {
 			msg := Message{OneOffs: []*OneOf{
 				{
-					Fields: []*Field{
+					Fields: []*NormalField{
 						{Name: "b"},
 					},
 				},

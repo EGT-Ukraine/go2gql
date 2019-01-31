@@ -25,7 +25,7 @@ func (g *Proto2GraphQL) inputMessageTypeResolver(msgFile *parsedFile, message *p
 	}
 }
 
-func (g *Proto2GraphQL) inputMessageFieldTypeResolver(file *parsedFile, field *parser.Field) (graphql.TypeResolver, error) {
+func (g *Proto2GraphQL) inputMessageFieldTypeResolver(file *parsedFile, field *parser.NormalField) (graphql.TypeResolver, error) {
 	resolver, err := g.TypeInputTypeResolver(file, field.Type)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get input type resolver")
@@ -87,7 +87,7 @@ func (g *Proto2GraphQL) getMessageFields(file *parsedFile, msg *parser.Message) 
 	}
 
 	var fields []graphql.ObjectField
-	for _, field := range msg.Fields {
+	for _, field := range msg.NormalFields {
 		fldCfg := msgCfg.Fields[field.Name]
 		if fldCfg.ContextKey != "" {
 			continue
@@ -162,7 +162,7 @@ func (g *Proto2GraphQL) getMessageFields(file *parsedFile, msg *parser.Message) 
 	return fields, nil
 }
 
-func (g *Proto2GraphQL) getUnwrappedField(field *parser.Field) (*graphql.ObjectField, error) {
+func (g *Proto2GraphQL) getUnwrappedField(field *parser.NormalField) (*graphql.ObjectField, error) {
 	unwrappedMessage, ok := field.Type.(*parser.Message)
 
 	if !ok {
@@ -171,7 +171,7 @@ func (g *Proto2GraphQL) getUnwrappedField(field *parser.Field) (*graphql.ObjectF
 
 	unwrappedMessageFile, err := g.parsedFile(unwrappedMessage.File())
 
-	if len(unwrappedMessage.Fields) != 1 {
+	if len(unwrappedMessage.NormalFields) != 1 {
 		return nil, errors.Wrapf(err, "can't unwrap message. Must have 1 field")
 	}
 

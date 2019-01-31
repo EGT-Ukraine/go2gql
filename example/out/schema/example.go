@@ -2,63 +2,44 @@
 package schema
 
 import (
+	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
+	example "github.com/EGT-Ukraine/go2gql/example/out/example"
+	proto "github.com/EGT-Ukraine/go2gql/example/proto"
 	graphql "github.com/graphql-go/graphql"
 	errors "github.com/pkg/errors"
-
-	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
-	proto_1 "github.com/EGT-Ukraine/go2gql/example/import/proto"
-	example "github.com/EGT-Ukraine/go2gql/example/out/example"
-	proto_2 "github.com/EGT-Ukraine/go2gql/example/out/github.com/EGT-Ukraine/go2gql/example/import/proto"
-	proto "github.com/EGT-Ukraine/go2gql/example/proto"
 )
 
 type ExampleSchemaSchemaClients struct {
 	ServiceExampleClient proto.ServiceExampleClient
-	ServiceImportClient  proto_1.ServiceImportClient
 }
 
+func (c ExampleSchemaSchemaClients) GetServiceExampleClient() proto.ServiceExampleClient {
+	return c.ServiceExampleClient
+}
 func GetExampleSchemaSchema(cls ExampleSchemaSchemaClients, ih *interceptors.InterceptorHandler) (graphql.Schema, error) {
 	if cls.ServiceExampleClient == nil {
 		return graphql.Schema{}, errors.Errorf("Service client ServiceExample can't be nil nil")
-	}
-	if cls.ServiceImportClient == nil {
-		return graphql.Schema{}, errors.Errorf("Service client ServiceImport can't be nil nil")
 	}
 	var ServiceExampleQueryFields = example.GetServiceExampleServiceQueryMethods(cls.ServiceExampleClient, ih)
 	var _ = ServiceExampleQueryFields
 	var ServiceExampleMutationFields = example.GetServiceExampleServiceMutationMethods(cls.ServiceExampleClient, ih)
 	var _ = ServiceExampleMutationFields
-	var ServiceImportQueryFields = proto_2.GetServiceImportServiceQueryMethods(cls.ServiceImportClient, ih)
-	var _ = ServiceImportQueryFields
-	var ServiceImportMutationFields = proto_2.GetServiceImportServiceMutationMethods(cls.ServiceImportClient, ih)
-	var _ = ServiceImportMutationFields
 	var Example = graphql.NewObject(graphql.ObjectConfig{
-		Name: "Example",
+		Name:        "Example",
+		Description: "example result type",
 		Fields: graphql.Fields{
 			"getQueryMethod": ServiceExampleQueryFields["getQueryMethod"],
 			"queryMethod":    ServiceExampleQueryFields["queryMethod"],
 			"getEmptiesMsg":  ServiceExampleQueryFields["getEmptiesMsg"],
 		},
 	})
-	var Import = graphql.NewObject(graphql.ObjectConfig{
-		Name: "Import",
-		Fields: graphql.Fields{
-			"getQueryImportMethod": ServiceImportQueryFields["getQueryImportMethod"],
-		},
-	})
 	var Query = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
 			"example": &graphql.Field{
-				Name: "example",
-				Type: Example,
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					return struct{}{}, nil
-				},
-			},
-			"import": &graphql.Field{
-				Name: "import",
-				Type: Import,
+				Name:        "example",
+				Type:        Example,
+				Description: "Service, which do smth",
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					return struct{}{}, nil
 				},
@@ -66,38 +47,27 @@ func GetExampleSchemaSchema(cls ExampleSchemaSchemaClients, ih *interceptors.Int
 		},
 	})
 	var ExampleMutation = graphql.NewObject(graphql.ObjectConfig{
-		Name: "ExampleMutation",
+		Name:        "ExampleMutation",
+		Description: "example result type",
 		Fields: graphql.Fields{
 			"mutationMethod":     ServiceExampleMutationFields["mutationMethod"],
 			"getMutatuionMethod": ServiceExampleMutationFields["getMutatuionMethod"],
-		},
-	})
-	var ImportMutation = graphql.NewObject(graphql.ObjectConfig{
-		Name: "ImportMutation",
-		Fields: graphql.Fields{
-			"mutationImportMethod": ServiceImportMutationFields["mutationImportMethod"],
+			"ListSomeEntities":   ServiceExampleMutationFields["ListSomeEntities"],
 		},
 	})
 	var Mutation = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Mutation",
 		Fields: graphql.Fields{
 			"example": &graphql.Field{
-				Name: "example",
-				Type: ExampleMutation,
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					return struct{}{}, nil
-				},
-			},
-			"import": &graphql.Field{
-				Name: "import",
-				Type: ImportMutation,
+				Name:        "example",
+				Type:        ExampleMutation,
+				Description: "Service, which do smth",
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					return struct{}{}, nil
 				},
 			},
 		},
 	})
-
 	return graphql.NewSchema(graphql.SchemaConfig{
 		Query:    Query,
 		Mutation: Mutation,

@@ -26,6 +26,7 @@ type LoaderModel struct {
 	OutputGraphqlType graphql.TypeResolver
 	FetchCode         func(importer *importer.Importer) string
 	Config            ProviderConfig
+	Slice             bool
 }
 
 func (p *Plugin) createDataLoader(config *DataLoadersConfig, vendorPath string) (*DataLoader, error) {

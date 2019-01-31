@@ -60,6 +60,7 @@ func (f *File) findSymbol(fullName string) (Type, bool) {
 
 func (f *File) findType(name string, relativeToFullName string) (Type, bool) {
 	var result Type
+
 	var ok bool
 
 	if strings.HasPrefix(name, ".") {
@@ -147,7 +148,7 @@ func (f *File) parseMessagesFields() error {
 				if !ok {
 					return errors.Errorf("failed to find message %s field %s type", strings.Join(msg.TypeName, "."), fld.Name)
 				}
-				fl := &Field{
+				fl := &NormalField{
 					Name:          fld.Name,
 					QuotedComment: quoteComment(fld.Comment, fld.InlineComment),
 					Repeated:      fld.Repeated,
@@ -156,7 +157,7 @@ func (f *File) parseMessagesFields() error {
 					descriptor:    fld.Field,
 					Type:          typ,
 				}
-				msg.Fields = append(msg.Fields, fl)
+				msg.NormalFields = append(msg.NormalFields, fl)
 			case *proto.MapField:
 				ktyp, ok := f.findTypeInMessage(msg, fld.KeyType)
 				if !ok {
@@ -193,7 +194,7 @@ func (f *File) parseMessagesFields() error {
 					if !ok {
 						return errors.Errorf("failed to find message %s field %s type", strings.Join(msg.TypeName, "."), fld.Name)
 					}
-					of.Fields = append(of.Fields, &Field{
+					of.Fields = append(of.Fields, &NormalField{
 						Name:          fld.Name,
 						QuotedComment: quoteComment(fld.Comment, fld.InlineComment),
 						Repeated:      false,

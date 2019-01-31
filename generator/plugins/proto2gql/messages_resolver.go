@@ -13,7 +13,7 @@ func (g *Proto2GraphQL) inputMessageResolverName(msgFile *parsedFile, message *p
 	return "Resolve" + g.inputMessageGraphQLName(msgFile, message)
 }
 
-func (g *Proto2GraphQL) oneOfValueAssigningWrapper(file *parsedFile, msg *parser.Message, field *parser.Field) graphql.AssigningWrapper {
+func (g *Proto2GraphQL) oneOfValueAssigningWrapper(file *parsedFile, msg *parser.Message, field *parser.NormalField) graphql.AssigningWrapper {
 	return func(arg string, ctx graphql.BodyContext) string {
 		return "&" + ctx.Importer.Prefix(file.GRPCSourcesPkg) + camelCaseSlice(msg.TypeName) + "_" + camelCase(field.Name) + "{" + arg + "}"
 	}
@@ -25,11 +25,11 @@ func (g *Proto2GraphQL) inputUnwrappedMessagesResolver(file *parsedFile, msg *pa
 		return nil, errors.Wrap(err, "failed to resolve message go type")
 	}
 
-	if len(msg.Fields) != 1 {
+	if len(msg.NormalFields) != 1 {
 		return nil, errors.Wrapf(err, "can't unwrap message %s. Must have 1 field", msg.Name)
 	}
 
-	fld := msg.Fields[0]
+	fld := msg.NormalFields[0]
 
 	goType, err := g.goTypeByParserType(fld.Type)
 	if err != nil {
@@ -112,7 +112,7 @@ func (g *Proto2GraphQL) fileInputMessagesResolvers(file *parsedFile) ([]graphql.
 			})
 		}
 		var fields []graphql.InputObjectResolverField
-		for _, fld := range msg.Fields {
+		for _, fld := range msg.NormalFields {
 			fldTypeFile, err := g.parsedFile(fld.Type.File())
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to resolve message '%s' field '%s' type parsed file", dotedTypeName(msg.TypeName), fld.Name)

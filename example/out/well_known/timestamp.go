@@ -4,11 +4,10 @@ package well_known
 import (
 	context "context"
 
+	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	graphql "github.com/graphql-go/graphql"
 	errors "github.com/pkg/errors"
-
-	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
 )
 
 // Enums
@@ -19,8 +18,8 @@ var TimestampInput = graphql.NewInputObject(graphql.InputObjectConfig{
 })
 
 func init() {
-	TimestampInput.Fields()["seconds"] = &graphql.InputObjectField{PrivateName: "seconds", Type: scalars.GraphQLInt64Scalar}
-	TimestampInput.Fields()["nanos"] = &graphql.InputObjectField{PrivateName: "nanos", Type: scalars.GraphQLInt32Scalar}
+	TimestampInput.AddFieldConfig("seconds", &graphql.InputObjectFieldConfig{Type: scalars.GraphQLInt64Scalar, Description: "Represents seconds of UTC time since Unix epoch\n 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to\n 9999-12-31T23:59:59Z inclusive."})
+	TimestampInput.AddFieldConfig("nanos", &graphql.InputObjectFieldConfig{Type: scalars.GraphQLInt32Scalar, Description: "Non-negative fractions of a second at nanosecond resolution. Negative\n second values with fractions must still have non-negative nanos values\n that count forward in time. Must be from 0 to 999,999,999\n inclusive."})
 }
 
 // Input objects resolvers
@@ -28,7 +27,7 @@ func ResolveTimestampInput(ctx context.Context, i interface{}) (_ *timestamp.Tim
 	if i == nil {
 		return nil, nil
 	}
-	args := i.(map[string]interface{})
+	args, _ := i.(map[string]interface{})
 	_ = args
 	var result = new(timestamp.Timestamp)
 	if args["seconds"] != nil {
@@ -48,9 +47,11 @@ var Timestamp = graphql.NewObject(graphql.ObjectConfig{
 })
 
 func init() {
+
 	Timestamp.AddFieldConfig("seconds", &graphql.Field{
-		Name: "seconds",
-		Type: scalars.GraphQLInt64Scalar,
+		Name:        "seconds",
+		Description: "Represents seconds of UTC time since Unix epoch\n 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to\n 9999-12-31T23:59:59Z inclusive.",
+		Type:        scalars.GraphQLInt64Scalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
 			case *timestamp.Timestamp:
@@ -62,13 +63,13 @@ func init() {
 			case timestamp.Timestamp:
 				return src.Seconds, nil
 			}
-
 			return nil, errors.New("source of unknown type")
 		},
 	})
 	Timestamp.AddFieldConfig("nanos", &graphql.Field{
-		Name: "nanos",
-		Type: scalars.GraphQLInt32Scalar,
+		Name:        "nanos",
+		Description: "Non-negative fractions of a second at nanosecond resolution. Negative\n second values with fractions must still have non-negative nanos values\n that count forward in time. Must be from 0 to 999,999,999\n inclusive.",
+		Type:        scalars.GraphQLInt32Scalar,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			switch src := p.Source.(type) {
 			case *timestamp.Timestamp:
@@ -80,10 +81,10 @@ func init() {
 			case timestamp.Timestamp:
 				return src.Nanos, nil
 			}
-
 			return nil, errors.New("source of unknown type")
 		},
 	})
+
 }
 
 // Maps input objects
