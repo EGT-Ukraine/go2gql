@@ -8,7 +8,7 @@ type DataLoadersConfig struct {
 
 type ProviderConfig struct {
 	Name         string        `mapstructure:"name"`
-	WaitDuration time.Duration `mapstructure:"wait_duration_ms"`
+	WaitDuration time.Duration `mapstructure:"wait_duration"`
 	Slice        bool
 }
 

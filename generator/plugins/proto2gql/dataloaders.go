@@ -56,7 +56,10 @@ func (g Proto2GraphQL) registerMethodDataLoader(name string, cfg DataLoaderConfi
 
 	var fetchCode func(importer *importer.Importer) string
 	if cfg.Type == DataLoaderType1ToN {
-		fetchCode = g.oneToNDataLoaderFetchCode(file, cfg, method)
+		fetchCode, err = g.oneToNDataLoaderFetchCode(file, cfg, method)
+		if err != nil {
+			return errors.Wrap(err, "failed to resolve 1-N data loader fetch code")
+		}
 		responseCopy := responseGoType
 		responseGoType = graphql.GoType{
 			Kind:     reflect.Slice,
@@ -64,7 +67,10 @@ func (g Proto2GraphQL) registerMethodDataLoader(name string, cfg DataLoaderConfi
 		}
 		dataLoaderOutType = graphql.GqlListTypeResolver(dataLoaderOutType)
 	} else {
-		fetchCode = g.oneToOneDataLoaderFetchCode(file, cfg, method)
+		fetchCode, err = g.oneToOneDataLoaderFetchCode(file, cfg, method)
+		if err != nil {
+			return errors.Wrap(err, "failed to resolve 1-1 data loader fetch code")
+		}
 	}
 
 	matchFieldGoType, err := g.goTypeByParserType(matchField.GetType())
@@ -158,7 +164,16 @@ func (g Proto2GraphQL) validateDataLoader(cfg DataLoaderConfig, method *parser.M
 	return nil
 }
 
-func (g Proto2GraphQL) oneToOneDataLoaderFetchCode(file *parsedFile, cfg DataLoaderConfig, method *parser.Method) func(importer *importer.Importer) string {
+func (g Proto2GraphQL) oneToOneDataLoaderFetchCode(file *parsedFile, cfg DataLoaderConfig, method *parser.Method) (func(importer *importer.Importer) string, error) {
+	resultField, err := messageFieldByPath(method.OutputMessage, cfg.ResultField)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get result message field by path")
+	}
+	responseGoType, err := g.goTypeByParserType(resultField.GetType())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to resolve go type by result field parser type")
+	}
+
 	return func(importer *importer.Importer) string {
 		filledRequest, err := g.getMessageWithFilledField(file, importer, method.InputMessage, strings.Split(cfg.RequestField, "."), "keys")
 		if err != nil {
@@ -167,11 +182,6 @@ func (g Proto2GraphQL) oneToOneDataLoaderFetchCode(file *parsedFile, cfg DataLoa
 
 		responseFieldAccessor := buildFieldAccessorByFieldPath(cfg.ResultField)
 		matchFieldAccessor := buildFieldAccessorByFieldPath(cfg.MatchField)
-		responseField, err := messageFieldByPath(method.OutputMessage, cfg.ResultField)
-		if err != nil {
-			panic("failed to access output message field by path")
-		}
-		responseGoType, err := g.goTypeByParserType(responseField.GetType())
 
 		return `response, err := client.` + method.Name + `(ctx, ` + filledRequest + `)
 				if err != nil{
@@ -188,10 +198,19 @@ func (g Proto2GraphQL) oneToOneDataLoaderFetchCode(file *parsedFile, cfg DataLoa
 				}
 				
 				return result, nil`
-	}
+	}, nil
 }
 
-func (g Proto2GraphQL) oneToNDataLoaderFetchCode(file *parsedFile, cfg DataLoaderConfig, method *parser.Method) func(importer *importer.Importer) string {
+func (g Proto2GraphQL) oneToNDataLoaderFetchCode(file *parsedFile, cfg DataLoaderConfig, method *parser.Method) (func(importer *importer.Importer) string, error) {
+	resultField, err := messageFieldByPath(method.OutputMessage, cfg.ResultField)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get result message field by path")
+	}
+	responseGoType, err := g.goTypeByParserType(resultField.GetType())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to resolve go type by result field parser type")
+	}
+
 	return func(importer *importer.Importer) string {
 		filledRequest, err := g.getMessageWithFilledField(file, importer, method.InputMessage, strings.Split(cfg.RequestField, "."), "keys")
 		if err != nil {
@@ -200,11 +219,6 @@ func (g Proto2GraphQL) oneToNDataLoaderFetchCode(file *parsedFile, cfg DataLoade
 
 		responseFieldAccessor := buildFieldAccessorByFieldPath(cfg.ResultField)
 		matchFieldAccessor := buildFieldAccessorByFieldPath(cfg.MatchField)
-		responseField, err := messageFieldByPath(method.OutputMessage, cfg.ResultField)
-		if err != nil {
-			panic("failed to access output message field by path")
-		}
-		responseGoType, err := g.goTypeByParserType(responseField.GetType())
 
 		return `response, err := client.` + method.Name + `(ctx, ` + filledRequest + `)
 				if err != nil{
@@ -220,7 +234,7 @@ func (g Proto2GraphQL) oneToNDataLoaderFetchCode(file *parsedFile, cfg DataLoade
 				}
 				
 				return result, nil`
-	}
+	}, nil
 }
 
 func messageFieldByPath(message *parser.Message, path string) (parser.Field, error) {
@@ -266,7 +280,7 @@ func (g Proto2GraphQL) getMessageWithFilledField(file *parsedFile, importer *imp
 
 	field, ok := msg.GetFieldByName(pathParts[0])
 	if !ok {
-		return "", errors.New("can't find field ") // TOOD
+		return "", errors.New("can't find field ")
 	}
 	if len(pathParts) == 1 {
 		typ, err := g.goTypeByParserType(msg)
