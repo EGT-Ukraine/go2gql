@@ -9,6 +9,7 @@ type DataLoadersConfig struct {
 type ProviderConfig struct {
 	Name         string        `mapstructure:"name"`
 	WaitDuration time.Duration `mapstructure:"wait_duration_ms"`
+	Slice        bool
 }
 
 type FieldConfig struct {

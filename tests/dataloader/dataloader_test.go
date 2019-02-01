@@ -47,9 +47,11 @@ func TestDataLoader(t *testing.T) {
 	categoryClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.CategoryListResponse{
 		Categories: []*apis.Category{
 			{
+				Id:   12,
 				Name: "category 12",
 			},
 			{
+				Id:   11,
 				Name: "category 11",
 			},
 		},
@@ -118,12 +120,15 @@ func TestDataLoaderWithKeyFieldSlice(t *testing.T) {
 	categoryClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.CategoryListResponse{
 		Categories: []*apis.Category{
 			{
+				Id:   12,
 				Name: "category 12",
 			},
 			{
+				Id:   11,
 				Name: "category 11",
 			},
 			{
+				Id:   15,
 				Name: "category 15",
 			},
 		},
@@ -236,7 +241,7 @@ func TestDataLoaderGetOne(t *testing.T) {
 	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
 	itemsClient.EXPECT().GetOne(gomock.Any(), gomock.Any()).Return(&apis.Item{
 		Name:       "item 1",
-		CategoryId: 12,
+		CategoryId: 1,
 	}, nil).AnyTimes()
 
 	categoryClient := mock.NewMockCategoryServiceClient(mockCtrl)
@@ -244,6 +249,7 @@ func TestDataLoaderGetOne(t *testing.T) {
 	categoryClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.CategoryListResponse{
 		Categories: []*apis.Category{
 			{
+				Id:   1,
 				Name: "category 1",
 			},
 		},
@@ -367,19 +373,17 @@ func TestDataLoaderWithProtoFieldUnwrapping(t *testing.T) {
 	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
 	itemsClient.EXPECT().GetOne(gomock.Any(), gomock.Any()).Return(&apis.Item{
 		Name:       "item 1",
+		Id:         1,
 		CategoryId: 12,
 	}, nil).AnyTimes()
 
 	reviewsClient := mock.NewMockItemsReviewServiceClient(mockCtrl)
 	reviewsClient.EXPECT().List(gomock.Any(), gomock.Any()).Return(&apis.ListResponse{
-		ItemReviews: []*apis.ItemReviews{
+		Reviews: []*apis.Review{
 			{
-				ItemReview: []*apis.Review{
-					{
-						Id:   456,
-						Text: "excellent item",
-					},
-				},
+				Id:     456,
+				ItemId: 1,
+				Text:   "excellent item",
 			},
 		},
 	}, nil).AnyTimes()

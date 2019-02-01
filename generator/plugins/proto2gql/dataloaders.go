@@ -62,6 +62,7 @@ func (g Proto2GraphQL) registerMethodDataLoader(name string, cfg DataLoaderConfi
 			Kind:     reflect.Slice,
 			ElemType: &responseCopy,
 		}
+		dataLoaderOutType = graphql.GqlListTypeResolver(dataLoaderOutType)
 	} else {
 		fetchCode = g.oneToOneDataLoaderFetchCode(file, cfg, method)
 	}

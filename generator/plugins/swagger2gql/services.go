@@ -194,6 +194,7 @@ func (p *Plugin) addDataLoaderProvider(
 		OutputGoType:      responseGoType,
 		OutputGraphqlType: dataLoaderOutType,
 		Config:            dataLoaderProviderConfig,
+		Slice:             dataLoaderProviderConfig.Slice,
 	}
 
 	p.dataLoaderPlugin.AddLoader(dataLoaderProvider)
