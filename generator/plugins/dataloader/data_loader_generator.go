@@ -16,7 +16,7 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 )
 
-const DefaultWaitDurationMs = 10
+const DefaultWaitDuration = 10 * time.Millisecond
 
 type LoadersHeadContext struct {
 	Imports []importer.Import
@@ -129,7 +129,7 @@ func (p *LoaderGenerator) generateBody() ([]byte, error) {
 		},
 		"duration": func(duration time.Duration) int64 {
 			if duration == 0 {
-				return int64(DefaultWaitDurationMs)
+				return int64(DefaultWaitDuration)
 			}
 
 			return int64(duration)

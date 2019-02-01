@@ -46,7 +46,7 @@ func createSomeEntitiesByAID(ctx context.Context, client proto.ServiceExampleCli
 
 			return result, nil
 		},
-		wait: 10,
+		wait: 10000000,
 	}
 }
 func createSomeEntitiesByID(ctx context.Context, client proto.ServiceExampleClient) ListSomeEntitiesResponse_SomeEntityLoader {
@@ -68,7 +68,7 @@ func createSomeEntitiesByID(ctx context.Context, client proto.ServiceExampleClie
 
 			return result, nil
 		},
-		wait: 10,
+		wait: 10000000,
 	}
 }
 func GetDataLoadersFromContext(ctx context.Context) *DataLoaders {
