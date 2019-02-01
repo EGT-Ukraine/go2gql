@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"reflect"
 	"text/template"
+	"time"
 
 	"github.com/EGT-Ukraine/dataloaden/pkg/generator"
 	"github.com/pkg/errors"
@@ -16,14 +16,15 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/importer"
 )
 
-const DefaultWaitDurationMs = 10
+const DefaultWaitDuration = 10 * time.Millisecond
 
 type LoadersHeadContext struct {
 	Imports []importer.Import
 }
 
 type LoadersBodyContext struct {
-	Loaders []Loader
+	Loaders  []Loader
+	Services []Service
 }
 
 type Loader struct {
@@ -33,7 +34,8 @@ type Loader struct {
 	RequestGoType     graphql.GoType
 	ResponseGoType    graphql.GoType
 	OutputGraphqlType graphql.TypeResolver
-	Config            ProviderConfig
+	Name              string
+	WaitDuration      time.Duration
 }
 
 type LoaderGenerator struct {
@@ -55,26 +57,29 @@ func (p *LoaderGenerator) GenerateDataLoaders() error {
 	}
 
 	for _, dataLoader := range p.dataLoader.Loaders {
-		if err := p.generateLoaders(dataLoader.InputGoType, dataLoader.OutputGoType); err != nil {
-			return err
+		if err := p.generateLoaders(dataLoader.InputGoType, dataLoader.OutputGoType, dataLoader.Slice); err != nil {
+			return errors.Wrapf(err, "failed to generate %s data loader", dataLoader.Name)
 		}
 	}
 
 	return nil
 }
 
-func (p *LoaderGenerator) generateLoaders(requestGoType graphql.GoType, responseGoType graphql.GoType) error {
+func (p *LoaderGenerator) generateLoaders(requestGoType graphql.GoType, responseGoType graphql.GoType, slice bool) (rerr error) {
 	keyType := requestGoType.ElemType.Kind.String()
 
 	var typeName string
-
-	slice := responseGoType.Kind == reflect.Slice
 
 	if slice {
 		typeName = responseGoType.ElemType.ElemType.Pkg + "." + responseGoType.ElemType.ElemType.Name
 	} else {
 		typeName = responseGoType.ElemType.Pkg + "." + responseGoType.ElemType.Name
 	}
+	defer func() {
+		if v := recover(); v != nil {
+			rerr = fmt.Errorf("failed to generate dataloader: %v", v)
+		}
+	}()
 
 	if err := generator.Generate(typeName, keyType, slice, true, p.dataLoader.OutputPath); err != nil {
 		return errors.Wrapf(err, "Failed to generate loader for '%s'", typeName)
@@ -128,12 +133,12 @@ func (p *LoaderGenerator) generateBody() ([]byte, error) {
 		"goType": func(typ graphql.GoType) string {
 			return typ.String(p.importer)
 		},
-		"duration": func(duration int) int {
+		"duration": func(duration time.Duration) int64 {
 			if duration == 0 {
-				return DefaultWaitDurationMs
+				return int64(DefaultWaitDuration)
 			}
 
-			return duration
+			return int64(duration)
 		},
 	}
 
@@ -153,7 +158,7 @@ func (p *LoaderGenerator) generateBody() ([]byte, error) {
 
 		loaderTypeName := responseGoType.ElemType.Name
 
-		if responseGoType.Kind == reflect.Slice {
+		if dataLoaderModel.Slice {
 			loaderTypeName = responseGoType.ElemType.ElemType.Name + "Slice"
 		}
 
@@ -163,12 +168,23 @@ func (p *LoaderGenerator) generateBody() ([]byte, error) {
 			FetchCode:      dataLoaderModel.FetchCode(p.importer),
 			RequestGoType:  requestGoType,
 			ResponseGoType: responseGoType,
-			Config:         dataLoaderModel.Config,
+			Name:           dataLoaderModel.Name,
+			WaitDuration:   dataLoaderModel.WaitDuration,
 		})
 	}
 
+	servicesSet := map[Service]struct{}{}
+	for _, loader := range loaders {
+		servicesSet[loader.Service] = struct{}{}
+	}
+	var services []Service
+	for service := range servicesSet {
+		services = append(services, service)
+	}
+
 	context := LoadersBodyContext{
-		Loaders: loaders,
+		Loaders:  loaders,
+		Services: services,
 	}
 
 	err = servicesTpl.Execute(buf, context)

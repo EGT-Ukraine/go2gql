@@ -170,6 +170,7 @@
     "ptypes/duration",
     "ptypes/empty",
     "ptypes/timestamp",
+    "ptypes/wrappers",
   ]
   pruneopts = ""
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
@@ -452,6 +453,7 @@
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes/empty",
     "github.com/golang/protobuf/ptypes/timestamp",
+    "github.com/golang/protobuf/ptypes/wrappers",
     "github.com/graphql-go/graphql",
     "github.com/graphql-go/graphql/language/ast",
     "github.com/graphql-go/graphql/language/kinds",

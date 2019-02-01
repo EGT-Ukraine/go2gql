@@ -1,6 +1,8 @@
 package dataloader
 
 import (
+	"time"
+
 	"github.com/pkg/errors"
 
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
@@ -19,13 +21,15 @@ type Service struct {
 }
 
 type LoaderModel struct {
+	Name              string
+	WaitDuration      time.Duration
 	Service           *Service
 	Method            *graphql.Method
 	InputGoType       graphql.GoType
 	OutputGoType      graphql.GoType
 	OutputGraphqlType graphql.TypeResolver
 	FetchCode         func(importer *importer.Importer) string
-	Config            ProviderConfig
+	Slice             bool
 }
 
 func (p *Plugin) createDataLoader(config *DataLoadersConfig, vendorPath string) (*DataLoader, error) {

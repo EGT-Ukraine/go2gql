@@ -10,6 +10,7 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/pluginconfig"
 )
 
 const (
@@ -42,7 +43,7 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 		return errors.New("'dataloader' plugin is not installed")
 	}
 	cfg := new(Config)
-	err := mapstructure.Decode(config.PluginsConfigs[PluginConfigKey], cfg)
+	err := pluginconfig.Decode(config.PluginsConfigs[PluginConfigKey], cfg)
 	if err != nil {
 		return errors.Wrap(err, "failed to decode config")
 	}
@@ -70,6 +71,7 @@ func (p *Plugin) parseImports() error {
 
 		for _, config := range *configs {
 			var importFileDir = filepath.Dir(pluginsConfigsImports.Path)
+
 			var protoPath = filepath.Join(importFileDir, config.ProtoPath)
 
 			config.ProtoPath = protoPath

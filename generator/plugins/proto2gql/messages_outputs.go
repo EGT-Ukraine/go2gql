@@ -30,7 +30,7 @@ func (g *Proto2GraphQL) outputMessageTypeResolver(messageFile *parsedFile, messa
 
 func (g *Proto2GraphQL) outputMessageFields(msgCfg MessageConfig, msg *parser.Message) ([]graphql.ObjectField, error) {
 	var res []graphql.ObjectField
-	for _, field := range msg.Fields {
+	for _, field := range msg.NormalFields {
 		if msgCfg.ErrorField == field.Name {
 			continue
 		}
@@ -114,17 +114,21 @@ func (g *Proto2GraphQL) dataLoaderFields(configs []dataloader.FieldConfig, msg *
 	var fields []*graphql.DataLoaderField
 
 	for _, cfg := range configs {
-		msgField := msg.GetFieldByName(cfg.KeyFieldName)
+		msgKeyField, ok := msg.GetFieldByName(cfg.KeyFieldName)
+		if !ok {
+			return nil, errors.Errorf("can't find key field %s for dataloader", cfg.KeyFieldName)
+		}
 
-		if msgField == nil {
-			return nil, errors.Errorf("Can't find field %s for dataloader", cfg.FieldName)
+		normalKeyField, ok := msgKeyField.(*parser.NormalField)
+		if !ok {
+			return nil, errors.Errorf("only normal fields(not maps) can be keys for dataloaders")
 		}
 
 		field := &graphql.DataLoaderField{
 			Name:                         cfg.FieldName,
 			NormalizedParentKeyFieldName: camelCase(cfg.KeyFieldName),
 			ParentKeyFieldName:           cfg.KeyFieldName,
-			KeyFieldSlice:                msgField.Repeated,
+			KeyFieldSlice:                normalKeyField.Repeated,
 			DataLoaderName:               cfg.DataLoader,
 		}
 

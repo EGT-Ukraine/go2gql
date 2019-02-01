@@ -45,6 +45,10 @@ func (Client) GetEmptiesMsg(ctx context.Context, in *example.Empty, opts ...grpc
 	return &example.Empty{}, nil
 }
 
+func (Client) ListSomeEntities(ctx context.Context, in *example.ListSomeEntitiesRequest, opts ...grpc.CallOption) (*example.ListSomeEntitiesResponse, error) {
+	return &example.ListSomeEntitiesResponse{}, nil
+}
+
 func main() {
 	schem, err := schema.GetExampleSchemaSchema(schema.ExampleSchemaSchemaClients{
 		ServiceExampleClient: Client{},

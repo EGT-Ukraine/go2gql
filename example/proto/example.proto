@@ -1,5 +1,5 @@
 syntax = "proto3";
-package example;
+package proto;
 
 import "google/protobuf/timestamp.proto";
 
@@ -10,8 +10,22 @@ service ServiceExample {
     rpc queryMethod (google.protobuf.Timestamp) returns (google.protobuf.Timestamp); // in generate.yml we mark, that this method is QUERY
     rpc getMutatuionMethod (MsgWithEmpty) returns (MsgWithEmpty); // in generate.yml we mark, that this method is MUTATION
     rpc getEmptiesMsg (Empty) returns (Empty);
-
-
+    rpc ListSomeEntities (ListSomeEntitiesRequest) returns (ListSomeEntitiesResponse);
+}
+message ListSomeEntitiesRequest {
+    message Filter {
+        repeated string a_ids = 2;
+        repeated string ids = 1;
+    }
+    Filter filter = 1;
+}
+message ListSomeEntitiesResponse {
+    message SomeEntity {
+        string id = 1;
+        string name = 2;
+        string a_id = 3;
+    }
+    repeated SomeEntity entities = 1;
 }
 enum someEnum {
     Val1 = 0;
@@ -38,6 +52,9 @@ message A {
     //    bytes n_r_bytes = 14; // TODO
     AOneOffs message_with_oneoffs = 13;
     bytes test = 14;
+    repeated string some_entity_ids = 15;
+    repeated string some_entity_id = 16;
+    string id = 17;
 }
 message AOneOffs {
     oneof firstEnum {

@@ -286,25 +286,40 @@ proto2gql:
         ItemsReviewService:
           methods:
             List:
-              data_loader_provider:
-                name: "ItemReviewsLoader"
+              data_loaders:
+                ItemReviewsByIDs:
+                  request_field: "filter.item_ids"
+                  result_field: "reviews"
+                  match_field: "item_id"
+                  type: "1-N"                       # Relation type (1-N|1-1)
+                  wait_duration: 1h1m1s   ( WARNING!! this is only example, use some small duration)
+
     - proto_path: "./apis/category.proto"
       services:
         CategoryService:
           methods:
             List:
-              data_loader_provider:
-                name: "CategoryLoader"
-                wait_duration_ms: 5
+              data_loaders:
+                CategoriesByIDs:
+                  request_field: "filter.ids"
+                  result_field: "categories"
+                  match_field: "id"
+                  type: "1-1"
+                  wait_duration: 1s
+
 
     - proto_path: "./apis/user.proto"
       services:
         UserService:
           methods:
             List:
-              data_loader_provider:
-                name: "UserLoader"
-                wait_duration_ms: 5
+              data_loaders:
+                UsersByIDs:
+                  request_field: "filter.ids"
+                  result_field: "users"
+                  match_field: "id"
+                  type: "1-1"
+                  wait_duration: 1s
     - proto_path: "./apis/items.proto"
       services:
         ItemsService:
@@ -317,13 +332,13 @@ proto2gql:
             data_loaders:
               - field_name: "category"
                 key_field_name: "category_id"
-                data_loader_name: "CategoryLoader"
+                data_loader_name: "CategoriesByIDs"
               - field_name: "comments"
                 key_field_name: "id"
                 data_loader_name: "CommentsLoader"
               - field_name: "reviews"
                 key_field_name: "id"
-                data_loader_name: "ItemReviewsLoader"
+                data_loader_name: "ItemReviewsByIDs"
 
 swagger2gql:
   output_path: "./generated/schema"
@@ -346,7 +361,7 @@ swagger2gql:
             data_loaders:
               - field_name: "user"
                 key_field_name: "user_id"
-                data_loader_name: "UserLoader"
+                data_loader_name: "UserService"
 
 graphql_schemas:
   - name: "API"
