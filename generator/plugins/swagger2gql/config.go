@@ -2,6 +2,7 @@ package swagger2gql
 
 import (
 	"regexp"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -18,10 +19,17 @@ type ObjectConfig struct {
 }
 
 type MethodConfig struct {
-	Alias              string                    `mapstructure:"alias"`
-	RequestType        string                    `mapstructure:"request_type"` // QUERY | MUTATION
-	DataLoaderProvider dataloader.ProviderConfig `mapstructure:"data_loader_provider"`
+	Alias              string         `mapstructure:"alias"`
+	RequestType        string         `mapstructure:"request_type"` // QUERY | MUTATION
+	DataLoaderProvider ProviderConfig `mapstructure:"data_loader_provider"`
 }
+
+type ProviderConfig struct {
+	Name         string        `mapstructure:"name"`
+	WaitDuration time.Duration `mapstructure:"wait_duration"`
+	Slice        bool
+}
+
 type TagConfig struct {
 	ClientGoPackage string                             `mapstructure:"client_go_package"`
 	ServiceName     string                             `mapstructure:"service_name"`

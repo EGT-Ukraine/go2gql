@@ -160,6 +160,8 @@ func (p *Plugin) addDataLoaderProvider(
 	}
 
 	dataLoaderProvider := dataloader.LoaderModel{
+		Name:         dataLoaderProviderConfig.Name,
+		WaitDuration: dataLoaderProviderConfig.WaitDuration,
 		Service: &dataloader.Service{
 			Name:          p.tagName(tag, &tagCfg),
 			CallInterface: p.serviceCallInterface(&tagCfg),
@@ -193,7 +195,6 @@ func (p *Plugin) addDataLoaderProvider(
 		InputGoType:       inputArgumentGoType,
 		OutputGoType:      responseGoType,
 		OutputGraphqlType: dataLoaderOutType,
-		Config:            dataLoaderProviderConfig,
 		Slice:             dataLoaderProviderConfig.Slice,
 	}
 

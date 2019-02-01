@@ -25,7 +25,7 @@ type Plugin struct {
 }
 
 func (p *Plugin) AddLoader(loader LoaderModel) {
-	p.loaders[loader.Config.Name] = loader
+	p.loaders[loader.Name] = loader
 }
 
 func (p *Plugin) Prepare() error {

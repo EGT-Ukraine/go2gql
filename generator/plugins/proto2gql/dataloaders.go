@@ -90,11 +90,9 @@ func (g Proto2GraphQL) registerMethodDataLoader(name string, cfg DataLoaderConfi
 		},
 		OutputGoType:      responseGoType,
 		OutputGraphqlType: dataLoaderOutType,
-		Config: dataloader.ProviderConfig{
-			Name:         name,
-			WaitDuration: cfg.WaitDuration,
-		},
-		Slice: cfg.Type == DataLoaderType1ToN,
+		Name:              name,
+		WaitDuration:      cfg.WaitDuration,
+		Slice:             cfg.Type == DataLoaderType1ToN,
 	}
 
 	g.DataLoaderPlugin.AddLoader(dataLoaderProvider)

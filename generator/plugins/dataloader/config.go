@@ -1,15 +1,7 @@
 package dataloader
 
-import "time"
-
 type DataLoadersConfig struct {
 	OutputPath string `mapstructure:"output_path"`
-}
-
-type ProviderConfig struct {
-	Name         string        `mapstructure:"name"`
-	WaitDuration time.Duration `mapstructure:"wait_duration"`
-	Slice        bool
 }
 
 type FieldConfig struct {

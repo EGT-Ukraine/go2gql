@@ -11,6 +11,7 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/dataloader"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql"
+	"github.com/EGT-Ukraine/go2gql/generator/plugins/graphql/lib/pluginconfig"
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/swagger2gql/parser"
 )
 
@@ -60,7 +61,7 @@ func (p *Plugin) Init(config *generator.GenerateConfig, plugins []generator.Plug
 func (p *Plugin) parseImports() error {
 	for _, pluginsConfigsImports := range p.generateConfig.PluginsConfigsImports {
 		configs := new([]*SwaggerFileConfig)
-		if err := mapstructure.Decode(pluginsConfigsImports.PluginsConfigs[PluginImportConfigKey], configs); err != nil {
+		if err := pluginconfig.Decode(pluginsConfigsImports.PluginsConfigs[PluginImportConfigKey], configs); err != nil {
 			return errors.Wrap(err, "failed to decode config")
 		}
 

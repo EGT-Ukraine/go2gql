@@ -34,7 +34,8 @@ type Loader struct {
 	RequestGoType     graphql.GoType
 	ResponseGoType    graphql.GoType
 	OutputGraphqlType graphql.TypeResolver
-	Config            ProviderConfig
+	Name              string
+	WaitDuration      time.Duration
 }
 
 type LoaderGenerator struct {
@@ -57,7 +58,7 @@ func (p *LoaderGenerator) GenerateDataLoaders() error {
 
 	for _, dataLoader := range p.dataLoader.Loaders {
 		if err := p.generateLoaders(dataLoader.InputGoType, dataLoader.OutputGoType, dataLoader.Slice); err != nil {
-			return errors.Wrapf(err, "failed to generate %s data loader", dataLoader.Config.Name)
+			return errors.Wrapf(err, "failed to generate %s data loader", dataLoader.Name)
 		}
 	}
 
@@ -167,7 +168,8 @@ func (p *LoaderGenerator) generateBody() ([]byte, error) {
 			FetchCode:      dataLoaderModel.FetchCode(p.importer),
 			RequestGoType:  requestGoType,
 			ResponseGoType: responseGoType,
-			Config:         dataLoaderModel.Config,
+			Name:           dataLoaderModel.Name,
+			WaitDuration:   dataLoaderModel.WaitDuration,
 		})
 	}
 
