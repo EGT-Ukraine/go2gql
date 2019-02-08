@@ -59,9 +59,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.Seconds, nil
+				return s.GetSeconds(), nil
 			case timestamp.Timestamp:
-				return src.Seconds, nil
+				return src.GetSeconds(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -77,9 +77,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.Nanos, nil
+				return s.GetNanos(), nil
 			case timestamp.Timestamp:
-				return src.Nanos, nil
+				return src.GetNanos(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},

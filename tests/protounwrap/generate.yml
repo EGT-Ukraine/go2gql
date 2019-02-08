@@ -37,7 +37,16 @@ proto2gql:
             unwrap_field: true
         - "TestRequestUnwrapRepeatedMessageRequestPayload":
             unwrap_field: true
-
+        - "^TestRequestUnwrapRepeatedMessage$":
+            unwrap_field: true
+        - "^TestRequestUnwrapRepeatedMessageResponse$":
+            unwrap_field: true
+        - "^TestRequestUnwrapRepeatedMessageResponsePayload$":
+            unwrap_field: true
+        - "^TestRequestUnwrapInnerMessageResponse$":
+            unwrap_field: true
+        - "^TestRequestUnwrapInnerMessageResponsePayload$":
+            unwrap_field: true
     - proto_path: "../../vendor/github.com/golang/protobuf/ptypes/wrappers/wrappers.proto"
       proto_go_package: "github.com/golang/protobuf/ptypes/wrappers"
       messages:

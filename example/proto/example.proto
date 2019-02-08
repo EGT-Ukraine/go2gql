@@ -2,6 +2,7 @@ syntax = "proto3";
 package proto;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 // Service, which do smth
 service ServiceExample {
@@ -55,6 +56,7 @@ message A {
     repeated string some_entity_ids = 15;
     repeated string some_entity_id = 16;
     string id = 17;
+    google.protobuf.FloatValue unwrapped_field = 18;
 }
 message AOneOffs {
     oneof firstEnum {

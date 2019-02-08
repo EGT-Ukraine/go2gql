@@ -158,7 +158,7 @@ func TestProtoRequestFieldUnwrappingNestedMessageResponse(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
-	itemsClient.EXPECT().TestRequestUnwrapInnerMessage(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil).AnyTimes()
+	itemsClient.EXPECT().TestRequestUnwrapInnerMessage(gomock.Any(), gomock.Any()).Return(&apis.TestRequestUnwrapInnerMessageResponse{}, nil).AnyTimes()
 
 	clients := &mock.Clients{
 		ItemsClient: itemsClient,
@@ -167,7 +167,10 @@ func TestProtoRequestFieldUnwrappingNestedMessageResponse(t *testing.T) {
 	response := makeRequest(t, clients, &handler.RequestOptions{
 		Query: `{
 			items {
-				testRequestUnwrapInnerMessage(payload: [{names: ["username"], activated: true}])
+				testRequestUnwrapInnerMessage(payload: [{names: ["username"], activated: true}]){
+					names
+					activated
+				}
 			}
 		}`,
 	})
@@ -197,27 +200,18 @@ func TestProtoRequestFieldUnwrappingNestedMessageCorrectRequestFormed(t *testing
 				Activated: true,
 			},
 		},
-	}).Return(&empty.Empty{}, nil).Times(1)
-
-	clients := &mock.Clients{
-		ItemsClient: itemsClient,
-	}
-
-	makeRequest(t, clients, &handler.RequestOptions{
-		Query: `{
-			items {
-				testRequestUnwrapInnerMessage(payload: [{names: ["username1", "username2"], activated: true}])
-			}
-		}`,
-	})
-}
-
-func TestRequestUnwrapRepeatedMessageResponse(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-
-	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
-	itemsClient.EXPECT().TestRequestUnwrapRepeatedMessage(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil).AnyTimes()
+	}).Return(&apis.TestRequestUnwrapInnerMessageResponse{
+		Payload: &apis.TestRequestUnwrapInnerMessageResponsePayload{
+			Data: &apis.TestRequestUnwrapInnerMessageResponsePayloadData{
+				Names: []*wrappers.StringValue{
+					{Value: "a"},
+					{Value: "b"},
+					{Value: "c"},
+				},
+				Activated: true,
+			},
+		},
+	}, nil).Times(1)
 
 	clients := &mock.Clients{
 		ItemsClient: itemsClient,
@@ -226,7 +220,43 @@ func TestRequestUnwrapRepeatedMessageResponse(t *testing.T) {
 	response := makeRequest(t, clients, &handler.RequestOptions{
 		Query: `{
 			items {
-				testRequestUnwrapRepeatedMessage(payload: ["username1", "username2"])
+				testRequestUnwrapInnerMessage(payload: [{names: ["username1", "username2"], activated: true}]){
+					activated
+					names
+				}
+			}
+		}`,
+	})
+	tests.AssertJSON(t, `{
+		"data": {
+			"items": {
+				"testRequestUnwrapInnerMessage": {
+					"names": ["a","b","c"],
+					"activated": true
+				}
+			}
+		}
+	}`, response)
+}
+
+func TestRequestUnwrapRepeatedMessageResponse(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().TestRequestUnwrapRepeatedMessage(gomock.Any(), gomock.Any()).Return(&apis.TestRequestUnwrapRepeatedMessageResponse{}, nil).AnyTimes()
+
+	clients := &mock.Clients{
+		ItemsClient: itemsClient,
+	}
+
+	response := makeRequest(t, clients, &handler.RequestOptions{
+		Query: `{
+			items {
+				testRequestUnwrapRepeatedMessage(payload: ["username1", "username2"]){
+					names
+					activated
+				}
 			}
 		}`,
 	})
@@ -234,7 +264,7 @@ func TestRequestUnwrapRepeatedMessageResponse(t *testing.T) {
 	tests.AssertJSON(t, `{
 		"data": {
 			"items": {
-				"testRequestUnwrapRepeatedMessage": null
+				"testRequestUnwrapRepeatedMessage": []
 			}
 		}
 	}`, response)
@@ -250,19 +280,61 @@ func TestRequestUnwrapRepeatedMessageCorrectRequestFormed(t *testing.T) {
 		Payload: &apis.TestRequestUnwrapRepeatedMessageRequestPayload{
 			Test: []string{"username1", "username2"},
 		},
-	}).Return(&empty.Empty{}, nil).Times(1)
+	}).Return(&apis.TestRequestUnwrapRepeatedMessageResponse{
+		Payload: []*apis.TestRequestUnwrapRepeatedMessageResponsePayload{
+			{
+				Data: []*apis.TestRequestUnwrapRepeatedMessageResponsePayloadData{
+					{
+						Names: []*wrappers.StringValue{
+							{Value: "a"},
+							{Value: "b"},
+						},
+						Activated: true,
+					},
+					{
+						Names: []*wrappers.StringValue{
+							{Value: "c"},
+							{Value: "d"},
+						},
+						Activated: false,
+					},
+				},
+			},
+		},
+	}, nil).Times(1)
 
 	clients := &mock.Clients{
 		ItemsClient: itemsClient,
 	}
 
-	makeRequest(t, clients, &handler.RequestOptions{
+	response := makeRequest(t, clients, &handler.RequestOptions{
 		Query: `{
 			items {
-				testRequestUnwrapRepeatedMessage(payload: ["username1", "username2"])
+				testRequestUnwrapRepeatedMessage(payload: ["username1", "username2"]){
+					names
+					activated
+				}
 			}
 		}`,
 	})
+	tests.AssertJSON(t, `{
+		"data": {
+			"items": {
+				"testRequestUnwrapRepeatedMessage": [
+					[
+						{
+							"names": ["a", "b"],
+							"activated": true
+						},
+						{
+							"names": ["c", "d"],
+							"activated": false
+						}
+					]
+				]
+			}
+		}
+	}`, response)
 }
 
 func makeRequest(t *testing.T, clients *mock.Clients, opts *handler.RequestOptions) *graphql.Result {

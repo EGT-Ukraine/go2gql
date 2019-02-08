@@ -97,14 +97,14 @@ func (mr *MockItemsServiceClientMockRecorder) TestRequestUnwrap(arg0, arg1 inter
 }
 
 // TestRequestUnwrapInnerMessage mocks base method
-func (m *MockItemsServiceClient) TestRequestUnwrapInnerMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapInnerMessageRequest, arg2 ...grpc.CallOption) (*empty.Empty, error) {
+func (m *MockItemsServiceClient) TestRequestUnwrapInnerMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapInnerMessageRequest, arg2 ...grpc.CallOption) (*apis.TestRequestUnwrapInnerMessageResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "TestRequestUnwrapInnerMessage", varargs...)
-	ret0, _ := ret[0].(*empty.Empty)
+	ret0, _ := ret[0].(*apis.TestRequestUnwrapInnerMessageResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -117,14 +117,14 @@ func (mr *MockItemsServiceClientMockRecorder) TestRequestUnwrapInnerMessage(arg0
 }
 
 // TestRequestUnwrapRepeatedMessage mocks base method
-func (m *MockItemsServiceClient) TestRequestUnwrapRepeatedMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapRepeatedMessageRequest, arg2 ...grpc.CallOption) (*empty.Empty, error) {
+func (m *MockItemsServiceClient) TestRequestUnwrapRepeatedMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapRepeatedMessageRequest, arg2 ...grpc.CallOption) (*apis.TestRequestUnwrapRepeatedMessageResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "TestRequestUnwrapRepeatedMessage", varargs...)
-	ret0, _ := ret[0].(*empty.Empty)
+	ret0, _ := ret[0].(*apis.TestRequestUnwrapRepeatedMessageResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

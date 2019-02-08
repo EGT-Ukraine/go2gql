@@ -3,7 +3,16 @@ proto2gql:
   paths:
     - "vendor"
     - "$GOPATH/src"
+  imports_aliases:
+    - google/protobuf/wrappers.proto:   "github.com/golang/protobuf/ptypes/wrappers/wrappers.proto"
   files:
+    # Google wrappers
+    - proto_path: "$GOPATH/src/github.com/golang/protobuf/ptypes/wrappers/wrappers.proto"
+      proto_go_package: "github.com/golang/protobuf/ptypes/wrappers"
+      messages:
+        - "Value$":
+            unwrap_field: true
+
     - name: "Google Timestamp"
       proto_path: "$GOPATH/src/github.com/golang/protobuf/ptypes/timestamp/timestamp.proto"
       proto_go_package: "github.com/golang/protobuf/ptypes/timestamp"

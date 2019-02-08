@@ -7,7 +7,74 @@ import (
 	"github.com/EGT-Ukraine/go2gql/generator/plugins/proto2gql/parser"
 )
 
-func (g *Proto2GraphQL) TypeOutputTypeResolver(typeFile *parsedFile, typ parser.Type) (graphql.TypeResolver, error) {
+func (g *Proto2GraphQL) FieldOutputGraphQLTypeResolver(message *parser.Message, fieldName string) (graphql.TypeResolver, error) {
+	field, ok := message.GetFieldByName(fieldName)
+	if !ok {
+		return nil, errors.Errorf("can't find field %s of message %s", fieldName, message.Name)
+	}
+	fieldTypeFile, err := g.parsedFile(field.GetType().File())
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to field %s type parsed filed", field.GetName())
+	}
+
+	var result graphql.TypeResolver
+
+	switch pType := field.GetType().(type) {
+	case *parser.Scalar:
+		resolver, ok := scalarsResolvers[pType.ScalarName]
+		if !ok {
+			return nil, errors.Errorf("unimplemented scalar type: %s", pType.ScalarName)
+		}
+		result = resolver
+
+	case *parser.Message:
+		messageConfig, err := fieldTypeFile.Config.MessageConfig(pType.Name)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to resolve message %s config", pType.Name)
+		}
+
+		if !pType.HaveFieldsExcept(messageConfig.ErrorField) {
+			return graphql.GqlNoDataTypeResolver, nil
+		}
+		if messageConfig.UnwrapField {
+			messageFields := pType.GetFields()
+			if len(messageFields) != 1 {
+				return nil, errors.Errorf("unwrapped message %s should have one field", pType.Name)
+			}
+			unwrappedField := messageFields[0]
+			result, err = g.FieldOutputGraphQLTypeResolver(pType, unwrappedField.GetName())
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to make resolver for %s message path %s", pType.Name, unwrappedField.GetName())
+			}
+		} else {
+			result = g.outputMessageTypeResolver(fieldTypeFile, pType)
+		}
+
+	case *parser.Enum:
+		file, err := g.parsedFile(pType.File())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to resolve type parsed file")
+		}
+		res, err := g.enumTypeResolver(file, pType)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get enum type resolver")
+		}
+		return res, nil
+
+	case *parser.Map:
+		return g.outputObjectMapFieldTypeResolver(fieldTypeFile, pType)
+
+	default:
+		return nil, errors.Errorf("not implemented %v", field.GetType())
+	}
+	if field.IsRepeated() {
+		result = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(result))
+	}
+
+	return result, nil
+}
+
+func (g *Proto2GraphQL) TypeOutputGraphQLTypeResolver(typeFile *parsedFile, typ parser.Type) (graphql.TypeResolver, error) {
 	switch pType := typ.(type) {
 	case *parser.Scalar:
 		resolver, ok := scalarsResolvers[pType.ScalarName]
@@ -39,9 +106,10 @@ func (g *Proto2GraphQL) TypeOutputTypeResolver(typeFile *parsedFile, typ parser.
 	case *parser.Map:
 		return g.outputObjectMapFieldTypeResolver(typeFile, pType)
 	}
-	return nil, errors.New("not implemented " + typ.String())
+	return nil, errors.Errorf("not implemented %v", typ)
 }
-func (g *Proto2GraphQL) TypeInputTypeResolver(typeFile *parsedFile, typ parser.Type) (graphql.TypeResolver, error) {
+
+func (g *Proto2GraphQL) TypeInputGraphQLTypeResolver(typeFile *parsedFile, typ parser.Type) (graphql.TypeResolver, error) {
 	switch pType := typ.(type) {
 	case *parser.Scalar:
 		resolver, ok := scalarsResolvers[pType.ScalarName]
@@ -65,6 +133,7 @@ func (g *Proto2GraphQL) TypeInputTypeResolver(typeFile *parsedFile, typ parser.T
 	}
 	return nil, errors.New("not implemented " + typ.String())
 }
+
 func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type, ctxKey string, ptr bool) (_ graphql.ValueResolver, withErr, fromArgs bool, err error) {
 	if ctxKey != "" {
 		goType, err := g.goTypeByParserType(typ)
@@ -133,12 +202,48 @@ func (g *Proto2GraphQL) TypeValueResolver(typeFile *parsedFile, typ parser.Type,
 
 }
 
-func (g *Proto2GraphQL) FieldOutputValueResolver(fieldFile *parsedFile, fieldName string, fieldRepeated bool, fieldType parser.Type) (_ graphql.ValueResolver, err error) {
-	switch ft := fieldType.(type) {
-	case *parser.Scalar:
-		return graphql.IdentAccessValueResolver(camelCase(fieldName)), nil
+func (g *Proto2GraphQL) FieldOutputValueResolver(message *parser.Message, fieldName string) (_ graphql.ValueResolver, err error) {
+	field, ok := message.GetFieldByName(fieldName)
+	if !ok {
+		return nil, errors.Errorf("can't find field %s of message %s", fieldName, message.Name)
+	}
+
+	var result graphql.ValueResolver
+	switch ft := field.GetType().(type) {
 	case *parser.Message:
-		return graphql.IdentAccessValueResolver(camelCase(fieldName)), nil
+		result = graphql.IdentAccessValueResolver("Get" + camelCase(field.GetName()) + "()")
+		messageFile, err := g.parsedFile(ft.File())
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to resolve message %s parsed filed", ft.Name)
+		}
+		messageConfig, err := messageFile.Config.MessageConfig(ft.Name)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to resolve message %s config", ft.Name)
+		}
+		if messageConfig.UnwrapField {
+			childMessageFields := ft.GetFields()
+			if len(childMessageFields) != 1 {
+				return nil, errors.Errorf("unwrapped message %s should have one field", ft.Name)
+			}
+			childResolver, err := g.FieldOutputValueResolver(ft, childMessageFields[0].GetName())
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to make resolver for %s message path %s", ft.Name, childMessageFields[0].GetName())
+			}
+			if field.IsRepeated() {
+				fieldGoType, err := g.goTypeByParserType(field.GetType())
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to resolve field %s go type", field.GetName())
+				}
+
+				return repeatedValueResolver(fieldGoType, result, childResolver), nil
+			} else {
+				return func(arg string, ctx graphql.BodyContext) string {
+					return childResolver(result(arg, ctx), ctx)
+				}, nil
+			}
+		}
+	case *parser.Scalar:
+		result = graphql.IdentAccessValueResolver("Get" + camelCase(field.GetName()) + "()")
 	case *parser.Map:
 		goKeyTyp, err := g.goTypeByParserType(ft.KeyType)
 		if err != nil {
@@ -148,7 +253,7 @@ func (g *Proto2GraphQL) FieldOutputValueResolver(fieldFile *parsedFile, fieldNam
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve field value go type")
 		}
-		return func(arg string, ctx graphql.BodyContext) string {
+		result = func(arg string, ctx graphql.BodyContext) string {
 			return "func(arg map[" + goKeyTyp.String(ctx.Importer) + "]" + goValueTyp.String(ctx.Importer) + ") []map[string]interface{} {" +
 				"\n  	res := make([]int, len(arg))" +
 				"\n 	for i, val := range arg {" +
@@ -156,10 +261,10 @@ func (g *Proto2GraphQL) FieldOutputValueResolver(fieldFile *parsedFile, fieldNam
 				"\n		}" +
 				"\n 	return res" +
 				"\n	}(" + arg + ".Get" + camelCase(fieldName) + "())"
-		}, nil
+		}
 	case *parser.Enum:
-		if fieldRepeated {
-			goTyp, err := g.goTypeByParserType(fieldType)
+		if field.IsRepeated() {
+			goTyp, err := g.goTypeByParserType(field.GetType())
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to resolve field go type")
 			}
@@ -178,10 +283,11 @@ func (g *Proto2GraphQL) FieldOutputValueResolver(fieldFile *parsedFile, fieldNam
 		return func(arg string, ctx graphql.BodyContext) string {
 			return "int(" + arg + ".Get" + camelCase(fieldName) + "())"
 		}, nil
+	default:
+		return nil, errors.Errorf("can't build output value resolver for field of type %v", field.GetType().Kind())
 	}
-	return func(arg string, ctx graphql.BodyContext) string {
-		return arg + "// not implemented"
-	}, nil
+
+	return result, nil
 }
 
 func optionalValueResolver(goTyp, valueResolver, arg string) string {
@@ -189,4 +295,16 @@ func optionalValueResolver(goTyp, valueResolver, arg string) string {
 		"val := " + valueResolver + "\n" +
 		"return &val\n" +
 		"}(" + arg + ")"
+}
+
+func repeatedValueResolver(fieldGoType graphql.GoType, valueResolver, childValueResolver graphql.ValueResolver) graphql.ValueResolver {
+	return func(arg string, ctx graphql.BodyContext) string {
+		return `func(values []` + fieldGoType.String(ctx.Importer) + `) (interface{}) {
+					var result []interface{}
+					for _, value := range values {
+						result = append(result, ` + childValueResolver("value", ctx) + `)
+					}
+					return result
+				}(` + valueResolver(arg, ctx) + `)`
+	}
 }
