@@ -56,6 +56,26 @@ func (mr *MockItemsServiceClientMockRecorder) Activated(arg0, arg1 interface{}, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Activated", reflect.TypeOf((*MockItemsServiceClient)(nil).Activated), varargs...)
 }
 
+// GetDeep mocks base method
+func (m *MockItemsServiceClient) GetDeep(arg0 context.Context, arg1 *empty.Empty, arg2 ...grpc.CallOption) (*apis.GetDeepResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetDeep", varargs...)
+	ret0, _ := ret[0].(*apis.GetDeepResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDeep indicates an expected call of GetDeep
+func (mr *MockItemsServiceClientMockRecorder) GetDeep(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeep", reflect.TypeOf((*MockItemsServiceClient)(nil).GetDeep), varargs...)
+}
+
 // List mocks base method
 func (m *MockItemsServiceClient) List(arg0 context.Context, arg1 *empty.Empty, arg2 ...grpc.CallOption) (*apis.ItemListResponse, error) {
 	m.ctrl.T.Helper()
@@ -74,6 +94,26 @@ func (mr *MockItemsServiceClientMockRecorder) List(arg0, arg1 interface{}, arg2 
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockItemsServiceClient)(nil).List), varargs...)
+}
+
+// ListDeepRepeated mocks base method
+func (m *MockItemsServiceClient) ListDeepRepeated(arg0 context.Context, arg1 *empty.Empty, arg2 ...grpc.CallOption) (*apis.ListDeepRepeatedResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListDeepRepeated", varargs...)
+	ret0, _ := ret[0].(*apis.ListDeepRepeatedResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListDeepRepeated indicates an expected call of ListDeepRepeated
+func (mr *MockItemsServiceClientMockRecorder) ListDeepRepeated(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDeepRepeated", reflect.TypeOf((*MockItemsServiceClient)(nil).ListDeepRepeated), varargs...)
 }
 
 // TestRequestUnwrap mocks base method
@@ -97,14 +137,14 @@ func (mr *MockItemsServiceClientMockRecorder) TestRequestUnwrap(arg0, arg1 inter
 }
 
 // TestRequestUnwrapInnerMessage mocks base method
-func (m *MockItemsServiceClient) TestRequestUnwrapInnerMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapInnerMessageRequest, arg2 ...grpc.CallOption) (*apis.TestRequestUnwrapInnerMessageResponse, error) {
+func (m *MockItemsServiceClient) TestRequestUnwrapInnerMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapInnerMessageRequest, arg2 ...grpc.CallOption) (*empty.Empty, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "TestRequestUnwrapInnerMessage", varargs...)
-	ret0, _ := ret[0].(*apis.TestRequestUnwrapInnerMessageResponse)
+	ret0, _ := ret[0].(*empty.Empty)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -117,14 +157,14 @@ func (mr *MockItemsServiceClientMockRecorder) TestRequestUnwrapInnerMessage(arg0
 }
 
 // TestRequestUnwrapRepeatedMessage mocks base method
-func (m *MockItemsServiceClient) TestRequestUnwrapRepeatedMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapRepeatedMessageRequest, arg2 ...grpc.CallOption) (*apis.TestRequestUnwrapRepeatedMessageResponse, error) {
+func (m *MockItemsServiceClient) TestRequestUnwrapRepeatedMessage(arg0 context.Context, arg1 *apis.TestRequestUnwrapRepeatedMessageRequest, arg2 ...grpc.CallOption) (*empty.Empty, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "TestRequestUnwrapRepeatedMessage", varargs...)
-	ret0, _ := ret[0].(*apis.TestRequestUnwrapRepeatedMessageResponse)
+	ret0, _ := ret[0].(*empty.Empty)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

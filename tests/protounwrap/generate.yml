@@ -15,8 +15,14 @@ proto2gql:
       services:
         ItemsService:
           methods:
+            GetDeep:
+              alias: "deep"
+              request_type: "QUERY"
             List:
               alias: "list"
+              request_type: "QUERY"
+            ListDeepRepeated:
+              alias: "listDeepRepeated"
               request_type: "QUERY"
             Activated:
               alias: "activated"
@@ -31,6 +37,14 @@ proto2gql:
               alias: "testRequestUnwrapRepeatedMessage"
               request_type: "QUERY"
       messages:
+        - "^GetDeepResponse$":
+            unwrap_field: true
+        - "^GetDeepResponsePayload$":
+            unwrap_field: true
+        - "^ListDeepRepeatedResponse$":
+            unwrap_field: true
+        - "^ListDeepRepeatedResponsePayload$":
+            unwrap_field: true
         - "^ActivatedResponse$":
             unwrap_field: true
         - "^ItemListResponse$":
@@ -38,14 +52,6 @@ proto2gql:
         - "TestRequestUnwrapRepeatedMessageRequestPayload":
             unwrap_field: true
         - "^TestRequestUnwrapRepeatedMessage$":
-            unwrap_field: true
-        - "^TestRequestUnwrapRepeatedMessageResponse$":
-            unwrap_field: true
-        - "^TestRequestUnwrapRepeatedMessageResponsePayload$":
-            unwrap_field: true
-        - "^TestRequestUnwrapInnerMessageResponse$":
-            unwrap_field: true
-        - "^TestRequestUnwrapInnerMessageResponsePayload$":
             unwrap_field: true
     - proto_path: "../../vendor/github.com/golang/protobuf/ptypes/wrappers/wrappers.proto"
       proto_go_package: "github.com/golang/protobuf/ptypes/wrappers"

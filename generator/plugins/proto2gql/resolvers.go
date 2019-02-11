@@ -236,11 +236,11 @@ func (g *Proto2GraphQL) FieldOutputValueResolver(message *parser.Message, fieldN
 				}
 
 				return repeatedValueResolver(fieldGoType, result, childResolver), nil
-			} else {
-				return func(arg string, ctx graphql.BodyContext) string {
-					return childResolver(result(arg, ctx), ctx)
-				}, nil
 			}
+			return func(arg string, ctx graphql.BodyContext) string {
+				return childResolver(result(arg, ctx), ctx)
+			}, nil
+
 		}
 	case *parser.Scalar:
 		result = graphql.IdentAccessValueResolver("Get" + camelCase(field.GetName()) + "()")
