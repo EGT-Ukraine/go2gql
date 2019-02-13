@@ -19,6 +19,125 @@ import (
 
 //go:generate mockgen -destination=mock/item.go -package=mock github.com/EGT-Ukraine/go2gql/tests/protounwrap/generated/clients/apis ItemsServiceClient
 
+func TestProtoDeepResponseFieldUnwrapping(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().GetDeep(gomock.Any(), gomock.Any()).Return(&apis.GetDeepResponse{
+		Payload: &apis.GetDeepResponsePayload{
+			Data: &apis.GetDeepResponsePayloadData{
+				Id:   "123",
+				Name: "456",
+			},
+		},
+	}, nil).AnyTimes()
+
+	clients := &mock.Clients{
+		ItemsClient: itemsClient,
+	}
+
+	response := makeRequest(t, clients, &handler.RequestOptions{
+		Query: `{
+			items {
+				deep {
+					id
+					name
+				}
+			}
+		}`,
+	})
+
+	tests.AssertJSON(t, `{
+		"data": {
+			"items": {
+				"deep": {
+					"id": "123",
+					"name": "456"
+				}
+			}
+		}
+	}`, response)
+}
+func TestProtoListDeepRepeatedResponseFieldUnwrapping(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().ListDeepRepeated(gomock.Any(), gomock.Any()).Return(&apis.ListDeepRepeatedResponse{
+		Payload: []*apis.ListDeepRepeatedResponsePayload{
+			{
+				Data: []*apis.ListDeepRepeatedResponsePayloadData{
+					{
+						Id:   "123",
+						Name: "456",
+					},
+					{
+						Id:   "789",
+						Name: "101112",
+					},
+				},
+			},
+			{
+				Data: []*apis.ListDeepRepeatedResponsePayloadData{
+					{
+						Id:   "222",
+						Name: "444",
+					},
+					{
+						Id:   "555",
+						Name: "666",
+					},
+				},
+			},
+		},
+	}, nil).Times(1)
+
+	clients := &mock.Clients{
+		ItemsClient: itemsClient,
+	}
+
+	response := makeRequest(t, clients, &handler.RequestOptions{
+		Query: `{
+			items {
+				listDeepRepeated {
+					id
+					name
+				}
+			}
+		}`,
+	})
+
+	tests.AssertJSON(t, `{
+		"data": {
+			"items": {
+				"listDeepRepeated": [
+					[
+						{
+							"id": "123",
+							"name": "456"
+						},
+						{
+							"id": "789",
+							"name": "101112"
+						}
+					],
+					[
+						{
+							"id": "222",
+							"name": "444"
+						},
+						{
+							"id": "555",
+							"name": "666"
+						}
+					]
+				]
+			}
+		}
+	}`, response)
+}
+
 func TestProtoResponseFieldUnwrapping(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

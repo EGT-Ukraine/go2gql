@@ -8,18 +8,42 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
 service ItemsService {
-    rpc List (google.protobuf.Empty) returns (ItemListResponse) {}
-    rpc Activated (google.protobuf.Empty) returns (ActivatedResponse) {}
-    rpc TestRequestUnwrap (TestRequestUnwrapRequest) returns (google.protobuf.Empty) {}
-    rpc TestRequestUnwrapInnerMessage (TestRequestUnwrapInnerMessageRequest) returns (google.protobuf.Empty) {}
-    rpc TestRequestUnwrapRepeatedMessage (TestRequestUnwrapRepeatedMessageRequest) returns (google.protobuf.Empty) {}
+    rpc GetDeep (google.protobuf.Empty) returns (GetDeepResponse);
+    rpc List (google.protobuf.Empty) returns (ItemListResponse);
+    rpc ListDeepRepeated (google.protobuf.Empty) returns (ListDeepRepeatedResponse);
+    rpc Activated (google.protobuf.Empty) returns (ActivatedResponse);
+    rpc TestRequestUnwrap (TestRequestUnwrapRequest) returns (google.protobuf.Empty);
+    rpc TestRequestUnwrapInnerMessage (TestRequestUnwrapInnerMessageRequest) returns (google.protobuf.Empty);
+    rpc TestRequestUnwrapRepeatedMessage (TestRequestUnwrapRepeatedMessageRequest) returns (google.protobuf.Empty);
+}
+
+message GetDeepResponse {
+    GetDeepResponsePayload payload = 1;
+}
+message GetDeepResponsePayload {
+    GetDeepResponsePayloadData data = 1;
+}
+message GetDeepResponsePayloadData {
+    string id = 1;
+    string name = 2;
+}
+
+message ListDeepRepeatedResponse {
+    repeated ListDeepRepeatedResponsePayload payload = 1;
+}
+message ListDeepRepeatedResponsePayload {
+    repeated ListDeepRepeatedResponsePayloadData data = 1;
+}
+message ListDeepRepeatedResponsePayloadData {
+    string id = 1;
+    string name = 2;
 }
 
 message TestRequestUnwrapRequest {
     google.protobuf.StringValue name = 1;
 }
 
-    message ActivatedResponse {
+message ActivatedResponse {
     bool activated = 1;
 }
 
@@ -28,8 +52,8 @@ message ItemListResponse {
 }
 
 message Item {
-    int64 id           = 1;
-    string name        = 2;
+    int64 id = 1;
+    string name = 2;
 }
 
 message TestRequestUnwrapInnerMessageRequest {
@@ -38,7 +62,7 @@ message TestRequestUnwrapInnerMessageRequest {
 
 message TestRequestUnwrapInnerMessageRequestPayload {
     repeated google.protobuf.StringValue names = 1;
-    bool activated                             = 2;
+    bool activated = 2;
 }
 
 message TestRequestUnwrapRepeatedMessageRequest {

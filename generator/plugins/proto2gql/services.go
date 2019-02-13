@@ -116,15 +116,16 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 	}
 
 	var outProtoType parser.Type
+	var outType graphql.TypeResolver
 
 	var outProtoTypeRepeated bool
 
-	msgCfg, err := file.Config.MessageConfig(method.OutputMessage.Name)
+	outputMessageConfig, err := file.Config.MessageConfig(method.OutputMessage.Name)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to resolve message %s config", method.OutputMessage.Name)
 	}
 
-	if msgCfg.UnwrapField {
+	if outputMessageConfig.UnwrapField {
 		if len(method.OutputMessage.NormalFields) != 1 {
 			return nil, errors.Errorf(
 				"can't unwrap `%s` service `%s` method response. Output message must have 1 field.",
@@ -133,10 +134,17 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 			)
 		}
 
-		outProtoType = method.OutputMessage.NormalFields[0].Type
-		outProtoTypeRepeated = method.OutputMessage.NormalFields[0].Repeated
+		unwrapFieldName := method.OutputMessage.NormalFields[0].Name
 
-		unwrapFieldName := camelCase(method.OutputMessage.NormalFields[0].Name)
+		resolver, err := g.FieldOutputValueResolver(method.OutputMessage, unwrapFieldName)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to build output value resolver")
+		}
+
+		outType, err = g.FieldOutputGraphQLTypeResolver(method.OutputMessage, unwrapFieldName)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to build output type resovler")
+		}
 
 		clientMethodCaller = func(client, arg string, ctx graphql.BodyContext) string {
 			return `func() (interface{}, error) {
@@ -146,7 +154,7 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 					return nil, err
 				}
 
-				return res.` + unwrapFieldName + `, nil
+				return ` + resolver("res", ctx) + `, nil
 			}()`
 		}
 	} else {
@@ -160,15 +168,13 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 		}
 
 		outProtoType = method.OutputMessage
-	}
-
-	outType, err := g.TypeOutputTypeResolver(outputMsgTypeFile, outProtoType)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get output type resolver for method: %s", method.Name)
-	}
-
-	if outProtoTypeRepeated {
-		outType = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(outType))
+		outType, err = g.TypeOutputGraphQLTypeResolver(outputMsgTypeFile, outProtoType)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get output type resolver for method: %s", method.Name)
+		}
+		if outProtoTypeRepeated {
+			outType = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(outType))
+		}
 	}
 
 	requestType, err := g.goTypeByParserType(method.InputMessage)

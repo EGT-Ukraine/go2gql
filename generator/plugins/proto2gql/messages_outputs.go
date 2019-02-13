@@ -29,32 +29,58 @@ func (g *Proto2GraphQL) outputMessageTypeResolver(messageFile *parsedFile, messa
 }
 
 func (g *Proto2GraphQL) outputMessageFields(msgCfg MessageConfig, msg *parser.Message) ([]graphql.ObjectField, error) {
+	if msgCfg.UnwrapField {
+		fields := msg.GetFields()
+		if len(fields) != 1 {
+			return nil, errors.New("can't unwrap %s output message because it contains more that 1 field")
+		}
+		return nil, nil
+	}
 	var res []graphql.ObjectField
 	for _, field := range msg.NormalFields {
 		if msgCfg.ErrorField == field.Name {
 			continue
+		}
+		fieldGoType, err := g.goTypeByParserType(field.Type)
+
+		if err != nil {
+			return nil, errors.New("failed to resolve property go type")
+		}
+		fieldMessage, ok := field.Type.(*parser.Message)
+		if ok {
+			fieldMessageFile, err := g.parsedFile(fieldMessage.File())
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to resolve message %s parsed file", fieldMessage.Name)
+			}
+			fieldMessageConfig, err := fieldMessageFile.Config.MessageConfig(fieldMessage.Name)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to resolve message %s config", fieldMessage.Name)
+			}
+			if fieldMessageConfig.UnwrapField {
+				object, err := g.outputMessageUnwrappedField(msg, fieldMessage, field)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to resolve output message unwrapped field")
+				}
+				res = append(res, *object)
+				continue
+			}
 		}
 		fieldTypeFile, err := g.parsedFile(field.Type.File())
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve file type file")
 		}
 
-		typeResolver, err := g.TypeOutputTypeResolver(fieldTypeFile, field.Type)
+		typeResolver, err := g.TypeOutputGraphQLTypeResolver(fieldTypeFile, field.Type)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare message %s field %s output type resolver", msg.Name, field.Name)
 		}
+
 		if field.Repeated {
 			typeResolver = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(typeResolver))
 		}
-		valueResolver, err := g.FieldOutputValueResolver(fieldTypeFile, field.Name, field.Repeated, field.Type)
+		valueResolver, err := g.FieldOutputValueResolver(msg, field.Name)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare message %s field %s output value resolver", msg.Name, field.Name)
-		}
-
-		fieldGoType, err := g.goTypeByParserType(field.Type)
-
-		if err != nil {
-			return nil, errors.New("failed to resolve property go type")
 		}
 
 		res = append(res, graphql.ObjectField{
@@ -74,7 +100,7 @@ func (g *Proto2GraphQL) outputMessageFields(msgCfg MessageConfig, msg *parser.Me
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to resolve file type file")
 			}
-			typeResolver, err := g.TypeOutputTypeResolver(fieldTypeFile, field.Type)
+			typeResolver, err := g.TypeOutputGraphQLTypeResolver(fieldTypeFile, field.Type)
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to prepare message %s field %s output type resolver", msg.Name, field.Name)
 			}
@@ -96,7 +122,7 @@ func (g *Proto2GraphQL) outputMessageMapFields(msgCfg MessageConfig, file *parse
 		if msgCfg.ErrorField == field.Name {
 			continue
 		}
-		typeResolver, err := g.TypeOutputTypeResolver(file, field.Map)
+		typeResolver, err := g.TypeOutputGraphQLTypeResolver(file, field.Map)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare message %s field %s output type resolver", msg.Name, field.Name)
 		}
@@ -179,4 +205,36 @@ func (g *Proto2GraphQL) fileOutputMessages(file *parsedFile) ([]graphql.OutputOb
 	}
 
 	return res, nil
+}
+
+func (g *Proto2GraphQL) outputMessageUnwrappedField(msg, fieldMessage *parser.Message, field parser.Field) (*graphql.ObjectField, error) {
+	unwrappedField := fieldMessage.NormalFields[0]
+	unwrappedFieldTypeFile, err := g.parsedFile(unwrappedField.Type.File())
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to resolve unwrappedField %s message file", unwrappedField.Name)
+	}
+	outProtoType := unwrappedField.Type
+
+	typeResolver, err := g.TypeOutputGraphQLTypeResolver(unwrappedFieldTypeFile, outProtoType)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get type output type resolver")
+	}
+	unwrappedFieldGoType, err := g.goTypeByParserType(outProtoType)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to resolve go type of unwrapped unwrappedField")
+	}
+	valueResolver, err := g.FieldOutputValueResolver(msg, field.GetName())
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to prepare message %s unwrappedField %s output value resolver", msg.Name, unwrappedField.Name)
+	}
+	if field.IsRepeated() {
+		typeResolver = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(typeResolver))
+	}
+	return &graphql.ObjectField{
+		Name:          field.GetName(),
+		QuotedComment: unwrappedField.QuotedComment,
+		Type:          typeResolver,
+		GoType:        unwrappedFieldGoType,
+		Value:         valueResolver,
+	}, nil
 }

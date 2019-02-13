@@ -85,7 +85,7 @@ func templatesLoaders_bodyGohtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/loaders_body.gohtml", size: 1390, mode: os.FileMode(420), modTime: time.Unix(1549016074, 0)}
+	info := bindataFileInfo{name: "templates/loaders_body.gohtml", size: 1390, mode: os.FileMode(420), modTime: time.Unix(1549558494, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

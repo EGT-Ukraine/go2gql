@@ -200,6 +200,7 @@ func (f *File) parseMessagesFields() error {
 						Repeated:      false,
 						descriptor:    fld.Field,
 						Type:          typ,
+						OneOf:         of,
 					})
 				}
 				msg.OneOffs = append(msg.OneOffs, of)

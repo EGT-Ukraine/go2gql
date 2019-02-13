@@ -126,6 +126,7 @@ func (m Message) GetFullName() string {
 type Field interface {
 	GetName() string
 	GetType() Type
+	IsRepeated() bool
 }
 
 type NormalField struct {
@@ -136,6 +137,7 @@ type NormalField struct {
 	Type          Type
 	Optional      bool
 	Required      bool
+	OneOf         *OneOf
 }
 
 func (n *NormalField) GetName() string {
@@ -144,6 +146,9 @@ func (n *NormalField) GetName() string {
 
 func (n *NormalField) GetType() Type {
 	return n.Type
+}
+func (n *NormalField) IsRepeated() bool {
+	return n.Repeated
 }
 
 type MapField struct {
@@ -159,6 +164,9 @@ func (n *MapField) GetName() string {
 
 func (n *MapField) GetType() Type {
 	return n.Map
+}
+func (n *MapField) IsRepeated() bool {
+	return false
 }
 
 type OneOf struct {

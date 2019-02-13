@@ -1,4 +1,5 @@
-dataloader_tests:
+generate_test_data:
+	# Schema
 	rm -rf generated/*
 	mkdir -p generated/clients
 	protoc --go_out=paths=source_relative,plugins=grpc:generated/clients apis/category.proto
@@ -9,3 +10,6 @@ dataloader_tests:
 	swagger generate client --template-dir=../swagger_templates/ -f apis/swagger.json -t generated/clients
 
 	go run ../../cmd/go2gql/main.go ../../cmd/go2gql/basic_plugins.go
+
+	# Mocks
+	go generate ./...

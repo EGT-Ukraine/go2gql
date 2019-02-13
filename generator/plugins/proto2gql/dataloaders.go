@@ -49,7 +49,7 @@ func (g Proto2GraphQL) registerMethodDataLoader(name string, cfg DataLoaderConfi
 		return errors.Wrap(err, "failed to resolve file type file")
 	}
 
-	dataLoaderOutType, err := g.TypeOutputTypeResolver(outputMsgTypeFile, resultMessage)
+	dataLoaderOutType, err := g.TypeOutputGraphQLTypeResolver(outputMsgTypeFile, resultMessage)
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve output type")
 	}

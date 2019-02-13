@@ -7,6 +7,7 @@ import (
 
 	interceptors "github.com/EGT-Ukraine/go2gql/api/interceptors"
 	scalars "github.com/EGT-Ukraine/go2gql/api/scalars"
+	wrappers "github.com/EGT-Ukraine/go2gql/example/out/github.com/golang/protobuf/ptypes/wrappers"
 	loaders "github.com/EGT-Ukraine/go2gql/example/out/loaders"
 	well_known "github.com/EGT-Ukraine/go2gql/example/out/well_known"
 	proto "github.com/EGT-Ukraine/go2gql/example/proto"
@@ -101,6 +102,7 @@ func init() {
 	ExmplAInput.AddFieldConfig("some_entity_ids", &graphql.InputObjectFieldConfig{Type: graphql.NewList(graphql.NewNonNull(graphql.String)), Description: ""})
 	ExmplAInput.AddFieldConfig("some_entity_id", &graphql.InputObjectFieldConfig{Type: graphql.NewList(graphql.NewNonNull(graphql.String)), Description: ""})
 	ExmplAInput.AddFieldConfig("id", &graphql.InputObjectFieldConfig{Type: graphql.String, Description: ""})
+	ExmplAInput.AddFieldConfig("unwrapped_field", &graphql.InputObjectFieldConfig{Type: scalars.GraphQLFloat32Scalar, Description: "The float value."})
 	ExmplAInput.AddFieldConfig("map_enum", &graphql.InputObjectFieldConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplAInput__MapEnum)), Description: "Map with enum value"})
 	ExmplAInput.AddFieldConfig("map_scalar", &graphql.InputObjectFieldConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplAInput__MapScalar)), Description: "Map with scalar value"})
 	ExmplAInput.AddFieldConfig("map_msg", &graphql.InputObjectFieldConfig{Type: graphql.NewList(graphql.NewNonNull(ExmplAInput__MapMsg)), Description: "Map with Message value"})
@@ -344,6 +346,15 @@ func ResolveExmplAInput(ctx context.Context, i interface{}) (_ *proto.A, rerr er
 	if args["id"] != nil {
 		result.Id = args["id"].(string)
 	}
+	if args["unwrapped_field"] != nil {
+		{
+			v, err := wrappers.ResolveFloatValueInput(ctx, args["unwrapped_field"])
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to resolve `ResolveExmplAInput` input object field")
+			}
+			result.UnwrappedField = v
+		}
+	}
 	if args["map_enum"] != nil {
 		{
 			v, err := ResolveExmplAInput__MapEnum(ctx, args["map_enum"])
@@ -552,9 +563,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.Filter, nil
+				return s.GetFilter(), nil
 			case proto.ListSomeEntitiesRequest:
-				return src.Filter, nil
+				return src.GetFilter(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -580,9 +591,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.AIds, nil
+				return s.GetAIds(), nil
 			case proto.ListSomeEntitiesRequest_Filter:
-				return src.AIds, nil
+				return src.GetAIds(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -598,9 +609,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.Ids, nil
+				return s.GetIds(), nil
 			case proto.ListSomeEntitiesRequest_Filter:
-				return src.Ids, nil
+				return src.GetIds(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -626,9 +637,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.Entities, nil
+				return s.GetEntities(), nil
 			case proto.ListSomeEntitiesResponse:
-				return src.Entities, nil
+				return src.GetEntities(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -654,9 +665,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.Id, nil
+				return s.GetId(), nil
 			case proto.ListSomeEntitiesResponse_SomeEntity:
-				return src.Id, nil
+				return src.GetId(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -672,9 +683,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.Name, nil
+				return s.GetName(), nil
 			case proto.ListSomeEntitiesResponse_SomeEntity:
-				return src.Name, nil
+				return src.GetName(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -690,9 +701,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.AId, nil
+				return s.GetAId(), nil
 			case proto.ListSomeEntitiesResponse_SomeEntity:
-				return src.AId, nil
+				return src.GetAId(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -740,7 +751,7 @@ func init() {
 	ExmplA.AddFieldConfig("someEntities", &graphql.Field{
 		Name:        "someEntities",
 		Description: "",
-		Type:        ExmplListSomeEntitiesResponse_SomeEntity,
+		Type:        graphql.NewList(ExmplListSomeEntitiesResponse_SomeEntity),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			parent := p.Source.(*proto.A)
 
@@ -801,9 +812,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.RMsg, nil
+				return s.GetRMsg(), nil
 			case proto.A:
-				return src.RMsg, nil
+				return src.GetRMsg(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -819,9 +830,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.RScalar, nil
+				return s.GetRScalar(), nil
 			case proto.A:
-				return src.RScalar, nil
+				return src.GetRScalar(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -885,9 +896,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.NRScalar, nil
+				return s.GetNRScalar(), nil
 			case proto.A:
-				return src.NRScalar, nil
+				return src.GetNRScalar(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -903,9 +914,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.NRMsg, nil
+				return s.GetNRMsg(), nil
 			case proto.A:
-				return src.NRMsg, nil
+				return src.GetNRMsg(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -921,9 +932,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.ScalarFromContext, nil
+				return s.GetScalarFromContext(), nil
 			case proto.A:
-				return src.ScalarFromContext, nil
+				return src.GetScalarFromContext(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -957,9 +968,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.MessageFromContext, nil
+				return s.GetMessageFromContext(), nil
 			case proto.A:
-				return src.MessageFromContext, nil
+				return src.GetMessageFromContext(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -975,9 +986,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.MessageWithOneoffs, nil
+				return s.GetMessageWithOneoffs(), nil
 			case proto.A:
-				return src.MessageWithOneoffs, nil
+				return src.GetMessageWithOneoffs(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -993,9 +1004,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.Test, nil
+				return s.GetTest(), nil
 			case proto.A:
-				return src.Test, nil
+				return src.GetTest(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -1011,9 +1022,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.SomeEntityIds, nil
+				return s.GetSomeEntityIds(), nil
 			case proto.A:
-				return src.SomeEntityIds, nil
+				return src.GetSomeEntityIds(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -1029,9 +1040,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.SomeEntityId, nil
+				return s.GetSomeEntityId(), nil
 			case proto.A:
-				return src.SomeEntityId, nil
+				return src.GetSomeEntityId(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -1047,9 +1058,27 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.Id, nil
+				return s.GetId(), nil
 			case proto.A:
-				return src.Id, nil
+				return src.GetId(), nil
+			}
+			return nil, errors.New("source of unknown type")
+		},
+	})
+	ExmplA.AddFieldConfig("unwrapped_field", &graphql.Field{
+		Name:        "unwrapped_field",
+		Description: "The float value.",
+		Type:        scalars.GraphQLFloat32Scalar,
+		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			switch src := p.Source.(type) {
+			case *proto.A:
+				if src == nil {
+					return nil, nil
+				}
+				s := *src
+				return s.GetUnwrappedField().GetValue(), nil
+			case proto.A:
+				return src.GetUnwrappedField().GetValue(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -1341,9 +1370,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.EmptyField, nil
+				return s.GetEmptyField(), nil
 			case proto.MsgWithEmpty:
-				return src.EmptyField, nil
+				return src.GetEmptyField(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -1369,9 +1398,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.RMsg, nil
+				return s.GetRMsg(), nil
 			case proto.B:
-				return src.RMsg, nil
+				return src.GetRMsg(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -1387,9 +1416,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.RScalar, nil
+				return s.GetRScalar(), nil
 			case proto.B:
-				return src.RScalar, nil
+				return src.GetRScalar(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -1453,9 +1482,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.NRScalar, nil
+				return s.GetNRScalar(), nil
 			case proto.B:
-				return src.NRScalar, nil
+				return src.GetNRScalar(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
@@ -1471,9 +1500,9 @@ func init() {
 					return nil, nil
 				}
 				s := *src
-				return s.NRMsg, nil
+				return s.GetNRMsg(), nil
 			case proto.B:
-				return src.NRMsg, nil
+				return src.GetNRMsg(), nil
 			}
 			return nil, errors.New("source of unknown type")
 		},
