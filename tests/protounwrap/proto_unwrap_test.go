@@ -336,7 +336,7 @@ func TestRequestUnwrapRepeatedMessageResponse(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
-	itemsClient.EXPECT().TestRequestUnwrapRepeatedMessage(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil).Times(1)
+	itemsClient.EXPECT().TestRequestUnwrapRepeatedMessage(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil).AnyTimes()
 
 	clients := &mock.Clients{
 		ItemsClient: itemsClient,
