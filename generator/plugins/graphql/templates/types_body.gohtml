@@ -200,11 +200,7 @@ func {{$resolver.FunctionName}}(ctx {{ctxPkg}}.Context, i interface{}) (_ {{goTy
 			Name: "value",
 			Type: {{call $object.ValueObjectType $}},
 			Resolve: func(p {{gqlPkg}}.ResolveParams) (interface{}, error) {
-				src := p.Source.(map[string]interface{})
-				if src == nil {
-					return nil, nil
-				}
-				return src["value"], nil
+				{{call $object.ValueResolver "p" $}}
 			},
 		})
 	}

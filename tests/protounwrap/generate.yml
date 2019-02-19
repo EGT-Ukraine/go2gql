@@ -36,6 +36,9 @@ proto2gql:
             TestRequestUnwrapRepeatedMessage:
               alias: "testRequestUnwrapRepeatedMessage"
               request_type: "QUERY"
+            MapUnwrap:
+              alias: "mapUnwrap"
+              request_type: "QUERY"
       messages:
         - "^GetDeepResponse$":
             unwrap_field: true

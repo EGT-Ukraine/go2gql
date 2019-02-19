@@ -219,6 +219,50 @@ func TestProtoResponseScalarFieldUnwrapping(t *testing.T) {
 	}`, response)
 }
 
+func TestMapUnwrappingResponse(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().MapUnwrap(gomock.Any(), gomock.Any()).Return(&apis.MapUnwrapResponse{
+		Items: map[string]*wrappers.StringValue{
+			"key": {Value: "value"},
+		},
+	}, nil).AnyTimes()
+
+	clients := &mock.Clients{
+		ItemsClient: itemsClient,
+	}
+
+	response := makeRequest(t, clients, &handler.RequestOptions{
+		Query: `{
+			items {
+				mapUnwrap {
+					items {
+						key
+						value
+					}
+				}
+			}
+		}`,
+	})
+
+	tests.AssertJSON(t, `{
+		"data": {
+			"items": {
+				"mapUnwrap": {
+					"items": [
+						{
+							"key": "key",
+							"value": "value"
+				  		}
+					]
+				}
+			}
+		}
+	}`, response)
+}
+
 func TestProtoRequestFieldUnwrappingResponse(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
