@@ -27,15 +27,64 @@ func (g *Proto2GraphQL) fileMapOutputObjects(file *parsedFile) ([]graphql.MapOut
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to resolve value type file")
 			}
+
+			valueResolver := func(arg string, ctx graphql.BodyContext) string {
+				return `src := p.Source.(map[string]interface{})
+				if src == nil {
+					return nil, nil
+				}
+				return src["value"], nil`
+			}
+
 			valueTypResolver, err := g.TypeOutputGraphQLTypeResolver(valueFile, mapFld.Map.ValueType)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to resolve value input type resolver")
 			}
+
+			valueMessage, ok := mapFld.Map.ValueType.(*parser.Message)
+
+			if ok {
+				msgCfg, err := valueFile.Config.MessageConfig(valueMessage.Name)
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to resolve message %s config", valueMessage.Name)
+				}
+
+				if msgCfg.UnwrapField {
+					fields := valueMessage.GetFields()
+					if len(fields) != 1 {
+						return nil, errors.Errorf("can't unwrap %s output message because it contains more that 1 field", valueMessage.Name)
+					}
+
+					unwrappedField := fields[0]
+
+					responseGoType, err := g.goTypeByParserType(valueMessage)
+
+					if err != nil {
+						return nil, err
+					}
+
+					valueResolver = func(arg string, ctx graphql.BodyContext) string {
+						return `src := p.Source.(map[string]interface{})
+						if src == nil {
+							return nil, nil
+						}
+
+						return src["value"].(` + responseGoType.String(ctx.Importer) + `).` + camelCase(unwrappedField.GetName()) + `, nil`
+					}
+
+					valueTypResolver, err = g.TypeOutputGraphQLTypeResolver(valueFile, unwrappedField.GetType())
+					if err != nil {
+						return nil, errors.Wrap(err, "failed to resolve value input type resolver")
+					}
+				}
+			}
+
 			res = append(res, graphql.MapOutputObject{
 				VariableName:    g.outputMapVariable(file, mapFld.Map),
 				GraphQLName:     g.outputMapGraphQLName(file, mapFld.Map),
 				KeyObjectType:   keyTypResolver,
 				ValueObjectType: valueTypResolver,
+				ValueResolver:   valueResolver,
 			})
 		}
 	}

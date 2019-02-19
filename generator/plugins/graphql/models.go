@@ -167,6 +167,7 @@ type MapOutputObject struct {
 	GraphQLName     string
 	KeyObjectType   TypeResolver
 	ValueObjectType TypeResolver
+	ValueResolver   ValueResolver
 }
 
 type Service struct {

@@ -33,6 +33,13 @@ func (p *Plugin) fileMapOutputMessages(file *parsedFile) ([]graphql.MapOutputObj
 				GraphQLName:     p.mapOutputObjectGQLName(file, t),
 				KeyObjectType:   graphql.GqlNonNullTypeResolver(graphql.GqlStringTypeResolver),
 				ValueObjectType: valueType,
+				ValueResolver: func(arg string, ctx graphql.BodyContext) string {
+					return `src := p.Source.(map[string]interface{})
+					if src == nil {
+						return nil, nil
+					}
+					return src["value"], nil`
+				},
 			})
 		case *parser.Object:
 			if _, handled := handledObjects[t]; handled {

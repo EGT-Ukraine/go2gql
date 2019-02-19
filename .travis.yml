@@ -23,4 +23,4 @@ env:
 script:
   - make test
   - make lint
-  - goveralls -race -service=travis-ci -repotoken $COVERALLS_TOKEN
+  #- goveralls -race -service=travis-ci -repotoken $COVERALLS_TOKEN

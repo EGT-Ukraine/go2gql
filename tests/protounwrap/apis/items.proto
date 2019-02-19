@@ -11,6 +11,7 @@ service ItemsService {
     rpc GetDeep (google.protobuf.Empty) returns (GetDeepResponse);
     rpc List (google.protobuf.Empty) returns (ItemListResponse);
     rpc ListDeepRepeated (google.protobuf.Empty) returns (ListDeepRepeatedResponse);
+    rpc MapUnwrap(google.protobuf.Empty) returns (MapUnwrapResponse);
     rpc Activated (google.protobuf.Empty) returns (ActivatedResponse);
     rpc TestRequestUnwrap (TestRequestUnwrapRequest) returns (google.protobuf.Empty);
     rpc TestRequestUnwrapInnerMessage (TestRequestUnwrapInnerMessageRequest) returns (google.protobuf.Empty);
@@ -71,4 +72,8 @@ message TestRequestUnwrapRepeatedMessageRequest {
 
 message TestRequestUnwrapRepeatedMessageRequestPayload {
     repeated string test = 1;
+}
+
+message MapUnwrapResponse {
+    map<string, google.protobuf.StringValue> items = 1;
 }
