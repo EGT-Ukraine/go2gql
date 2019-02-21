@@ -262,6 +262,51 @@ func TestMapUnwrappingResponse(t *testing.T) {
 		}
 	}`, response)
 }
+func TestMapRepeatedUnwrappingResponse(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+	itemsClient.EXPECT().MapRepeatedUnwrap(gomock.Any(), gomock.Any()).Return(&apis.MapRepeatedUnwrapResponse{
+		Items: map[string]*apis.RepeatedUnwrapResponse{
+			"key": {
+				Items: []string{"1", "2", "3"},
+			},
+		},
+	}, nil).AnyTimes()
+
+	clients := &mock.Clients{
+		ItemsClient: itemsClient,
+	}
+
+	response := makeRequest(t, clients, &handler.RequestOptions{
+		Query: `{
+			items {
+				mapRepeatedUnwrap {
+					items {
+						key
+						value
+					}
+				}
+			}
+		}`,
+	})
+
+	tests.AssertJSON(t, `{
+		"data": {
+			"items": {
+				"mapRepeatedUnwrap": {
+					"items": [
+						{
+							"key": "key",
+							"value": ["1", "2", "3"]
+				  		}
+					]
+				}
+			}
+		}
+	}`, response)
+}
 
 func TestProtoRequestFieldUnwrappingResponse(t *testing.T) {
 	mockCtrl := gomock.NewController(t)

@@ -39,6 +39,9 @@ proto2gql:
             MapUnwrap:
               alias: "mapUnwrap"
               request_type: "QUERY"
+            MapRepeatedUnwrap:
+              alias: "mapRepeatedUnwrap"
+              request_type: "QUERY"
       messages:
         - "^GetDeepResponse$":
             unwrap_field: true
@@ -55,6 +58,8 @@ proto2gql:
         - "TestRequestUnwrapRepeatedMessageRequestPayload":
             unwrap_field: true
         - "^TestRequestUnwrapRepeatedMessage$":
+            unwrap_field: true
+        - "^RepeatedUnwrapResponse$":
             unwrap_field: true
     - proto_path: "../../vendor/github.com/golang/protobuf/ptypes/wrappers/wrappers.proto"
       proto_go_package: "github.com/golang/protobuf/ptypes/wrappers"
