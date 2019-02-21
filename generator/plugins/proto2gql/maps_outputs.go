@@ -76,6 +76,9 @@ func (g *Proto2GraphQL) fileMapOutputObjects(file *parsedFile) ([]graphql.MapOut
 					if err != nil {
 						return nil, errors.Wrap(err, "failed to resolve value input type resolver")
 					}
+					if unwrappedField.IsRepeated() {
+						valueTypResolver = graphql.GqlListTypeResolver(graphql.GqlNonNullTypeResolver(valueTypResolver))
+					}
 				}
 			}
 
