@@ -51,6 +51,8 @@ func Get{{.Service.Name}}Service{{.FieldType}}Methods(c {{goType .Service.CallIn
                             Params: p,
                         }
                         req, err := ih.ResolveArgs(ictx, func(ictx *{{interceptorsPkg}}.Context, next {{interceptorsPkg}}.ResolveArgsInvoker) (result interface{}, err error) {
+                            ctx := ictx.Params.Context
+                            _ = ctx
                             {{ if $method.RequestResolver -}}
                                 return {{call $method.RequestResolver "p.Args" $.BodyContext}}{{- if not $method.RequestResolverWithErr -}}, error(nil){{end}}
                             {{ else -}}
