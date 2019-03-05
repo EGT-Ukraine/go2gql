@@ -203,6 +203,7 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 	}
 
 	return &graphql.Method{
+		OriginalName:           method.Name,
 		Name:                   g.methodName(cfg, method),
 		QuotedComment:          method.QuotedComment,
 		GraphQLOutputType:      outType,
@@ -282,6 +283,7 @@ func (g Proto2GraphQL) fileServices(file *parsedFile) ([]graphql.Service, error)
 		}
 
 		res = append(res, graphql.Service{
+			OriginalName:    service.Name,
 			Name:            g.serviceName(sc, service),
 			QuotedComment:   service.QuotedComment,
 			CallInterface:   g.serviceCallInterface(file, service.Name),

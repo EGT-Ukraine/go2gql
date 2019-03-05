@@ -171,6 +171,7 @@ type MapOutputObject struct {
 }
 
 type Service struct {
+	OriginalName    string
 	Name            string
 	QuotedComment   string
 	CallInterface   GoType
@@ -179,6 +180,7 @@ type Service struct {
 }
 
 type Method struct {
+	OriginalName           string
 	Name                   string
 	QuotedComment          string
 	GraphQLOutputType      TypeResolver

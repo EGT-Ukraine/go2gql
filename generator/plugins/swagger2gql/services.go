@@ -78,6 +78,7 @@ func (p *Plugin) graphqlMethod(tagCfg TagConfig, methodCfg MethodConfig, file *p
 	}
 
 	return &graphql.Method{
+		OriginalName:           method.Path,
 		Name:                   name,
 		QuotedComment:          strconv.Quote(method.Description),
 		GraphQLOutputType:      responseType,
@@ -292,6 +293,7 @@ func (p *Plugin) fileServices(file *parsedFile) ([]graphql.Service, error) {
 		}
 
 		res = append(res, graphql.Service{
+			OriginalName:    tag.Name,
 			Name:            p.tagName(tag, tagCfg),
 			QuotedComment:   strconv.Quote(tag.Description),
 			QueryMethods:    queriesMethods,
