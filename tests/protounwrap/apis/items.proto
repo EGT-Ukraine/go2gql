@@ -14,9 +14,23 @@ service ItemsService {
     rpc MapUnwrap(google.protobuf.Empty) returns (MapUnwrapResponse);
     rpc MapRepeatedUnwrap(google.protobuf.Empty) returns (MapRepeatedUnwrapResponse);
     rpc Activated (google.protobuf.Empty) returns (ActivatedResponse);
+    rpc RequestUnwrapWithCasting (RequestUnwrapWithCastingRequest) returns (google.protobuf.Empty);
     rpc TestRequestUnwrap (TestRequestUnwrapRequest) returns (google.protobuf.Empty);
     rpc TestRequestUnwrapInnerMessage (TestRequestUnwrapInnerMessageRequest) returns (google.protobuf.Empty);
     rpc TestRequestUnwrapRepeatedMessage (TestRequestUnwrapRepeatedMessageRequest) returns (google.protobuf.Empty);
+}
+
+enum Direction {
+    DEPOSIT = 0;
+    WITHDRAW = 1;
+}
+
+message DirectionValue {
+    Direction value = 1;
+}
+
+message RequestUnwrapWithCastingRequest {
+    DirectionValue direction = 1;
 }
 
 message GetDeepResponse {
