@@ -60,6 +60,10 @@ func (g *Proto2GraphQL) inputUnwrappedMessagesResolver(file *parsedFile, msg *pa
 						`
 					}
 
+					if _, ok := fld.Type.(*parser.Enum); ok {
+						return goTypeString + "(i.(int))"
+					}
+
 					return "i.(" + goTypeString + ")"
 				},
 				GoType: goType,

@@ -42,7 +42,12 @@ proto2gql:
             MapRepeatedUnwrap:
               alias: "mapRepeatedUnwrap"
               request_type: "QUERY"
+            RequestUnwrapWithCasting:
+              alias: "requestUnwrapWithCasting"
+              request_type: "QUERY"
       messages:
+        - "^DirectionValue$":
+            unwrap_field: true
         - "^GetDeepResponse$":
             unwrap_field: true
         - "^GetDeepResponsePayload$":

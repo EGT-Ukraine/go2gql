@@ -361,6 +361,31 @@ func TestProtoRequestFieldUnwrappingCorrectRequestFormed(t *testing.T) {
 	})
 }
 
+func TestUnwrapRequestWithConversions(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	itemsClient := mock.NewMockItemsServiceClient(mockCtrl)
+
+	itemsClient.EXPECT().RequestUnwrapWithCasting(gomock.Any(), &apis.RequestUnwrapWithCastingRequest{
+		Direction: &apis.DirectionValue{
+			Value: apis.Direction_DEPOSIT,
+		},
+	}).Return(&empty.Empty{}, nil).Times(1)
+
+	clients := &mock.Clients{
+		ItemsClient: itemsClient,
+	}
+
+	makeRequest(t, clients, &handler.RequestOptions{
+		Query: `{
+			items {
+				requestUnwrapWithCasting(direction: DEPOSIT)
+			}
+		}`,
+	})
+}
+
 func TestProtoRequestFieldUnwrappingNestedMessageResponse(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
