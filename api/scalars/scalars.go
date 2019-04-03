@@ -376,7 +376,7 @@ var GraphQLBytesScalar = graphql.NewScalar(graphql.ScalarConfig{
 	Name: "Bytes",
 	Serialize: func(value interface{}) interface{} {
 		switch value.(type) {
-		case string:
+		case []byte:
 			return base64.StdEncoding.EncodeToString(value.([]byte))
 		}
 
