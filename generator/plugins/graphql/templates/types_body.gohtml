@@ -161,6 +161,9 @@ func {{$resolver.FunctionName}}(ctx {{ctxPkg}}.Context, i interface{}) (_ {{goTy
 					return nil, {{errorsPkg}}.Wrapf(err, "failed to resolve #%d map element key", i)
 				}
 			{{else -}}
+				if k == nil {
+					return nil, {{errorsPkg}}.Errorf("key for #%d map element not provided", i)
+				}
 				kk := {{call $resolver.KeyResolver "k" $}}
 			{{end -}}
 			{{if $resolver.ValueResolverWithError -}}
@@ -169,6 +172,9 @@ func {{$resolver.FunctionName}}(ctx {{ctxPkg}}.Context, i interface{}) (_ {{goTy
 					return nil, {{errorsPkg}}.Wrapf(err, "failed to resolve #%d map element value", i)
 				}
 			{{else -}}
+				if v == nil {
+					return nil, {{errorsPkg}}.Errorf("value for #%d map element not provided", i)
+				}
 				vv := {{call $resolver.ValueResolver "v" $}}
 			{{end -}}
 			result[kk]=vv
