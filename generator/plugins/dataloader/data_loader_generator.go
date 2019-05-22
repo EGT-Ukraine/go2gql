@@ -57,7 +57,7 @@ func (p *LoaderGenerator) GenerateDataLoaders() error {
 	}
 
 	for _, dataLoader := range p.dataLoader.Loaders {
-		if err := p.generateLoaders(dataLoader.InputGoType, dataLoader.OutputGoType, dataLoader.Slice); err != nil {
+		if err := p.generateLoaders(dataLoader.OutputGraphqlTypeName, dataLoader.InputGoType, dataLoader.OutputGoType, dataLoader.Slice); err != nil {
 			return errors.Wrapf(err, "failed to generate %s data loader", dataLoader.Name)
 		}
 	}
@@ -65,7 +65,7 @@ func (p *LoaderGenerator) GenerateDataLoaders() error {
 	return nil
 }
 
-func (p *LoaderGenerator) generateLoaders(requestGoType graphql.GoType, responseGoType graphql.GoType, slice bool) (rerr error) {
+func (p *LoaderGenerator) generateLoaders(outputGraphqlTypeName string, requestGoType graphql.GoType, responseGoType graphql.GoType, slice bool) (rerr error) {
 	keyType := requestGoType.ElemType.Kind.String()
 
 	var typeName string
@@ -81,7 +81,7 @@ func (p *LoaderGenerator) generateLoaders(requestGoType graphql.GoType, response
 		}
 	}()
 
-	if err := generator.Generate(typeName, keyType, slice, true, p.dataLoader.OutputPath); err != nil {
+	if err := generator.Generate(outputGraphqlTypeName, typeName, keyType, slice, true, p.dataLoader.OutputPath); err != nil {
 		return errors.Wrapf(err, "Failed to generate loader for '%s'", typeName)
 	}
 
@@ -156,14 +156,14 @@ func (p *LoaderGenerator) generateBody() ([]byte, error) {
 
 		responseGoType := dataLoaderModel.OutputGoType
 
-		loaderTypeName := responseGoType.ElemType.Name
+		loaderTypeName := dataLoaderModel.OutputGraphqlTypeName
 
 		if dataLoaderModel.Slice {
-			loaderTypeName = responseGoType.ElemType.ElemType.Name + "Slice"
+			loaderTypeName += "Slice"
 		}
 
 		loaders = append(loaders, Loader{
-			LoaderTypeName: loaderTypeName,
+			LoaderTypeName: loaderTypeName + "Loader",
 			Service:        *service,
 			FetchCode:      dataLoaderModel.FetchCode(p.importer),
 			RequestGoType:  requestGoType,
