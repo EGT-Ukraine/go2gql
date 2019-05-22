@@ -21,15 +21,16 @@ type Service struct {
 }
 
 type LoaderModel struct {
-	Name              string
-	WaitDuration      time.Duration
-	Service           *Service
-	Method            *graphql.Method
-	InputGoType       graphql.GoType
-	OutputGoType      graphql.GoType
-	OutputGraphqlType graphql.TypeResolver
-	FetchCode         func(importer *importer.Importer) string
-	Slice             bool
+	Name                  string
+	WaitDuration          time.Duration
+	Service               *Service
+	Method                *graphql.Method
+	InputGoType           graphql.GoType
+	OutputGoType          graphql.GoType
+	OutputGraphqlType     graphql.TypeResolver
+	OutputGraphqlTypeName string
+	FetchCode             func(importer *importer.Importer) string
+	Slice                 bool
 }
 
 func (p *Plugin) createDataLoader(config *DataLoadersConfig, vendorPath string) (*DataLoader, error) {

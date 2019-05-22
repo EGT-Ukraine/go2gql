@@ -8,7 +8,7 @@ type LoaderClients interface {
 
 type DataLoaders struct {
 	{{range $loader := $.Loaders -}}
-		{{$loader.Name}}Loader {{$loader.LoaderTypeName}}Loader
+		{{$loader.Name}}Loader {{$loader.LoaderTypeName}}
 	{{end -}}
 }
 
@@ -27,8 +27,8 @@ func GetContextWithLoaders(ctx context.Context, apiClients LoaderClients) contex
 }
 
 {{range $loader := $.Loaders -}}
-func create{{$loader.Name}}(ctx context.Context, client {{goType $loader.Service.CallInterface}}) {{$loader.LoaderTypeName}}Loader {
-	return {{$loader.LoaderTypeName}}Loader{
+func create{{$loader.Name}}(ctx context.Context, client {{goType $loader.Service.CallInterface}}) {{$loader.LoaderTypeName}} {
+	return {{$loader.LoaderTypeName}}{
 		fetch: func(keys {{goType $loader.RequestGoType}}) ([]{{goType $loader.ResponseGoType}}, []error) {
 			{{$loader.FetchCode}}
 		},

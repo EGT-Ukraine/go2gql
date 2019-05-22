@@ -35,6 +35,12 @@ func (g Proto2GraphQL) registerMethodDataLoader(name string, cfg DataLoaderConfi
 	normalResultField := resultField.(*parser.NormalField)
 	resultMessage := normalResultField.Type.(*parser.Message)
 
+	resultMessageFile, err := g.parsedFile(resultMessage.File())
+	if err != nil {
+		return errors.Wrap(err, "failed to get result message file")
+	}
+
+
 	matchField, err := messageFieldByPath(resultField.GetType().(*parser.Message), cfg.MatchField)
 	if err != nil {
 		return errors.Wrap(err, "failed to get match field")
@@ -44,6 +50,7 @@ func (g Proto2GraphQL) registerMethodDataLoader(name string, cfg DataLoaderConfi
 	if err != nil {
 		return errors.Wrap(err, "failed to get result field go type")
 	}
+
 	outputMsgTypeFile, err := g.parsedFile(method.OutputMessage.File())
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve file type file")
@@ -79,6 +86,7 @@ func (g Proto2GraphQL) registerMethodDataLoader(name string, cfg DataLoaderConfi
 	}
 
 	dataLoaderProvider := dataloader.LoaderModel{
+		OutputGraphqlTypeName: g.outputMessageGraphQLName(resultMessageFile, resultMessage),
 		Service: &dataloader.Service{
 			Name:          g.serviceName(serviceConfig, method.Service),
 			CallInterface: g.serviceCallInterface(file, method.Service.Name),
