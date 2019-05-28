@@ -285,7 +285,7 @@ func (g Proto2GraphQL) fileServices(file *parsedFile) ([]graphql.Service, error)
 	for serviceName, sc := range file.Config.GetServices() {
 		service, ok := file.File.Services[serviceName]
 		if !ok {
-			return nil, errors.Errorf("Service '%s' not found if file '%s'", serviceName, file.File.FilePath)
+			return nil, errors.Errorf("Service '%s' not found in file '%s'", serviceName, file.File.FilePath)
 		}
 
 		queryMethods, err := g.serviceQueryMethods(sc, file, service)
