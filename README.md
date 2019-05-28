@@ -436,3 +436,8 @@ sch, err := schema.GetAPISchema(schemaApiClientsFactory.GetAPIClients(), schemaA
 ### Migrating from 4.x to 5.0
 
 `github.com/saturn4er/graphql` dependency was replaced with original `github.com/graphql-go/graphql` package.
+
+### Migrating from 5.x to 6.0
+
+Implicit service & method registration in proto plugin disabled.
+For now you must declare each proto service & method in config.

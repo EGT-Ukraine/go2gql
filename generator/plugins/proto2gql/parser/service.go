@@ -3,7 +3,7 @@ package parser
 type Service struct {
 	Name          string
 	QuotedComment string
-	Methods       []*Method
+	Methods       map[string]*Method
 }
 
 type Method struct {

@@ -219,15 +219,21 @@ func (g Proto2GraphQL) serviceMethod(sc ServiceConfig, cfg MethodConfig, file *p
 
 func (g Proto2GraphQL) serviceQueryMethods(sc ServiceConfig, file *parsedFile, service *parser.Service) ([]graphql.Method, error) {
 	var res []graphql.Method
-	for _, method := range service.Methods {
-		mc := sc.Methods[method.Name]
-		if !g.methodIsQuery(mc, method) {
+	for methodName, methodConfig := range sc.Methods {
+		method, ok := service.Methods[methodName]
+		if !ok {
+			return nil, errors.Errorf("Method with name '%s' not found in service '%s'", methodName, service.Name)
+		}
+
+		if !g.methodIsQuery(methodConfig, method) {
 			continue
 		}
-		met, err := g.serviceMethod(sc, mc, file, method)
+
+		met, err := g.serviceMethod(sc, methodConfig, file, method)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare service method %s", method.Name)
 		}
+
 		res = append(res, *met)
 	}
 
@@ -246,12 +252,17 @@ func (g Proto2GraphQL) methodIsQuery(cfg MethodConfig, method *parser.Method) bo
 
 func (g Proto2GraphQL) serviceMutationsMethods(cfg ServiceConfig, file *parsedFile, service *parser.Service) ([]graphql.Method, error) {
 	var res []graphql.Method
-	for _, method := range service.Methods {
-		mc := cfg.Methods[method.Name]
-		if g.methodIsQuery(mc, method) {
+	for methodName, methodConfig := range cfg.Methods {
+		method, ok := service.Methods[methodName]
+		if !ok {
+			return nil, errors.Errorf("Method with name '%s' not found in service '%s'", methodName, service.Name)
+		}
+
+		if g.methodIsQuery(methodConfig, method) {
 			continue
 		}
-		met, err := g.serviceMethod(cfg, mc, file, method)
+
+		met, err := g.serviceMethod(cfg, methodConfig, file, method)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare service method %s", method.Name)
 		}
@@ -271,8 +282,12 @@ func (g Proto2GraphQL) serviceName(sc ServiceConfig, service *parser.Service) st
 
 func (g Proto2GraphQL) fileServices(file *parsedFile) ([]graphql.Service, error) {
 	var res []graphql.Service
-	for _, service := range file.File.Services {
-		sc := file.Config.GetServices()[service.Name]
+	for serviceName, sc := range file.Config.GetServices() {
+		service, ok := file.File.Services[serviceName]
+		if !ok {
+			return nil, errors.Errorf("Service '%s' not found in file '%s'", serviceName, file.File.FilePath)
+		}
+
 		queryMethods, err := g.serviceQueryMethods(sc, file, service)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to resolve service methods")

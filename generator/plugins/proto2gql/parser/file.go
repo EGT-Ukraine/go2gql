@@ -12,7 +12,7 @@ type File struct {
 	FilePath    string
 	protoFile   *proto.Proto
 	PkgName     string
-	Services    []*Service
+	Services    map[string]*Service
 	Messages    []*Message
 	Enums       []*Enum
 	Imports     []*File
@@ -110,6 +110,7 @@ func (f *File) parseServices() error {
 		srv := &Service{
 			Name:          service.Name,
 			QuotedComment: quoteComment(service.Comment, nil),
+			Methods:       map[string]*Method{},
 		}
 		for _, el := range service.Elements {
 			method, ok := el.(*proto.RPC)
@@ -131,9 +132,9 @@ func (f *File) parseServices() error {
 				OutputMessage: retTyp.(*Message),
 				Service:       srv,
 			}
-			srv.Methods = append(srv.Methods, mtd)
+			srv.Methods[mtd.Name] = mtd
 		}
-		f.Services = append(f.Services, srv)
+		f.Services[service.Name] = srv
 	}
 
 	return nil
