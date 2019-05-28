@@ -40,7 +40,6 @@ func (g Proto2GraphQL) registerMethodDataLoader(name string, cfg DataLoaderConfi
 		return errors.Wrap(err, "failed to get result message file")
 	}
 
-
 	matchField, err := messageFieldByPath(resultField.GetType().(*parser.Message), cfg.MatchField)
 	if err != nil {
 		return errors.Wrap(err, "failed to get match field")

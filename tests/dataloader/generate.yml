@@ -59,6 +59,9 @@ proto2gql:
             List:
               alias: "list"
               request_type: "QUERY"
+            GetOne:
+              alias: "GetOne"
+              request_type: "QUERY"
       messages:
         - "^ItemListResponse$":
             unwrap_field: true
