@@ -160,9 +160,25 @@ func (p *Plugin) addDataLoaderProvider(
 		return errors.Errorf("Method %s %s input parameter must be array of scalars", method.HTTPMethod, method.Path)
 	}
 
+	var handleType func(typ parser.Type) string
+
+	handleType = func(typ parser.Type) string {
+		switch t := typ.(type) {
+		case *parser.Object:
+			return p.outputObjectGQLName(file, t)
+		case *parser.Array:
+			return handleType(t.ElemType)
+		}
+
+		panic("Unexpected parser type")
+	}
+
+	outputGraphqlTypeName := handleType(resType.ElemType)
+
 	dataLoaderProvider := dataloader.LoaderModel{
-		Name:         dataLoaderProviderConfig.Name,
-		WaitDuration: dataLoaderProviderConfig.WaitDuration,
+		OutputGraphqlTypeName: outputGraphqlTypeName,
+		Name:                  dataLoaderProviderConfig.Name,
+		WaitDuration:          dataLoaderProviderConfig.WaitDuration,
 		Service: &dataloader.Service{
 			Name:          p.tagName(tag, &tagCfg),
 			CallInterface: p.serviceCallInterface(&tagCfg),
