@@ -89,6 +89,7 @@ func (p *Parser) Parse(path string, importAliases []map[string]string, paths []s
 		FilePath:    absPath,
 		protoFile:   f,
 		PkgName:     resolveFilePkgName(f),
+		Services:    map[string]*Service{},
 		Descriptors: map[string]Type{},
 	}
 	result.parseGoPackage()

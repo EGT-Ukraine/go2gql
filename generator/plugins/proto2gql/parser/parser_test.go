@@ -37,15 +37,15 @@ func testFileInfo(file *File) *File {
 	var Proto2Message = file.Imports[1].Messages[0]
 
 	return &File{
-		Services: []*Service{
-			{
+		Services: map[string]*Service{
+			"ServiceExample": {
 				Name:          "ServiceExample",
 				QuotedComment: `"Service, which do smth"`,
-				Methods: []*Method{
-					{Name: "getQueryMethod", InputMessage: RootMessage, OutputMessage: RootMessage, QuotedComment: `""`},
-					{Name: "mutationMethod", InputMessage: RootMessage2, OutputMessage: NestedMessage, QuotedComment: `"rpc comment"`},
-					{Name: "EmptyMsgs", InputMessage: EmptyMessage, OutputMessage: EmptyMessage, QuotedComment: `""`},
-					{Name: "MsgsWithEpmty", InputMessage: MessageWithEmpty, OutputMessage: MessageWithEmpty, QuotedComment: `""`},
+				Methods: map[string]*Method{
+					"getQueryMethod": {Name: "getQueryMethod", InputMessage: RootMessage, OutputMessage: RootMessage, QuotedComment: `""`},
+					"mutationMethod": {Name: "mutationMethod", InputMessage: RootMessage2, OutputMessage: NestedMessage, QuotedComment: `"rpc comment"`},
+					"EmptyMsgs":      {Name: "EmptyMsgs", InputMessage: EmptyMessage, OutputMessage: EmptyMessage, QuotedComment: `""`},
+					"MsgsWithEpmty":  {Name: "MsgsWithEpmty", InputMessage: MessageWithEmpty, OutputMessage: MessageWithEmpty, QuotedComment: `""`},
 				},
 			},
 		},
