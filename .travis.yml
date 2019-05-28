@@ -2,7 +2,7 @@ language: go
 
 go:
   - "1.11"
-  - master
+  - "1.12"
 
 install:
   - go get github.com/mattn/goveralls
